@@ -1,4 +1,6 @@
-package tetris.block;
+package tetris.block.move;
+
+import tetris.block.data.BlockData;
 
 public class BlockMove {
     public static void MoveRight(BlockData blockData, int[][] board) {

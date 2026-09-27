@@ -1,4 +1,4 @@
-package tetris.block;
+package tetris.block.data;
 
 /*
     SapePalette 클래스는 블럭의 모양 정보를 저장

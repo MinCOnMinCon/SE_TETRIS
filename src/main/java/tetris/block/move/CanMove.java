@@ -1,4 +1,6 @@
-package tetris.block;
+package tetris.block.move;
+
+import tetris.block.data.BlockData;
 
 public class CanMove {
     public static boolean IsNoBlock(int direction, BlockData blockData, int[][] board) {
