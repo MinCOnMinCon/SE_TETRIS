@@ -1,15 +1,12 @@
 package tetris.block.move;
 
 import tetris.block.data.BlockData;
-<<<<<<< HEAD
 
 /*
     CanMove 클래스는 테트리스 블럭의 이동 가능 여부를 판단하는 클래스
     CanMove.IsNoBlock((0, -1, 1), BlockData, int[][]) 블럭이 특정 방향(0: 아래, -1: 왼쪽, 1: 오른쪽)으로 이동할 수 있는지 확인
     이동 가능하면 true, 이동 불가능하면 false 반환
 */
-=======
->>>>>>> c4c81e84f5465474972f099d093031f16b2c25bf
 
 public class CanMove {
     public static boolean IsNoBlock(int direction, BlockData blockData, int[][] board) {
