@@ -1,7 +1,7 @@
 package tetris.block.blocks;
 
-import tetris.block.BlockData;
-import tetris.block.ShapePalette;
+import tetris.block.data.BlockData;
+import tetris.block.data.ShapePalette;
 
 /*
     Block 클래스는 블럭의 최종적인 데이터들을 통합하는 클래스의 기본형
