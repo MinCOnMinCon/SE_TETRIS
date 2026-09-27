@@ -8,7 +8,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-public class BoardRenderer extends Application {
+public class SceneRenderer extends Application {
     private BoardRenderData boardRenderData = new BoardRenderData();
     private Scene gameScene;
     private Canvas boardCanvas;
