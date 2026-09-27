@@ -6,6 +6,8 @@ import tetris.block.data.BlockData;
     CanMove 클래스는 테트리스 블럭의 이동 가능 여부를 판단하는 클래스
     CanMove.IsNoBlock((0, -1, 1), BlockData, int[][]) 블럭이 특정 방향(0: 아래, -1: 왼쪽, 1: 오른쪽)으로 이동할 수 있는지 확인
     이동 가능하면 true, 이동 불가능하면 false 반환
+
+    현재 x, y 좌표의 기준 : 블럭의 좌측 상단 모서리
 */
 
 public class CanMove {
