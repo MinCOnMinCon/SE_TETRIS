@@ -1,8 +1,8 @@
-package src.main.java.tetris.block.blocks;
+package tetris.block.blocks;
 
 import java.awt.Color;
-import src.main.java.tetris.block.BlockData;
-import src.main.java.tetris.block.ColorPalette;
+import tetris.block.BlockData;
+import tetris.block.ColorPalette;
 
 // I 블럭
 public class BlockI extends Block {
