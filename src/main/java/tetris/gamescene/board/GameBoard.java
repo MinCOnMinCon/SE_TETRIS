@@ -1,4 +1,4 @@
-package tetris.gameboard;
+package tetris.gamescene.board;
 import javafx.scene.paint.Color;
 
 
@@ -20,7 +20,7 @@ public class GameBoard {
         InitGameBoard();
     }
 
-    public BoardElement[][] getBoard(){
+    public BoardElement[][] GetBoard(){
         return board;
     }
 

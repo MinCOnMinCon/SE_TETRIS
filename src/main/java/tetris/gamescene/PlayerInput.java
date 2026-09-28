@@ -1,4 +1,4 @@
-package tetris.gameboard;
+package tetris.gamescene;
 
 import java.util.HashMap;
 import java.util.Map;
