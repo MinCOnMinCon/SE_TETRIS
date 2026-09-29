@@ -1,8 +1,9 @@
 package tetris.block.blocks;
 
 import java.awt.Color;
-import tetris.block.BlockData;
-import tetris.block.ColorPalette;
+
+import tetris.block.data.BlockData;
+import tetris.block.data.ColorPalette;
 
 // J 블럭 (L블럭과 대비)
 public class BlockJ extends Block {

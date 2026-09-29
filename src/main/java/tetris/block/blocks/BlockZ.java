@@ -1,8 +1,9 @@
 package tetris.block.blocks;
 
 import java.awt.Color;
-import tetris.block.BlockData;
-import tetris.block.ColorPalette;
+
+import tetris.block.data.BlockData;
+import tetris.block.data.ColorPalette;
 
 // Z 블럭 (S블럭과 대비)
 public class BlockZ extends Block {
