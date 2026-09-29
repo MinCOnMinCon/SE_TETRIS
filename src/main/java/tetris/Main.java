@@ -1,8 +1,9 @@
 package tetris;
 
+import javafx.application.Application;
+
 public class Main {
     public static void main(String[] args) {
-        StartScreen screen = new StartScreen();
-        screen.show();
+        Application.launch(StartScreen.class, args);
     }
 }
