@@ -18,6 +18,6 @@ public final class SettingsConstants {
 
     // 객체 생성 방지용 생성자
     private SettingsConstants() {
-        // 외부에서 이 클래스의 인스턴스를 만들지 못하게 막음
+        // 외부에서 새로운 사이즈의 화면을 만들지 못하게 막음
     }
 }

@@ -19,6 +19,12 @@ import java.util.List; // 리스트 자료형
 
 public class ScoreBoardWindow {
     public void show(Stage stage) {
+        // 화면 전환 전의 창과 장면 크기를 저장
+        double windowWidth = stage.getWidth();
+        double windowHeight = stage.getHeight();
+        double sceneWidth = stage.getScene().getWidth();
+        double sceneHeight = stage.getScene().getHeight();
+
         // 저장된 점수 목록을 불러온 뒤, 점수 기준으로 내림차순 정렬
         List<ScoreRecord> scores = new ScoreLoader().loadScores();
         scores.sort(Comparator.comparingInt(ScoreRecord::getScore).reversed());
@@ -72,9 +78,12 @@ public class ScoreBoardWindow {
         root.setStyle("-fx-background-color: black;");
         root.setCenter(content);
 
-        // 스코어 보드 화면 타이틀, 크기 설정 및 화면 전환
+        // 스코어 보드 화면 타이틀, 화면 전환
+        //화면 사이즈는 기존의 크기를 유지
         stage.setTitle("Top 3 Scores");
-        stage.setScene(new Scene(root, 400, 250));
+        stage.setScene(new Scene(root, sceneWidth, sceneHeight));
+        stage.setWidth(windowWidth);
+        stage.setHeight(windowHeight);
         stage.show();
     }
 }
