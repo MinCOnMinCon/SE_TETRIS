@@ -17,8 +17,9 @@ import tetris.StartScreen; // 메인 화면으로 돌아가기 위해 필요
 import java.util.Comparator; // 정렬을 위해 사용하는 클래스
 import java.util.List; // 리스트 자료형
 
+// 점수판 화면을 생성하고 표시하는 클래스
 public class ScoreBoardWindow {
-    public void show(Stage stage) {
+    public void show(Stage stage) { // 현재 창을 점수판 화면으로 전환
         // 화면 전환 전의 창과 장면 크기를 저장
         double windowWidth = stage.getWidth();
         double windowHeight = stage.getHeight();
@@ -51,7 +52,7 @@ public class ScoreBoardWindow {
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
 
         // 표에 3개의 컬럼 추가
-        table.getColumns().addAll(rankColumn, nameColumn, scoreColumn);
+        table.getColumns().addAll(rankColumn, nameColumn, scoreColumn); // 세 컬럼을 표에 추가
 
         // top3 데이터를 표에 넣기
         table.setItems(FXCollections.observableArrayList(top3));
@@ -81,7 +82,7 @@ public class ScoreBoardWindow {
         // 스코어 보드 화면 타이틀, 화면 전환
         //화면 사이즈는 기존의 크기를 유지
         stage.setTitle("Top 3 Scores");
-        stage.setScene(new Scene(root, sceneWidth, sceneHeight));
+        stage.setScene(new Scene(root, sceneWidth, sceneHeight)); // 기존 장면 크기로 새 화면 생성
         stage.setWidth(windowWidth);
         stage.setHeight(windowHeight);
         stage.show();

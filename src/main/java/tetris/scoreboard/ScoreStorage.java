@@ -6,9 +6,10 @@ import java.nio.file.Path; // 파일 경로
 import java.nio.file.StandardOpenOption; // 파일 열기 옵션
 import java.util.List; // 리스트 자료형
 
+// 점수 파일을 저장하는 클래스
 public class ScoreStorage {
     // 이름과 점수를 받아 scores.txt에 한 줄씩 저장
-    public void saveScore(String name, int score) {
+    public void saveScore(String name, int score) { // 새 점수 저장
         // 저장할 파일 경로 지정
         Path path = Path.of("scores.txt");
 
@@ -17,7 +18,7 @@ public class ScoreStorage {
 
         try {
             // 파일이 없으면 생성하고, 있으면 기존 파일에 이어서 추가
-            Files.write(
+            Files.write( // 파일 생성 후 기존 내용 뒤에 점수 추가
                 path,
                 List.of(line),
                 StandardOpenOption.CREATE,

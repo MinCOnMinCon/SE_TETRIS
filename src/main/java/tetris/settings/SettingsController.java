@@ -1,52 +1,84 @@
 package tetris.settings;
 
-import javafx.scene.control.Button; // 버튼 사용
-import javafx.scene.control.ComboBox; // 해상도 선택용 드롭다운
+import javafx.scene.control.ComboBox; // 해상도와 색상 모드 선택 상자
+import javafx.scene.Scene; // 키 입력을 감지할 화면
+import javafx.scene.control.Button; // 역할별 키 버튼
+import javafx.scene.control.Label; // 상태 안내 문구
+import javafx.scene.input.KeyCode; // 입력된 키 종류
+import javafx.scene.input.KeyEvent; // 키보드 이벤트
+import javafx.scene.layout.HBox; // 역할 행
+import javafx.scene.layout.VBox; // 역할 행 목록
 import javafx.stage.Stage; // 창 크기 변경을 위해 필요
-import javafx.scene.layout.VBox; // 콘텐츠 배치용 레이아웃
+import tetris.settings.KeyBindingSettings.ActionType;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 // 설정 화면의 동작 로직을 담당하는 컨트롤러 클래스
 public class SettingsController {
     // 현재 창과 각 UI 요소를 저장
-    private final Stage stage;
-    private final VBox contentBox;
-    private final Button colorBlindModeButton;
-    private final ComboBox<String> resolutionComboBox;
-
-    // 색맹 모드 상태
-    private boolean colorBlindModeEnabled = false;
+    private final Stage stage; // 현재 앱 창
+    private final Scene scene; // 현재 설정 화면
+    private final ComboBox<String> resolutionComboBox; // 해상도 선택 상자
+    private final ComboBox<SettingsConstants.ColorBlindMode> colorBlindModeComboBox; // 색상 모드 선택 상자
+    private final KeyBindingSettings inputSettingData; // 키 배정 데이터
+    private final VBox keyBindingRows; // 역할별 행 목록
+    private final Label keySettingsStatus; // 키 변경 상태 표시
+    private final Map<ActionType, Button> keyButtons = new EnumMap<>(ActionType.class); // 역할과 버튼 연결
+    private ActionType actionWaitingForKey; // 새 키 입력을 기다리는 역할
 
     // 생성자: 필요한 UI 객체를 받아 저장
-    public SettingsController(Stage stage, VBox contentBox, Button colorBlindModeButton, ComboBox<String> resolutionComboBox) {
+    public SettingsController(
+            Stage stage,
+            Scene scene,
+            ComboBox<String> resolutionComboBox,
+            ComboBox<SettingsConstants.ColorBlindMode> colorBlindModeComboBox,
+            KeyBindingSettings inputSettingData,
+            VBox keyBindingRows,
+            Label keySettingsStatus) {
         this.stage = stage;
-        this.contentBox = contentBox;
-        this.colorBlindModeButton = colorBlindModeButton;
+        this.scene = scene;
         this.resolutionComboBox = resolutionComboBox;
+        this.colorBlindModeComboBox = colorBlindModeComboBox;
+        this.inputSettingData = inputSettingData;
+        this.keyBindingRows = keyBindingRows;
+        this.keySettingsStatus = keySettingsStatus;
     }
 
     // 화면이 열릴 때 기본값과 이벤트를 설정
-    public void initialize() {
+    public void initialize() { // 설정 화면의 기본값과 이벤트 초기화
+        SettingsStore.load(); // 저장된 설정을 먼저 복원
+
         // 해상도 옵션을 드롭다운에 추가
         resolutionComboBox.getItems().addAll(SettingsConstants.RESOLUTION_PRESETS);
 
-        // 기본 선택값은 720x1280으로 설정
-        resolutionComboBox.setValue(SettingsConstants.RESOLUTION_PRESETS[0]);
+        // 저장된 해상도와 색상 모드를 선택 상태로 표시
+        resolutionComboBox.setValue(SettingsConstants.getResolutionPreset());
+        colorBlindModeComboBox.getItems().setAll(SettingsConstants.ColorBlindMode.values());
+        colorBlindModeComboBox.setValue(SettingsConstants.getColorBlindMode());
+        updateResolution();
 
         // 해상도 선택 시 이벤트 연결
-        resolutionComboBox.setOnAction(e -> updateResolution());
-
-        // 색맹 모드 버튼 초기 상태 표시
-        updateColorBlindButtonLabel();
-
-        // 색맹 모드 버튼 클릭 시 상태 전환
-        colorBlindModeButton.setOnAction(e -> {
-            colorBlindModeEnabled = !colorBlindModeEnabled;
-            updateColorBlindButtonLabel();
+        resolutionComboBox.setOnAction(e -> {
+            SettingsConstants.setResolutionPreset(resolutionComboBox.getValue());
+            updateResolution();
+            SettingsStore.save();
         });
+
+        colorBlindModeComboBox.setOnAction(e -> {
+            SettingsConstants.setColorBlindMode(colorBlindModeComboBox.getValue());
+            SettingsStore.save();
+        });
+
+        // 역할별 키 버튼을 만들고 씬에서 다음 키 입력을 감지
+        createKeyBindingRows();
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, this::captureKeyBinding);
     }
 
     // 선택된 해상도에 맞춰 창 크기 변경
-    private void updateResolution() {
+    private void updateResolution() { // 선택한 해상도로 창 크기 변경
         String selected = resolutionComboBox.getValue();
         int index = -1;
 
@@ -67,14 +99,50 @@ public class SettingsController {
         }
     }
 
-    // 색맹 모드 상태에 따라 버튼 텍스트와 색상 변경
-    private void updateColorBlindButtonLabel() {
-        if (colorBlindModeEnabled) {
-            colorBlindModeButton.setText("색맹 모드: ON");
-            colorBlindModeButton.setStyle("-fx-background-color: #4da3ff; -fx-text-fill: white;");
-        } else {
-            colorBlindModeButton.setText("색맹 모드: OFF");
-            colorBlindModeButton.setStyle("-fx-background-color: #dcdcdc; -fx-text-fill: black;");
+    private void createKeyBindingRows() { // 역할별 버튼에 현재 키와 이벤트 연결
+        for (ActionType actionType : ActionType.values()) {
+            HBox row = (HBox) keyBindingRows.getChildren().get(actionType.ordinal());
+            Button keyButton = (Button) row.getChildren().get(1);
+            keyButtons.put(actionType, keyButton);
+            updateKeyButton(actionType);
+            keyButton.setOnAction(event -> {
+                actionWaitingForKey = actionType;
+                keySettingsStatus.setText(actionType.getDisplayName() + "에 지정할 키를 입력하세요.");
+                scene.getRoot().requestFocus();
+            });
         }
     }
+
+    private void captureKeyBinding(KeyEvent event) { // 다음 키 입력을 새 배정값으로 처리
+        if (actionWaitingForKey == null) {
+            return;
+        }
+
+        KeyCode newKey = event.getCode();
+        boolean alreadyUsed = inputSettingData.getAllBindings().entrySet().stream()
+                .anyMatch(binding -> binding.getKey() != actionWaitingForKey
+                        && binding.getValue().contains(newKey));
+
+        if (alreadyUsed) {
+            keySettingsStatus.setText(newKey.getName() + " 키는 다른 역할에 이미 배정되어 있습니다.");
+        } else {
+            ActionType updatedAction = actionWaitingForKey;
+            inputSettingData.setKeyCode(updatedAction, newKey);
+            updateKeyButton(updatedAction);
+            SettingsStore.save();
+            keySettingsStatus.setText(updatedAction.getDisplayName() + " 키를 " + newKey.getName() + "(으)로 변경했습니다.");
+            actionWaitingForKey = null;
+        }
+
+        event.consume();
+    }
+
+    private void updateKeyButton(ActionType actionType) { // 버튼에 현재 키 목록 표시
+        List<KeyCode> keyCodes = inputSettingData.getKeyCodes(actionType);
+        String displayedKeys = keyCodes.stream()
+                .map(KeyCode::getName)
+                .collect(Collectors.joining(" / "));
+        keyButtons.get(actionType).setText(displayedKeys);
+    }
+
 }

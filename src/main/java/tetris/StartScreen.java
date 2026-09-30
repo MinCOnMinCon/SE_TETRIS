@@ -1,22 +1,24 @@
 package tetris;
 
-import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import tetris.scoreboard.ScoreBoardWindow;
-import tetris.settings.SettingsScreen;
+import javafx.application.Application; // JavaFX 앱의 생명주기를 제공
+import javafx.geometry.Pos; // 화면 요소의 정렬 위치
+import javafx.scene.Scene; // 화면에 표시할 장면
+import javafx.scene.control.Button; // 버튼 컨트롤
+import javafx.scene.control.Label; // 제목과 문구를 표시
+import javafx.scene.input.KeyCode; // 키보드 키 종류
+import javafx.scene.layout.BorderPane; // 화면을 상·중·하로 나누는 레이아웃
+import javafx.scene.layout.VBox; // 버튼을 세로로 배치하는 레이아웃
+import javafx.stage.Stage; // 실제 앱 창
+import tetris.scoreboard.ScoreBoardWindow; // 점수판 화면
+import tetris.settings.SettingsConstants; // 저장된 화면 크기
+import tetris.settings.SettingsScreen; // 설정 화면
 
+// 테트리스의 시작 메뉴 화면
 public class StartScreen extends Application {
     private Button[] buttons;//버튼 배열 생성
     private int selectedIndex = 0;//선택된 버튼의 인덱스 초기화
 
-    private void updateSelection() {//선택된 버튼의 스타일 업데이트 방식 선언
+    private void updateSelection() {// 선택된 버튼과 일반 버튼의 색상 갱신
         for (int i = 0; i < buttons.length; i++) {//버튼 배열의 길이만큼 반복
             if (i == selectedIndex) {//선택된 버튼이면 푸른색으로 변경
                 buttons[i].setStyle("-fx-background-color: #4da3ff; -fx-text-fill: white;");
@@ -27,7 +29,7 @@ public class StartScreen extends Application {
     }
 
     @Override
-    public void start(Stage stage) {//시작 화면을 구성하는 메서드
+    public void start(Stage stage) {// JavaFX가 호출하는 시작 화면 구성 메서드
         Label title = new Label("TETRIS");//타이틀 생성
         //타이틀 스타일 설정(폰트, 굵기, 색상)
         title.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;");
@@ -89,9 +91,9 @@ public class StartScreen extends Application {
         BorderPane.setAlignment(title, Pos.CENTER);//타이틀 중앙 정렬
         root.setCenter(buttonBox);//버튼 중앙 배치
 
-        Scene scene = new Scene(root, 400, 600);//화면 크기 설정
+        Scene scene = new Scene(root, SettingsConstants.getScreenWidth(), SettingsConstants.getScreenHeight());//저장된 화면 크기를 적용
         scene.getRoot().requestFocus();//버튼으로 빠지는 focus를 scene 루트에 욺김
-        scene.setOnKeyPressed(e -> {
+        scene.setOnKeyPressed(e -> { // 씬 전체에서 키보드 입력을 감지
             if (e.getCode() == KeyCode.DOWN) {//아래 방향키 입력 시
                 if (selectedIndex < buttons.length - 1) {//선택된 버튼이 마지막 버튼이 아니면
                     selectedIndex++;//선택된 버튼 인덱스 증가
