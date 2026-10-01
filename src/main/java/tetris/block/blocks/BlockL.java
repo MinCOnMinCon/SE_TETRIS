@@ -7,8 +7,8 @@ import tetris.block.data.ColorPalette;
 
 // L 블럭 (J블럭과 대비)
 public class BlockL extends Block {
-    public BlockL() {
+    public BlockL(int colorMode) {
         ColorPalette palette = new ColorPalette(Color.ORANGE, new Color(255, 140, 0), new Color(255, 69, 0));
-        this.blockData = new BlockData(shapePalette.GetShapeL(), palette);
+        this.blockData = new BlockData(shapePalette.GetShapeL(), palette, colorMode);
     }
 }

@@ -7,8 +7,8 @@ import tetris.block.data.ColorPalette;
 
 // O 블럭
 public class BlockO extends Block {
-    public BlockO() {
+    public BlockO(int colorMode) {
         ColorPalette palette = new ColorPalette(Color.YELLOW, new Color(255, 215, 0), new Color(255, 250, 205));
-        this.blockData = new BlockData(shapePalette.GetShapeO(), palette);
+        this.blockData = new BlockData(shapePalette.GetShapeO(), palette, colorMode);
     }
 }

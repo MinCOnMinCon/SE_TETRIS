@@ -15,12 +15,14 @@ import java.awt.Color;
 public class BlockData {
     private int[][] shape;
     private ColorPalette colorPalette;
+    private int colorMode; // 0: 일반, 1: 적녹색맹, 2: 청황색맹
     private int x;
     private int y;
 
-    public BlockData(int[][] shape, ColorPalette colorPalette) {
+    public BlockData(int[][] shape, ColorPalette colorPalette, int colorMode) {
         this.shape = shape;
         this.colorPalette = colorPalette;
+        this.colorMode = colorMode;
         // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
         this.x = 3; 
         this.y = 0;
@@ -34,7 +36,7 @@ public class BlockData {
         this.shape = shape;
     }
 
-    public Color GetCurrentColor(int colorMode) {
+    public Color GetCurrentColor() {
         return this.colorPalette.GetColor(colorMode);
     }
 
