@@ -23,6 +23,7 @@ public class BlockRotate {
         } else if (direction == 1) {
             rotatedShape = RotateLeft(originalShape);
         }
+        tmpBlockData.SetShape(rotatedShape);
         
         if (CanRotate.IsNoBlock(tmpBlockData, board)) {
             blockData.SetShape(rotatedShape);
