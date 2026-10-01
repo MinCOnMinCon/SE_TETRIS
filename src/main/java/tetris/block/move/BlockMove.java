@@ -13,22 +13,22 @@ import tetris.block.data.CurrentShape;
 */
 
 public class BlockMove {
-    public static void MoveRight(BlockData blockData, int[][] board) {
+    public static void MoveRight(BlockData blockData, boolean[][] board) {
         if (CanMove.IsNoBlock(1, blockData, board)) {
             blockData.SetX(blockData.GetX() + 1);
         }
     }
-    public static void MoveLeft(BlockData blockData, int[][] board) {
+    public static void MoveLeft(BlockData blockData, boolean[][] board) {
         if (CanMove.IsNoBlock(-1, blockData, board)) {
             blockData.SetX(blockData.GetX() - 1);
         }
     }
-    public static void MoveDown(BlockData blockData, int[][] board) {
+    public static void MoveDown(BlockData blockData, boolean[][] board) {
         if (CanMove.IsNoBlock(0, blockData, board)) {
             blockData.SetY(blockData.GetY() + 1);
         }
         else {
-            int[][] shape = blockData.GetShape();
+            boolean[][] shape = blockData.GetShape();
             int x = blockData.GetX();
             int y = blockData.GetY();
 
@@ -37,7 +37,7 @@ public class BlockMove {
             for (int[] coord : currentShape) {
                 int i = coord[0];
                 int j = coord[1];
-                board[y + i][x + j] = 1; // 블럭을 보드에 고정
+                board[y + i][x + j] = true; // 블럭을 보드에 고정
             }
             // TODO: 바닥에 닿았을 때 새 블럭 생성 로직
         }

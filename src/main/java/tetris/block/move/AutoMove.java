@@ -17,9 +17,9 @@ import tetris.block.data.BlockData;
 public class AutoMove {
     private Timer autoDropTimer;
     private BlockData currentBlock;
-    private int[][] currentBoard;
+    private boolean[][] currentBoard;
 
-    public AutoMove(BlockData blockData, int[][] board) {
+    public AutoMove(BlockData blockData, boolean[][] board) {
         this.currentBlock = blockData;
         this.currentBoard = board;
     }
@@ -29,14 +29,14 @@ public class AutoMove {
     public BlockData GetCurrentBlock() {
         return this.currentBlock;
     }
-    public void SetCurrentBoard(int[][] board) {
+    public void SetCurrentBoard(boolean[][] board) {
         this.currentBoard = board;
     }
-    public int[][] GetCurrentBoard() {
+    public boolean[][] GetCurrentBoard() {
         return this.currentBoard;
     }
 
-    public void StartAutoMove(int intervalMillis, BlockData blockData, int[][] board) {
+    public void StartAutoMove(int intervalMillis, BlockData blockData, boolean[][] board) {
         if (this.autoDropTimer != null) {
             this.autoDropTimer.stop();
         }

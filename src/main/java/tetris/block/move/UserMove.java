@@ -12,16 +12,16 @@ import tetris.block.data.BlockData;
 */
 
 public class UserMove {
-    public static void MoveRight(BlockData blockData, int[][] board) {
+    public static void MoveRight(BlockData blockData, boolean[][] board) {
         BlockMove.MoveRight(blockData, board);
     }
-    public static void MoveLeft(BlockData blockData, int[][] board) {
+    public static void MoveLeft(BlockData blockData, boolean[][] board) {
         BlockMove.MoveLeft(blockData, board);
     }
-    public static void MoveDown(BlockData blockData, int[][] board) {
+    public static void MoveDown(BlockData blockData, boolean[][] board) {
         BlockMove.MoveDown(blockData, board);
     }
-    public static void MoveDownMax(BlockData blockData, int[][] board) {
+    public static void MoveDownMax(BlockData blockData, boolean[][] board) {
         // 블럭이 맨 아래로 이동하고 AutoMove가 돌때까지 기다림
         // 바로 다음 블럭 생성 필요 시 수정 필요
         while (CanMove.IsNoBlock(0, blockData, board)) {

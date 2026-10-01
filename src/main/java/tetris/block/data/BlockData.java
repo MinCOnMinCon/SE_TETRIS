@@ -13,31 +13,31 @@ import java.awt.Color;
 */
 
 public class BlockData {
-    private int[][] shape;
+    private boolean[][] shape;
     private ColorPalette colorPalette;
     private int colorMode; // 0: 일반, 1: 적녹색맹, 2: 청황색맹
     private int x;
     private int y;
 
-    public BlockData(int[][] shape, ColorPalette colorPalette, int colorMode, int x, int y) {
+    public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y) {
         this.shape = shape;
         this.colorPalette = colorPalette;
         this.colorMode = colorMode;
         this.x = x;
         this.y = y;
     }
-    public BlockData(int[][] shape, ColorPalette colorPalette, int colorMode) {
+    public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode) {
         this(shape, colorPalette, colorMode, 3, 0); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
     }
-    public BlockData(int[][] shape, int x, int y) {
+    public BlockData(boolean[][] shape, int x, int y) {
         this(shape, null, 0, x, y);
     }
 
-    public int[][] GetShape() {
+    public boolean[][] GetShape() {
         return this.shape;
     }
 
-    public void SetShape(int[][] shape) {
+    public void SetShape(boolean[][] shape) {
         this.shape = shape;
     }
 

@@ -15,10 +15,10 @@ import tetris.block.data.CurrentShape;
 */
 
 public class CanRotate {
-    public static boolean IsNoBlock(BlockData blockData, int[][] board) {
+    public static boolean IsNoBlock(BlockData blockData, boolean[][] board) {
         int x = blockData.GetX();
         int y = blockData.GetY();
-        int[][] shape = blockData.GetShape();
+        boolean[][] shape = blockData.GetShape();
 
         int[][] currentShape = CurrentShape.currentShapeIndex(shape); // 블럭의 현재 모양에서 1인 좌표만 추출
 
@@ -35,7 +35,7 @@ public class CanRotate {
             }
 
             // 2. 다른 블럭과의 충돌 체크
-            if (board[newY][newX] != 0) {
+            if (board[newY][newX]) {
                 return false; // 이미 다른 블럭이 존재하므로 이동 불가
             }
         }
