@@ -2,6 +2,7 @@ package tetris.block.move;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentShape;
+import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 
 /*
@@ -13,7 +14,8 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class CanMove {
-    public static boolean IsNoBlock(int direction, BlockData blockData, BoardElement[][] board) {
+    public static boolean IsNoBlock(int direction, CurrentBlock currentBlock, BoardElement[][] board) {
+        BlockData blockData = currentBlock.GetCurrentBlock();
         int x = blockData.GetX();
         int y = blockData.GetY();
         boolean[][] shape = blockData.GetShape();

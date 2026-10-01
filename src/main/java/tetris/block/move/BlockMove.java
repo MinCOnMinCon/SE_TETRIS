@@ -1,6 +1,6 @@
 package tetris.block.move;
 
-import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock;
 import tetris.block.data.CurrentShape;
 import tetris.gamescene.board.BoardElement;
 
@@ -14,24 +14,24 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class BlockMove {
-    public static void MoveRight(BlockData blockData, BoardElement[][] board) {
-        if (CanMove.IsNoBlock(1, blockData, board)) {
-            blockData.SetX(blockData.GetX() + 1);
+    public static void MoveRight(CurrentBlock currentBlock, BoardElement[][] board) {
+        if (CanMove.IsNoBlock(1, currentBlock, board)) {
+            currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() + 1);
         }
     }
-    public static void MoveLeft(BlockData blockData, BoardElement[][] board) {
-        if (CanMove.IsNoBlock(-1, blockData, board)) {
-            blockData.SetX(blockData.GetX() - 1);
+    public static void MoveLeft(CurrentBlock currentBlock, BoardElement[][] board) {
+        if (CanMove.IsNoBlock(-1, currentBlock, board)) {
+            currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() - 1);
         }
     }
-    public static void MoveDown(BlockData blockData, BoardElement[][] board) {
-        if (CanMove.IsNoBlock(0, blockData, board)) {
-            blockData.SetY(blockData.GetY() + 1);
+    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board) {
+        if (CanMove.IsNoBlock(0, currentBlock, board)) {
+            currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
         }
         else {
-            boolean[][] shape = blockData.GetShape();
-            int x = blockData.GetX();
-            int y = blockData.GetY();
+            boolean[][] shape = currentBlock.GetCurrentBlock().GetShape();
+            int x = currentBlock.GetCurrentBlock().GetX();
+            int y = currentBlock.GetCurrentBlock().GetY();
 
             int[][] currentShapeIndex = CurrentShape.currentShapeIndex(shape); // 블럭의 현재 모양에서 1인 좌표만 추출
 
@@ -39,8 +39,10 @@ public class BlockMove {
                 int i = coord[0];
                 int j = coord[1];
                 board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
+                board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
             }
             // TODO: 바닥에 닿았을 때 새 블럭 생성 로직
+            currentBlock.MoveEnd(); // 블럭이 바닥에 닿았음을 알림
         }
     }
 }

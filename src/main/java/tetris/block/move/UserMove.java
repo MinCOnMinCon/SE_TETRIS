@@ -1,6 +1,6 @@
 package tetris.block.move;
 
-import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 
 /*
@@ -13,16 +13,16 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class UserMove {
-    public static void MoveRight(BlockData blockData, BoardElement[][] board) {
+    public static void MoveRight(CurrentBlock blockData, BoardElement[][] board) {
         BlockMove.MoveRight(blockData, board);
     }
-    public static void MoveLeft(BlockData blockData, BoardElement[][] board) {
+    public static void MoveLeft(CurrentBlock blockData, BoardElement[][] board) {
         BlockMove.MoveLeft(blockData, board);
     }
-    public static void MoveDown(BlockData blockData, BoardElement[][] board) {
+    public static void MoveDown(CurrentBlock blockData, BoardElement[][] board) {
         BlockMove.MoveDown(blockData, board);
     }
-    public static void MoveDownMax(BlockData blockData, BoardElement[][] board) {
+    public static void MoveDownMax(CurrentBlock blockData, BoardElement[][] board) {
         // 블럭이 맨 아래로 이동하고 AutoMove가 돌때까지 기다림
         // 바로 다음 블럭 생성 필요 시 수정 필요
         while (CanMove.IsNoBlock(0, blockData, board)) {

@@ -4,7 +4,7 @@ import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 
 /*
@@ -17,17 +17,17 @@ import tetris.gamescene.board.BoardElement;
 
 public class AutoMove {
     private Timer autoDropTimer;
-    private BlockData currentBlock;
+    private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
 
-    public AutoMove(BlockData blockData, BoardElement[][] board) {
+    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
         this.currentBlock = blockData;
         this.currentBoard = board;
     }
-    public void SetCurrentBlock(BlockData blockData) {
+    public void SetCurrentBlock(CurrentBlock blockData) {
         this.currentBlock = blockData;
     }
-    public BlockData GetCurrentBlock() {
+    public CurrentBlock GetCurrentBlock() {
         return this.currentBlock;
     }
     public void SetCurrentBoard(BoardElement[][] board) {
@@ -37,7 +37,7 @@ public class AutoMove {
         return this.currentBoard;
     }
 
-    public void StartAutoMove(int intervalMillis, BlockData blockData, BoardElement[][] board) {
+    public void StartAutoMove(int intervalMillis, CurrentBlock blockData, BoardElement[][] board) {
         if (this.autoDropTimer != null) {
             this.autoDropTimer.stop();
         }
