@@ -19,13 +19,18 @@ public class BlockData {
     private int x;
     private int y;
 
-    public BlockData(int[][] shape, ColorPalette colorPalette, int colorMode) {
+    public BlockData(int[][] shape, ColorPalette colorPalette, int colorMode, int x, int y) {
         this.shape = shape;
         this.colorPalette = colorPalette;
         this.colorMode = colorMode;
-        // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
-        this.x = 3; 
-        this.y = 0;
+        this.x = x;
+        this.y = y;
+    }
+    public BlockData(int[][] shape, ColorPalette colorPalette, int colorMode) {
+        this(shape, colorPalette, colorMode, 3, 0); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
+    }
+    public BlockData(int[][] shape, int x, int y) {
+        this(shape, null, 0, x, y);
     }
 
     public int[][] GetShape() {
