@@ -1,6 +1,6 @@
 package tetris.block.blocks;
 
-import java.awt.Color;
+import javafx.scene.paint.Color;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorPalette;
@@ -8,7 +8,7 @@ import tetris.block.data.ColorPalette;
 // Z 블럭 (S블럭과 대비)
 public class BlockZ extends Block {
     public BlockZ(int colorMode) {
-        ColorPalette palette = new ColorPalette(Color.RED, new Color(139, 0, 0), new Color(255, 99, 71));
+        ColorPalette palette = new ColorPalette(Color.RED, Color.rgb(139, 0, 0), Color.rgb(255, 99, 71));
         this.blockData = new BlockData(shapePalette.GetShapeZ(), palette, colorMode);
     }
 }
