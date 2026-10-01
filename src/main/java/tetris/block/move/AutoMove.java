@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import tetris.block.data.BlockData;
+import tetris.gamescene.board.BoardElement;
 
 /*
     AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
@@ -17,9 +18,9 @@ import tetris.block.data.BlockData;
 public class AutoMove {
     private Timer autoDropTimer;
     private BlockData currentBlock;
-    private boolean[][] currentBoard;
+    private BoardElement[][] currentBoard;
 
-    public AutoMove(BlockData blockData, boolean[][] board) {
+    public AutoMove(BlockData blockData, BoardElement[][] board) {
         this.currentBlock = blockData;
         this.currentBoard = board;
     }
@@ -29,14 +30,14 @@ public class AutoMove {
     public BlockData GetCurrentBlock() {
         return this.currentBlock;
     }
-    public void SetCurrentBoard(boolean[][] board) {
+    public void SetCurrentBoard(BoardElement[][] board) {
         this.currentBoard = board;
     }
-    public boolean[][] GetCurrentBoard() {
+    public BoardElement[][] GetCurrentBoard() {
         return this.currentBoard;
     }
 
-    public void StartAutoMove(int intervalMillis, BlockData blockData, boolean[][] board) {
+    public void StartAutoMove(int intervalMillis, BlockData blockData, BoardElement[][] board) {
         if (this.autoDropTimer != null) {
             this.autoDropTimer.stop();
         }
