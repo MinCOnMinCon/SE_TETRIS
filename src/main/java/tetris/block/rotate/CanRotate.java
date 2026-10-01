@@ -4,6 +4,10 @@ import tetris.block.data.BlockData;
 import tetris.block.data.CurrentShape;
 
 /*
+    CanRotate 클래스는 블럭이 회전 가능한지 여부를 판단하는 기능을 제공
+    IsNoBlock(BlockData, boolean[][]) 블럭이 회전 후 위치 가능한지 여부를 판단하고 true/false 반환
+        BlockData의 shape, x, y 정보만 필요
+
     회전 난이도
         하  블럭당 고정 좌표
             블럭이 회전 후 위치 가능한 좌표가 고정되어 있음

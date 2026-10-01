@@ -2,6 +2,13 @@ package tetris.block.rotate;
 
 import tetris.block.data.BlockData;
 
+/*
+    BlockRotate 클래스는 테트리스 블럭의 회전 기능을 제공
+    Rotate(BlockData, boolean[][], int) 블럭을 회전시키고 회전 가능 여부에 따라 회전된 모양을 적용
+    RotateRight(boolean[][]) 블럭을 시계방향으로 90도 회전
+    RotateLeft(boolean[][]) 블럭을 반시계방향으로 90도 회전
+*/
+
 public class BlockRotate {
     public static void Rotate(BlockData blockData, boolean[][] board, int direction) {
         boolean[][] originalShape = blockData.GetShape();

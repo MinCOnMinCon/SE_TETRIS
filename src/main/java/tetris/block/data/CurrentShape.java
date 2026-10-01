@@ -2,6 +2,10 @@ package tetris.block.data;
 
 import java.util.ArrayList;
 
+/*
+    현재 블럭의 모양에서 true인 좌표를 추출하여 반환
+ */
+
 public class CurrentShape {
     public static int[][] currentShapeIndex(boolean[][] shape) {
         ArrayList<int[]> resultList = new ArrayList<>();
