@@ -1,6 +1,6 @@
 package tetris.gamescene.blockqueue;
 
-import tetris.block.BlockData;
+import tetris.block.data.BlockData;
 
 public class BlockQueue {
     private BlockData[] blockQueue;

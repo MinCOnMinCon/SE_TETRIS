@@ -128,6 +128,6 @@ public class CanRotate {
         //         }
         //     }
         // }
-        return; // 아무 충돌이 없으므로 이동 가능
+        //return; // 아무 충돌이 없으므로 이동 가능
     }
 }
