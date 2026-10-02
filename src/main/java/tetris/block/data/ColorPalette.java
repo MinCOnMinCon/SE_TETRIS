@@ -1,6 +1,6 @@
 package tetris.block.data;
 
-import java.awt.Color;
+import javafx.scene.paint.Color;
 
 /*
     ColorPalette 클래스는 블럭의 색상 정보를 색맹 모드에 따라 저장

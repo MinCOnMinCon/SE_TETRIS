@@ -2,6 +2,8 @@ package tetris.block.move;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentShape;
+import tetris.block.data.CurrentBlock;
+import tetris.gamescene.board.BoardElement;
 
 /*
     CanMove 클래스는 테트리스 블럭의 이동 가능 여부를 판단하는 클래스
@@ -12,14 +14,15 @@ import tetris.block.data.CurrentShape;
 */
 
 public class CanMove {
-    public static boolean IsNoBlock(int direction, BlockData blockData, int[][] board) {
+    public static boolean IsNoBlock(int direction, CurrentBlock currentBlock, BoardElement[][] board) {
+        BlockData blockData = currentBlock.GetCurrentBlock();
         int x = blockData.GetX();
         int y = blockData.GetY();
-        int[][] shape = blockData.GetShape();
+        boolean[][] shape = blockData.GetShape();
 
-        int[][] currentShape = CurrentShape.currentShapeIndex(shape); // 블럭의 현재 모양에서 1인 좌표만 추출
+        int[][] currentShapeIndex = CurrentShape.currentShapeIndex(shape); // 블럭의 현재 모양에서 1인 좌표만 추출
 
-        for (int[] coord : currentShape) {
+        for (int[] coord : currentShapeIndex) {
             int i = coord[0];
             int j = coord[1];
 
@@ -32,7 +35,7 @@ public class CanMove {
             }
 
             // 2. 다른 블럭과의 충돌 체크
-            if (board[newY][newX] != 0) {
+            if (board[newY][newX].isBlock()) {
                 return false; // 이미 다른 블럭이 존재하므로 이동 불가
             }
         }
