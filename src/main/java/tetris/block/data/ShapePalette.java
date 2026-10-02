@@ -7,49 +7,49 @@ package tetris.block.data;
 
 public class ShapePalette {
     
-    public int[][] GetShapeI() {
-        return new int[][] { {1, 1, 1, 1} };
+    public boolean[][] GetShapeI() {
+        return new boolean[][] { {true, true, true, true} };
     }
 
-    public int[][] GetShapeJ() {
-        return new int[][] {
-            {1, 0, 0},
-            {1, 1, 1}
+    public boolean[][] GetShapeJ() {
+        return new boolean[][] {
+            {true, false, false},
+            {true, true, true}
         };
     }
 
-    public int[][] GetShapeL() {
-        return new int[][] {
-            {0, 0, 1},
-            {1, 1, 1}
+    public boolean[][] GetShapeL() {
+        return new boolean[][] {
+            {false, false, true},
+            {true, true, true}
         };
     }
 
-    public int[][] GetShapeO() {
-        return new int[][] {
-            {1, 1},
-            {1, 1}
+    public boolean[][] GetShapeO() {
+        return new boolean[][] {
+            {true, true},
+            {true, true}
         };
     }
 
-    public int[][] GetShapeS() {
-        return new int[][] {
-            {0, 1, 1},
-            {1, 1, 0}
+    public boolean[][] GetShapeS() {
+        return new boolean[][] {
+            {false, true, true},
+            {true, true, false}
         };
     }
 
-    public int[][] GetShapeT() {
-        return new int[][] {
-            {0, 1, 0},
-            {1, 1, 1}
+    public boolean[][] GetShapeT() {
+        return new boolean[][] {
+            {false, true, false},
+            {true, true, true}
         };
     }
 
-    public int[][] GetShapeZ() {
-        return new int[][] {
-            {1, 1, 0},
-            {0, 1, 1}
+    public boolean[][] GetShapeZ() {
+        return new boolean[][] {
+            {true, true, false},
+            {false, true, true}
         };
     }
 }

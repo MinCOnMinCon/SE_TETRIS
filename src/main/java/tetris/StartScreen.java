@@ -17,6 +17,7 @@ import tetris.settings.SettingsScreen; // 설정 화면
 public class StartScreen extends Application {
     private Button[] buttons;//버튼 배열 생성
     private int selectedIndex = 0;//선택된 버튼의 인덱스 초기화
+    
 
     private void updateSelection() {// 선택된 버튼과 일반 버튼의 색상 갱신
         for (int i = 0; i < buttons.length; i++) {//버튼 배열의 길이만큼 반복
@@ -47,11 +48,12 @@ public class StartScreen extends Application {
         //버튼 크기 설정
         for (Button button : buttons) {
             button.setPrefSize(180, 50);
-        }
+        }   
 
         //게임 시작 버튼 클릭 시 동작
         startButton.setOnAction(e -> {
             System.out.println("게임 시작 버튼 누름");
+            
         });
 
         //스코어 보드 버튼 클릭 시 동작

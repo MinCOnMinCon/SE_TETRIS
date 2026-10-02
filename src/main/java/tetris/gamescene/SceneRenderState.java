@@ -1,6 +1,6 @@
 package tetris.gamescene;
 
-import tetris.block.BlockData;
+import tetris.block.data.BlockData;
 import tetris.gamescene.board.BoardElement;
 
 /**
