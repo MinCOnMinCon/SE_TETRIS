@@ -1,10 +1,12 @@
 package tetris.gamescene;
 
 import javafx.animation.AnimationTimer;
+import javafx.stage.Stage;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.blockqueue.BlockQueue;
+import tetris.block.data.BlockData;
 
 
 public class GameController {
@@ -45,8 +47,11 @@ public class GameController {
 	public void GameStart() {
 
 		SceneRenderState state = new SceneRenderState(board.GetBoard(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
-		renderer.createScene(state);
-		//씬 띄우는 함수 만들기.
+		Stage stage = new Stage();
+		stage.setTitle("Tetris");
+		stage.setScene(renderer.CreateScene(state));
+		stage.show();
+		
 		gameLoop.start();
 	}
 }
