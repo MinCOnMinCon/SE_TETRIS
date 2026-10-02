@@ -6,9 +6,10 @@ import java.nio.file.Path; // 파일 경로 표현
 import java.util.ArrayList; // 동적 배열
 import java.util.List; // 리스트 인터페이스
 
+// 점수 파일을 읽는 클래스
 public class ScoreLoader {
     // scores.txt 파일에서 점수 데이터를 읽어 ScoreRecord 목록으로 반환
-    public List<ScoreRecord> loadScores() {
+    public List<ScoreRecord> loadScores() { // 파일 점수 목록 로드
         // 결과를 담을 리스트 생성
         List<ScoreRecord> scores = new ArrayList<>();
 
@@ -30,7 +31,7 @@ public class ScoreLoader {
                     continue; // 빈 줄은 건너뜀
                 }
 
-                String[] parts = line.split(",");
+                String[] parts = line.split(","); // 이름과 점수를 쉼표로 분리
                 if (parts.length >= 2) {
                     String name = parts[0].trim(); // 이름 추출
                     int score = Integer.parseInt(parts[1].trim()); // 점수 추출
