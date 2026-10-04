@@ -5,16 +5,20 @@ import javafx.stage.Stage;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.blockholding.BlockHolding;
-import tetris.gamescene.blockqueue.BlockQueue;
+import tetris.gamescene.blockqueue.BlockQueueController;
+import tetris.block.data.CurrentBlock;
+import tetris.settingData.InputSettingData;
 
 
 public class GameController {
 
 	private final GameBoard board;
 	private final GameScore score;
-	private final BlockQueue blockQueue;
+	private final BlockQueueController blockQueueController;
 	private final BlockHolding blockHolding;
+	private final CurrentBlock currentBlock;
 	private final SceneRenderer renderer;
+	private final PlayerInput playerInput;
 
 	
 	
@@ -24,10 +28,13 @@ public class GameController {
         previousFrameTime = 0;
 		board = new GameBoard();
 		score = new GameScore();
-		blockQueue = new BlockQueue();
 		blockHolding = new BlockHolding();
+		blockQueueController = new BlockQueueController();
+		
+		currentBlock = new CurrentBlock(blockQueueController.GetNextBlock(), blockQueueController, blockHolding);
 
 		renderer = new SceneRenderer();
+		playerInput = new PlayerInput(new InputSettingData());
         GameStart();
     }
 
@@ -38,14 +45,15 @@ public class GameController {
             // 매프레임마다 호출할 함수 작성
 
 
-			SceneRenderState state = new SceneRenderState(board.GetBoard(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
+			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
+			// TODO: 저거 GetBlockQueue 함수명 고쳐야 할듯?
 			renderer.UpdateScene(state);
 		}
 	};
 
 	public void GameStart() {
 
-		SceneRenderState state = new SceneRenderState(board.GetBoard(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
+		SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
 		Stage stage = new Stage();
 		stage.setTitle("Tetris");
 		stage.setScene(renderer.CreateScene(state));
