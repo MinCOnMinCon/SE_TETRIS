@@ -1,28 +1,50 @@
 package tetris.block.move;
 
-import javax.swing.Timer;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 
 /*
     AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
-    AutoMove(BlockData, int[][]) 생성자: 현재 블럭과 보드 상태를 설정
-        currentBlock, currentBoard의 상태를 변경할 수 있는 getter/setter 제공
-    StartAutoMove(int, BlockData, int[][]) 블럭을 자동으로 아래로 이동
-    StopAutoMoveDown() 블럭의 자동 이동을 중지
+    AutoMove(BlockData, BoardElement[][], int) 생성자: 현재 블럭과 보드 상태를 설정
+        currentBlock, currentBoard, intervalMillis의 상태를 변경할 수 있는 getter/setter 제공
+    TimeUpdate(int) 메서드: 일정 시간 간격으로 블럭을 아래로 이동시키는 기능 제공
 */
 
 public class AutoMove {
-    private Timer autoDropTimer;
     private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
+    private int level = 0; // 현재 레벨 (기본값: 0)
+    private int fallSpeedLevel[] = {1000, 800, 600, 400, 200}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
+    private int intervalMillis;
+    private int currentTimeMillis;
 
-    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
+    public AutoMove(CurrentBlock blockData, BoardElement[][] board, int level) {
         this.currentBlock = blockData;
         this.currentBoard = board;
+        this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
+        this.level = level;
+    }
+    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
+        this(blockData, board, 0); // Default level of 0
+    }
+
+    public void TimeUpdate(int msTime) {
+        currentTimeMillis += msTime;
+        if (currentTimeMillis >= intervalMillis) {
+            currentTimeMillis -= intervalMillis; // Reset the timer
+            if (currentBlock != null) {
+                BlockMove.MoveDown(currentBlock, currentBoard);
+                currentBlock.GetGameScore().GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
+            }
+        }
+    }
+
+    
+    public void SetFallSpeedLevel(int level) {
+        this.intervalMillis = fallSpeedLevel[level - 1];
+    }
+    public int GetIntervalMillis() {
+        return this.intervalMillis;
     }
     public void SetCurrentBlock(CurrentBlock blockData) {
         this.currentBlock = blockData;
@@ -35,28 +57,5 @@ public class AutoMove {
     }
     public BoardElement[][] GetCurrentBoard() {
         return this.currentBoard;
-    }
-
-    public void StartAutoMove(int intervalMillis, CurrentBlock blockData, BoardElement[][] board) {
-        if (this.autoDropTimer != null) {
-            this.autoDropTimer.stop();
-        }
-
-        this.autoDropTimer = new Timer(intervalMillis, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (currentBlock != null) {
-                    BlockMove.MoveDown(currentBlock, currentBoard);
-                }
-            }
-        });
-        
-        this.autoDropTimer.start();
-    }
-
-    public void StopAutoMoveDown() {
-        if (this.autoDropTimer != null) {
-            this.autoDropTimer.stop();
-        }
     }
 }
