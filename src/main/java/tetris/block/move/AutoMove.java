@@ -1,62 +1,58 @@
 package tetris.block.move;
 
-import javax.swing.Timer;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
+import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 
 /*
-    AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
-    AutoMove(BlockData, int[][]) 생성자: 현재 블럭과 보드 상태를 설정
-        currentBlock, currentBoard의 상태를 변경할 수 있는 getter/setter 제공
-    StartAutoMove(int, BlockData, int[][]) 블럭을 자동으로 아래로 이동
-    StopAutoMoveDown() 블럭의 자동 이동을 중지
+    AutoMove 클래스는 전달받은 프레임 시간을 누적하여 1초마다 블럭을 아래로 이동한다.
+    새 블럭 생성 또는 홀딩으로 현재 블럭이 교체되면 누적 시간을 초기화한다.
 */
 
 public class AutoMove {
-    private Timer autoDropTimer;
-    private CurrentBlock currentBlock;
-    private BoardElement[][] currentBoard;
+    private static final double DROP_INTERVAL = 1.0;
 
-    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
-        this.currentBlock = blockData;
+    private final CurrentBlock currentBlock;
+    private final BoardElement[][] currentBoard;
+
+    private BlockData previousBlock;
+    private double elapsedTime;
+
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board) {
+        this.currentBlock = currentBlock;
         this.currentBoard = board;
-    }
-    public void SetCurrentBlock(CurrentBlock blockData) {
-        this.currentBlock = blockData;
-    }
-    public CurrentBlock GetCurrentBlock() {
-        return this.currentBlock;
-    }
-    public void SetCurrentBoard(BoardElement[][] board) {
-        this.currentBoard = board;
-    }
-    public BoardElement[][] GetCurrentBoard() {
-        return this.currentBoard;
+        this.previousBlock = currentBlock.GetCurrentBlock();
+        this.elapsedTime = 0.0;
     }
 
-    public void StartAutoMove(int intervalMillis, CurrentBlock blockData, BoardElement[][] board) {
-        if (this.autoDropTimer != null) {
-            this.autoDropTimer.stop();
+    public void Update(double deltaTime) {
+        // 입력 등으로 블럭이 교체됐다면 새 블럭은 0초부터 시작
+        if (ResetIfBlockChanged()) {
+            return;
         }
 
-        this.autoDropTimer = new Timer(intervalMillis, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (currentBlock != null) {
-                    BlockMove.MoveDown(currentBlock, currentBoard);
-                }
+        elapsedTime += deltaTime;
+
+        while (elapsedTime >= DROP_INTERVAL) {
+            elapsedTime -= DROP_INTERVAL;
+            BlockMove.MoveDown(currentBlock, currentBoard);
+
+            // 내려오다가 새 블럭이 생성되면 남은 시간도 초기화
+            if (ResetIfBlockChanged()) {
+                break;
             }
-        });
-        
-        this.autoDropTimer.start();
+        }
     }
 
-    public void StopAutoMoveDown() {
-        if (this.autoDropTimer != null) {
-            this.autoDropTimer.stop();
+    private boolean ResetIfBlockChanged() {
+        BlockData block = currentBlock.GetCurrentBlock();
+
+        if (block == previousBlock) {
+            return false;
         }
+
+        previousBlock = block;
+        elapsedTime = 0.0;
+        return true;
     }
 }
