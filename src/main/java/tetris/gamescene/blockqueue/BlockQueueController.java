@@ -19,15 +19,13 @@ import tetris.block.blocks.BlockCreate;
 
 public class BlockQueueController {
     private BlockQueue blockQueue;
-    private int[] queueFRS = new int[3]; // [0]: front, [1]: rear, [2]: size
     private int colorMode = 0; // 0: 일반, 1: 적록, 2: 청황
     
     public BlockQueueController(int colorMode) {
         this.blockQueue = new BlockQueue();
-        this.queueFRS = blockQueue.GetQueueFRS();
         this.colorMode = colorMode;
         // 초기 큐 채우기
-        while (queueFRS[2] < blockQueue.GetMaxQueueSize()) {
+        while (blockQueue.GetQueueFRS()[2] < blockQueue.GetMaxQueueSize()) {
             Add();
         }
     }
