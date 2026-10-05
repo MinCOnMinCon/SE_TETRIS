@@ -6,12 +6,28 @@ import java.util.Map;
 import tetris.settingData.InputSettingData;
 import tetris.settingData.InputSettingData.ActionType;
 import javafx.scene.input.KeyCode;
+import tetris.block.data.CurrentBlock;
+import tetris.block.move.BlockMove;
+import tetris.block.move.UserMove;
+import tetris.block.rotate.BlockRotate;
+import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.board.GameBoard;
 
 public class PlayerInput {
 	
 	private final Map<KeyCode, ActionType> keyBindings;
+	// final은 참조 교체만 막는다. 공유 객체 내부까지 읽기 전용으로 만들지는 못한다.
+	// PlayerInput에서는 setter나 배열 대입으로 상태를 직접 수정하지 않는다.
+	// 상태 변경은 이동·회전 함수에 위임하고, 입력마다 현재 블록과 보드를 조회한다.
+	private final CurrentBlock currentBlock;
+	private final GameBoard board;
+	private final Runnable pauseGame;
+	private boolean inputEnabled = true;
 
-	public PlayerInput(InputSettingData inputSettingData) {
+	public PlayerInput(InputSettingData inputSettingData, CurrentBlock currentBlock, GameBoard board, Runnable pauseGame) {
+		this.currentBlock = currentBlock;
+		this.board = board;
+		this.pauseGame = pauseGame;
 		Map<KeyCode, ActionType> bindings = new HashMap<>();
 
 		for (Map.Entry<ActionType, KeyCode> binding
@@ -24,6 +40,10 @@ public class PlayerInput {
 	}
 
 	public void HandleKeyCode(KeyCode keyCode) {
+		if (!inputEnabled) {
+			return;
+		}
+
 		ActionType actionType = keyBindings.get(keyCode);
 
 		if (actionType == null) {
@@ -32,20 +52,45 @@ public class PlayerInput {
 
 		switch (actionType) {
 			case MOVE_LEFT:
+				BlockMove.MoveLeft(currentBlock, board.GetBoard());
 				break;
 			case MOVE_RIGHT:
+				BlockMove.MoveRight(currentBlock, board.GetBoard());
 				break;
 			case SOFT_DROP:
+				BlockMove.MoveDown(currentBlock, board.GetBoard());
 				break;
 			case HARD_DROP:
+				UserMove.MoveDownMax(currentBlock, board.GetBoard());
 				break;
 			case ROTATE_CLOCK:
+				BlockRotate.Rotate(currentBlock.GetCurrentBlock(), GetBoardOccupancy(), 0);
 				break;
 			case ROTATE_COUNTERCLOCK:
+				BlockRotate.Rotate(currentBlock.GetCurrentBlock(), GetBoardOccupancy(), 1);
 				break;
 			case PAUSE:
+				pauseGame.run();
 				break;
 		}
+	}
+
+	public void SetInputEnabled(boolean inputEnabled) {
+		this.inputEnabled = inputEnabled;
+	}
+
+	// 회전 판정용 배열은 입력 시점의 최신 보드에서 만든다.
+	// TODO: 이거 로테이트 파라미터를 boolean[][]에서 boardElement[][]로 바꾸면 없어도 됨. 그때 수정할 것.
+	private boolean[][] GetBoardOccupancy() {
+		BoardElement[][] currentBoard = board.GetBoard();
+		boolean[][] occupancy = new boolean[currentBoard.length][];
+		for (int row = 0; row < currentBoard.length; row++) {
+			occupancy[row] = new boolean[currentBoard[row].length];
+			for (int col = 0; col < currentBoard[row].length; col++) {
+				occupancy[row][col] = currentBoard[row][col].isBlock();
+			}
+		}
+		return occupancy;
 	}
     
 }
