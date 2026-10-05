@@ -48,7 +48,7 @@ public class BlockQueue {
     }
 
     public BlockData[] GetBlockQueue() {
-        return blockQueue;
+        return this.blockQueue;
     }
 
     public BlockData GetBlock(int index) {

@@ -45,15 +45,18 @@ public class BlockQueueController {
         return nextBlock;
     }
     
+    
     public int GetColorMode() {
         return this.colorMode;
     }
     public void SetColorMode(int colorMode) {
         this.colorMode = colorMode;
     }
-    public BlockQueue GetBlockQueue() {
+    public BlockQueue GetBlockControllerQueue() {
         return this.blockQueue;
     }
+
+
 
     public void EnQ(BlockData blockData) {
         queueFRS = blockQueue.GetQueueFRS();
@@ -78,6 +81,8 @@ public class BlockQueueController {
         }
         return dequeuedBlock;
     }
+
+
 
     public int GetRandomBlockIndex() {
     Random random = new Random();
