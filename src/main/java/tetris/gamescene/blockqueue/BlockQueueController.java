@@ -37,15 +37,15 @@ public class BlockQueueController {
 
     public void Add() {
         BlockData blockData = BlockCreate.Block(GetRandomBlockIndex(), colorMode).GetBlockData();
-        EnQ(blockData);
+        blockQueue.EnQ(blockData);
     }
     public BlockData GetNextBlock() {
-        BlockData nextBlock = DeQ();
+        BlockData nextBlock = blockQueue.DeQ();
         Add();
         return nextBlock;
     }
     
-    
+
     public int GetColorMode() {
         return this.colorMode;
     }
@@ -55,34 +55,6 @@ public class BlockQueueController {
     public BlockQueue GetBlockControllerQueue() {
         return this.blockQueue;
     }
-
-
-
-    public void EnQ(BlockData blockData) {
-        queueFRS = blockQueue.GetQueueFRS();
-
-        if (queueFRS[2] < blockQueue.GetMaxQueueSize()) {
-            blockQueue.SetBlock(blockData, queueFRS[1]);
-            queueFRS[1] = (queueFRS[1] + 1) % blockQueue.GetMaxQueueSize();
-            queueFRS[2]++;
-            blockQueue.SetQueueFRS(queueFRS);
-        }
-    }
-
-    public BlockData DeQ() {
-        queueFRS = blockQueue.GetQueueFRS();
-        BlockData dequeuedBlock = null;
-
-        if (queueFRS[2] > 0) {
-            dequeuedBlock = blockQueue.GetBlock(queueFRS[0]);
-            queueFRS[0] = (queueFRS[0] + 1) % blockQueue.GetMaxQueueSize();
-            queueFRS[2]--;
-            blockQueue.SetQueueFRS(queueFRS);
-        }
-        return dequeuedBlock;
-    }
-
-
 
     public int GetRandomBlockIndex() {
     Random random = new Random();

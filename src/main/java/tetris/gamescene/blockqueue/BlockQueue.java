@@ -36,6 +36,25 @@ public class BlockQueue {
         this.queueFRS[2] = blocks.length;
     }
 
+    public void EnQ(BlockData blockData) {
+        if (this.queueFRS[2] < maxQueueSize) {
+            SetBlock(blockData, queueFRS[1]);
+            this.queueFRS[1] = (queueFRS[1] + 1) % maxQueueSize;
+            this.queueFRS[2]++;
+        }
+    }
+
+    public BlockData DeQ() {
+        BlockData dequeuedBlock = null;
+
+        if (this.queueFRS[2] > 0) {
+            dequeuedBlock = this.blockQueue[this.queueFRS[0]];
+            this.queueFRS[0] = (this.queueFRS[0] + 1) % this.maxQueueSize;
+            this.queueFRS[2]--;
+        }
+        return dequeuedBlock;
+    }
+
     public int GetMaxQueueSize() {
         return this.maxQueueSize;
     }
