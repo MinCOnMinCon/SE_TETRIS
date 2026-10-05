@@ -1,7 +1,7 @@
 package tetris.gamescene;
 
 
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -20,7 +20,6 @@ import tetris.gamescene.board.*;
 
 public class SceneRenderer  {
     private RenderConfig sceneRenderData;
-    private Scene gameScene;
     private Canvas boardCanvas;
     private Canvas blockQueueCanvas;
     private Canvas blockHoldingCanvas;
@@ -41,10 +40,6 @@ public class SceneRenderer  {
     // 설정 교체만 한다. 기존 화면의 크기와 배치를 다시 적용하는 처리는 추후 구현한다. 일시정지 메뉴에서 설정 교체가 일어났을 때 필요할 수 있다.
     public void SetRenderConfig(RenderConfig config) {
         sceneRenderData = Objects.requireNonNull(config);
-    }
-
-    public Scene GetGameScene() {
-        return gameScene;
     }
 
     public void CreateBoardCanvas(BoardElement[][] board){ // 보드 캔버스를 처음 생성하고 그린다.
@@ -160,19 +155,17 @@ public class SceneRenderer  {
         BorderPane.setAlignment(contentHBox, Pos.CENTER);
     }
 
-     public Scene CreateScene(SceneRenderState state){ // 게임 씬을 생성
+    public Parent CreateRoot(SceneRenderState state){ // 게임 화면의 루트를 생성하고 초기 상태를 그린다.
 
         CreateBoardCanvas(state.board());
         CreateBlockQueueCanvas();
         CreateBlockHoldingCanvas();
         CreateScoreCanvas();
         CreateLayout();
-        gameScene = new Scene(sceneLayout, sceneRenderData.gameSceneWidth,
-                sceneRenderData.gameSceneHeight, sceneRenderData.sceneColor);
-        UpdateScene(state);
-        return gameScene;
+        UpdateRoot(state);
+        return sceneLayout;
     }
-    public void UpdateScene(SceneRenderState state){ // 게임 씬 업데이트
+    public void UpdateRoot(SceneRenderState state){ // 게임 씬 업데이트
         
         UpdateBoardCanvas(state.board(), state.currentBlock());
         UpdateBlockQueueCanvas(state.blockQueue());

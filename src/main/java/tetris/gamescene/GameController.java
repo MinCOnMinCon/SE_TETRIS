@@ -3,7 +3,7 @@ package tetris.gamescene;
 import java.util.Objects;
 
 import javafx.animation.AnimationTimer;
-import javafx.stage.Stage;
+import javafx.scene.Parent;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.blockholding.BlockHolding;
@@ -23,6 +23,7 @@ public class GameController {
 	private final AutoMove autoMove;
 	private final SceneRenderer renderer;
 	private final PlayerInput playerInput;
+	private final Parent gameRoot;
 
 	
 	
@@ -45,7 +46,10 @@ public class GameController {
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
 		playerInput = new PlayerInput(new InputSettingData(), currentBlock, board, this::PauseGame);
 		//TODO: 이거 SettingData 확정되면 그때 수정할 것.
-        GameStart();
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
+        gameRoot = renderer.CreateRoot(state);
+        gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
+        playerInput.SetInputEnabled(false);
     }
 
 	private final AnimationTimer gameLoop = new AnimationTimer() {
@@ -63,7 +67,7 @@ public class GameController {
 
 			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
 			// TODO: 저거 GetBlockQueue 함수명 고쳐야 할듯?
-			renderer.UpdateScene(state);
+			renderer.UpdateRoot(state);
 		}
 	};
 
@@ -90,15 +94,15 @@ public class GameController {
 	}
 
 	public void GameStart() {
-
-		SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
-		Stage stage = new Stage();
-		stage.setTitle("Tetris");
-		stage.setScene(renderer.CreateScene(state));
-		renderer.GetGameScene().setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));//TODO: appcontroller로 옮겨야 한다.
-		stage.show();
-		
 		previousFrameTime = 0;
+		paused = false;
+		playerInput.SetInputEnabled(true);
 		gameLoop.start();
 	}
+
+	public Parent GetRoot() {
+		return gameRoot;
+	}
+
+	
 }
