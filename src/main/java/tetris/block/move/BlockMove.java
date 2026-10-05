@@ -1,5 +1,6 @@
 package tetris.block.move;
 
+import tetris.block.blocks.BlockDelete;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.CurrentShape;
 import tetris.gamescene.board.BoardElement;
@@ -41,8 +42,11 @@ public class BlockMove {
                 board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
                 board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
             }
-            // TODO: 바닥에 닿았을 때 새 블럭 생성 로직
-            currentBlock.MoveEnd(); // 블럭이 바닥에 닿았음을 알림
+
+            BlockDelete.DelCompleteLines(board, currentBlock.GetGameScore()); // 완료된 줄 삭제
+
+            // 테트리스가 바닥에 닿았을 때 새 블럭 생성 로직
+            currentBlock.MoveEnd(board);
         }
     }
 }
