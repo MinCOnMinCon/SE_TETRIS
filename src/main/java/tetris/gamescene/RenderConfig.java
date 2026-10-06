@@ -1,5 +1,6 @@
 package tetris.gamescene;
 import javafx.scene.paint.Color;
+import tetris.settings.GameSettings; // 저장된 게임 해상도와 색상 모드
 public class RenderConfig{
     public double gameSceneWidth = 800; // 게임 씬 전체의 너비(px)
     public double gameSceneHeight = 1000; // 게임 씬 전체의 높이(px)
@@ -46,6 +47,14 @@ public class RenderConfig{
 
     public RenderConfig(){
         
+    }
+
+    // 저장된 사용자 설정을 렌더링 설정에 반영
+    public RenderConfig(GameSettings settings) {
+        this();
+        gameSceneWidth = settings.screenWidth(); // 저장된 화면 너비 적용
+        gameSceneHeight = settings.screenHeight(); // 저장된 화면 높이 적용
+        colorMode = settings.colorMode(); // 블록 미리보기에 사용할 색상 모드 적용
     }
 }
 
