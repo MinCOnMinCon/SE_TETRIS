@@ -1,5 +1,8 @@
 package tetris.gamescene.blockqueue;
 
+import java.util.Random;
+
+import tetris.block.blocks.BlockCreate;
 import tetris.block.data.BlockData;
 
 /*
@@ -19,22 +22,32 @@ public class BlockQueue {
     private BlockData[] blockQueue;
     private final int maxQueueSize;
     private int[] queueFRS = new int[3]; // [0]: front, [1]: rear, [2]: size
+    private int colorMode = 0; // 0: 일반, 1: 적록, 2: 청황
 
-
-    public BlockQueue() {
+    public BlockQueue(int colorMode) {
         this.maxQueueSize = 3;
+        this.colorMode = colorMode;
         this.queueFRS[0] = 0; // front
         this.queueFRS[1] = 0; // rear
         this.queueFRS[2] = 0; // size
         this.blockQueue = new BlockData[this.maxQueueSize];
+        while (this.queueFRS[2] < this.maxQueueSize) {
+            BlockData blockData = BlockCreate.Block(GetRandomBlockIndex(), this.colorMode).GetBlockData();
+            EnQ(blockData);
+        }
     }
-    public BlockQueue(BlockData[] blocks) {
-        this.maxQueueSize = 3;
-        this.blockQueue = blocks;
-        this.queueFRS[0] = 0;
-        this.queueFRS[1] = blocks.length;
-        this.queueFRS[2] = blocks.length;
+
+    public BlockQueue() {
+        this(0);
     }
+
+    public BlockData GetNextBlock() {
+        BlockData nextBlock = DeQ();
+        BlockData blockData = BlockCreate.Block(GetRandomBlockIndex(), this.colorMode).GetBlockData();
+        EnQ(blockData);
+        return nextBlock;
+    }
+
 
     public void EnQ(BlockData blockData) {
         if (this.queueFRS[2] < maxQueueSize) {
@@ -53,6 +66,15 @@ public class BlockQueue {
             this.queueFRS[2]--;
         }
         return dequeuedBlock;
+    }
+
+
+    
+    public int GetColorMode() {
+        return this.colorMode;
+    }
+    public void SetColorMode(int colorMode) {
+        this.colorMode = colorMode;
     }
 
     public int GetMaxQueueSize() {
@@ -75,5 +97,11 @@ public class BlockQueue {
     }
     public void SetBlock(BlockData blockData, int index) {
         this.blockQueue[index] = blockData;
+    }
+
+    public int GetRandomBlockIndex() {
+    Random random = new Random();
+    // nextInt(7)은 0 이상 7 미만의 정수를 반환하므로 0~6이 나옵니다.
+    return random.nextInt(7); 
     }
 }
