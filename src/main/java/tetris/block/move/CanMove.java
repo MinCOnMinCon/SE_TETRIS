@@ -42,4 +42,27 @@ public class CanMove {
         
         return true; // 아무 충돌이 없으므로 이동 가능
     }
+
+    public static boolean CanGetNextBlock(BlockData currentBlockData, BoardElement[][] board) {
+        int x = currentBlockData.GetX();
+        int y = currentBlockData.GetY();
+        boolean[][] shape = currentBlockData.GetShape();
+
+        int[][] currentShapeIndex = CurrentShape.currentShapeIndex(shape); // 블럭의 현재 모양에서 1인 좌표만 추출
+
+        for (int[] coord : currentShapeIndex) {
+            int i = coord[0];
+            int j = coord[1];
+
+            int newX = x + j;
+            int newY = y + i;
+
+            // 다른 블럭과의 충돌 체크
+            if (board[newY][newX].isBlock()) {
+                return false; // 이미 다른 블럭이 존재하므로 이동 불가
+            }
+        }
+        
+        return true; // 아무 충돌이 없으므로 이동 가능
+    }
 }
