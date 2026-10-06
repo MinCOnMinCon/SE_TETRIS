@@ -1,10 +1,9 @@
 package tetris.block.data;
 
 import tetris.block.move.CanMove;
-import tetris.gamescene.blockqueue.BlockQueueController;
+import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.board.BoardElement;
-import tetris.gamescene.score.GameScore;
 
 /*
     CurrentBlock 클래스는 현재 테트리스 블럭의 정보를 저장하는 클래스
@@ -17,22 +16,16 @@ import tetris.gamescene.score.GameScore;
 
 public class CurrentBlock {
     private BlockData blockData;
-    private BlockQueueController nextBlocks;
+    private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
-    private GameScore gameScore;
 
-    public CurrentBlock(BlockData blockData, BlockQueueController nextBlocks, BlockHolding blockHolding, GameScore gameScore) {
+    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding) {
         this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
-        this.gameScore = gameScore;
     }
-    public CurrentBlock(BlockQueueController nextBlocks, BlockHolding blockHolding, GameScore gameScore) {
-        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding, gameScore);
-    }
-
-    public GameScore GetGameScore() {
-        return this.gameScore;
+    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding);
     }
 
     public BlockData GetCurrentBlock() {

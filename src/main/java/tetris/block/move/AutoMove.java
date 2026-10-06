@@ -2,6 +2,7 @@ package tetris.block.move;
 
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.score.GameScore;
 
 /*
     AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
@@ -18,8 +19,8 @@ public class AutoMove {
     private int intervalMillis;
     private int currentTimeMillis = 0;
 
-    public AutoMove(CurrentBlock blockData, BoardElement[][] board, int level) {
-        this.currentBlock = blockData;
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, int level) {
+        this.currentBlock = currentBlock;
         this.currentBoard = board;
         this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
         this.level = level;
@@ -29,13 +30,13 @@ public class AutoMove {
         this(blockData, board, 0); // Default level of 0
     }
 
-    public void TimeUpdate(int msTime) {
+    public void TimeUpdate(int msTime, GameScore gameScore) {
         currentTimeMillis += msTime;
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
-                BlockMove.MoveDown(currentBlock, currentBoard);
-                currentBlock.GetGameScore().GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
+                BlockMove.MoveDown(currentBlock, currentBoard, gameScore);
+                gameScore.GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
             }
         }
     }
