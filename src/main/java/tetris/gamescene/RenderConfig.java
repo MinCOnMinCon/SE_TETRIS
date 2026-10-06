@@ -22,7 +22,7 @@ public class RenderConfig{
     public double previewSlotGap = 16; // 큐 캔버스 안에서 블럭 미리보기 슬롯 사이의 세로 간격(px)
     
 
-    public final int blockQueueDisplayCount = 4; // 큐에서 앞쪽부터 표시할 최대 블럭 개수
+    public int blockQueueDisplayCount;
     public double blockQueueCanvasWidth = 128; // 다음 블럭 큐 캔버스의 너비(px)
     // 다음 블럭 큐 캔버스의 높이(px): 제목 + 하단 여백 + 슬롯 개수만큼의 높이 + 슬롯 사이 간격
     public double blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
@@ -46,7 +46,10 @@ public class RenderConfig{
     
 
     public RenderConfig(){
-        
+        this(3);
+    }
+    public RenderConfig(int queueDisplayCount){
+        blockQueueDisplayCount = queueDisplayCount;
     }
 
     // 저장된 사용자 설정을 렌더링 설정에 반영

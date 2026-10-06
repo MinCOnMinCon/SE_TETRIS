@@ -1,6 +1,7 @@
 package tetris.block.rotate;
 
 import tetris.block.data.BlockData;
+import tetris.gamescene.board.BoardElement;
 
 /*
     BlockRotate 클래스는 테트리스 블럭의 회전 기능을 제공
@@ -10,7 +11,7 @@ import tetris.block.data.BlockData;
 */
 
 public class BlockRotate {
-    public static void Rotate(BlockData blockData, boolean[][] board, int direction) {
+    public static void Rotate(BlockData blockData, BoardElement[][] board, int direction) {
         boolean[][] originalShape = blockData.GetShape();
         BlockData tmpBlockData = new BlockData(originalShape, blockData.GetX(), blockData.GetY());
         int rows = originalShape.length;       // 기존 배열의 세로 길이(y)

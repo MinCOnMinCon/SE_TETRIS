@@ -1,8 +1,10 @@
 package tetris.block.move;
 
+import tetris.block.blocks.BlockDelete;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.CurrentShape;
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.score.GameScore;
 
 /*
     BlockMove 클래스는 테트리스 블럭의 기본적인 이동 기능을 제공하는 클래스
@@ -24,7 +26,7 @@ public class BlockMove {
             currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() - 1);
         }
     }
-    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board) {
+    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore) {
         if (CanMove.IsNoBlock(0, currentBlock, board)) {
             currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
         }
@@ -41,8 +43,11 @@ public class BlockMove {
                 board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
                 board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
             }
-            // TODO: 바닥에 닿았을 때 새 블럭 생성 로직
-            currentBlock.MoveEnd(); // 블럭이 바닥에 닿았음을 알림
+
+            BlockDelete.DelCompleteLines(board, gameScore); // 완료된 줄 삭제
+
+            // 테트리스가 바닥에 닿았을 때 새 블럭 생성 로직
+            currentBlock.MoveEnd(board);
         }
     }
 }

@@ -1,7 +1,7 @@
 package tetris.gamescene;
 
 
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -20,7 +20,6 @@ import tetris.gamescene.board.*;
 
 public class SceneRenderer  {
     private RenderConfig sceneRenderData;
-    private Scene gameScene;
     private Canvas boardCanvas;
     private Canvas blockQueueCanvas;
     private Canvas blockHoldingCanvas;
@@ -38,13 +37,9 @@ public class SceneRenderer  {
         SetRenderConfig(config);
     }
 
-    // 설정 교체만 한다. 기존 화면의 크기와 배치를 다시 적용하는 처리는 추후 구현한다.
+    // 설정 교체만 한다. 기존 화면의 크기와 배치를 다시 적용하는 처리는 추후 구현한다. 일시정지 메뉴에서 설정 교체가 일어났을 때 필요할 수 있다.
     public void SetRenderConfig(RenderConfig config) {
         sceneRenderData = Objects.requireNonNull(config);
-    }
-
-    public Scene GetGameScene() {
-        return gameScene;
     }
 
     public void CreateBoardCanvas(BoardElement[][] board){ // 보드 캔버스를 처음 생성하고 그린다.
@@ -53,25 +48,50 @@ public class SceneRenderer  {
 
     }
 
-    public void UpdateBoardCanvas(BoardElement[][] board){ // 기존 보드 캔버스를 업데이트한다.
+    public void UpdateBoardCanvas(BoardElement[][] board, BlockData currentBlock){ // 기존 보드 캔버스를 업데이트한다.
+        BoardElement[][] renderBoard = MergeBoardAndCurrentBlock(board, currentBlock);
+        // 절대 renderboard의 boardElement에 직접 접근하여 수정하지 말 것. 그렇게 하면 원본 보드에 영향이 가, 임시 보드를 만든 이유가 없다
         double blockSide = sceneRenderData.blockSide;
         GraphicsContext graphicsContext = boardCanvas.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, boardCanvas.getWidth(), boardCanvas.getHeight());
         graphicsContext.setStroke(sceneRenderData.borderColor);
 
-        for(int row = 0; row < board.length; row++){
-            for(int col = 0; col < board[row].length; col++){
+        for(int row = 0; row < renderBoard.length; row++){
+            for(int col = 0; col < renderBoard[row].length; col++){
                 double x = col * blockSide;
                 double y = row * blockSide;
 
-                graphicsContext.setFill(board[row][col].getElementColor());
+                graphicsContext.setFill(renderBoard[row][col].getElementColor());
                 graphicsContext.fillRect(x, y, blockSide, blockSide);
                 graphicsContext.strokeRect(x, y, blockSide, blockSide);
             }
         }
     }
 
-   
+    // 원본 보드는 수정하지 않고, 현재 블록을 합친 렌더링용 임시 보드를 만든다.
+    private BoardElement[][] MergeBoardAndCurrentBlock(BoardElement[][] board, BlockData currentBlock) {
+        BoardElement[][] renderBoard = new BoardElement[board.length][];
+        // 절대 renderboard의 boardElement에 직접 접근하여 수정하지 말 것. 그렇게 하면 원본 보드에 영향이 가, 임시 보드를 만든 이유가 없다
+        for (int row = 0; row < board.length; row++) {
+            renderBoard[row] = board[row].clone();
+        }
+        if (currentBlock == null) return renderBoard;
+
+        boolean[][] shape = currentBlock.GetShape();
+        Color color = currentBlock.GetCurrentColor();
+        for (int row = 0; row < shape.length; row++) {
+            for (int col = 0; col < shape[row].length; col++) {
+                if (!shape[row][col]) continue;
+                int boardRow = currentBlock.GetY() + row;
+                int boardCol = currentBlock.GetX() + col;
+                if (boardRow < 0 || boardRow >= renderBoard.length
+                        || boardCol < 0 || boardCol >= renderBoard[boardRow].length) continue;
+                renderBoard[boardRow][boardCol] = new BoardElement(color, true);
+            }
+        }
+        return renderBoard;
+    }
+
     public void CreateBlockQueueCanvas() {
         blockQueueCanvas = new Canvas(sceneRenderData.blockQueueCanvasWidth,
                 sceneRenderData.blockQueueCanvasHeight);
@@ -135,21 +155,19 @@ public class SceneRenderer  {
         BorderPane.setAlignment(contentHBox, Pos.CENTER);
     }
 
-     public Scene CreateScene(SceneRenderState state){ // 게임 씬을 생성
+    public Parent CreateRoot(SceneRenderState state){ // 게임 화면의 루트를 생성하고 초기 상태를 그린다.
 
         CreateBoardCanvas(state.board());
         CreateBlockQueueCanvas();
         CreateBlockHoldingCanvas();
         CreateScoreCanvas();
         CreateLayout();
-        gameScene = new Scene(sceneLayout, sceneRenderData.gameSceneWidth,
-                sceneRenderData.gameSceneHeight, sceneRenderData.sceneColor);
-        UpdateScene(state);
-        return gameScene;
+        UpdateRoot(state);
+        return sceneLayout;
     }
-    public void UpdateScene(SceneRenderState state){ // 게임 씬 업데이트
+    public void UpdateRoot(SceneRenderState state){ // 게임 씬 업데이트
         
-        UpdateBoardCanvas(state.board());
+        UpdateBoardCanvas(state.board(), state.currentBlock());
         UpdateBlockQueueCanvas(state.blockQueue());
         UpdateBlockHoldingCanvas(state.blockHolding());
         UpdateScoreCanvas(state.score());
@@ -159,7 +177,7 @@ public class SceneRenderer  {
 
 
 
-
+    // 주어진 캔바스에 패널을 그리는 함수. 점수판, 블럭 큐, 블럭 홀딩의 기본 패널을 그리기 위한 함수.
     private void DrawPanel(Canvas canvas, String title) {
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -175,10 +193,10 @@ public class SceneRenderer  {
                 canvas.getWidth() - 2 * sceneRenderData.panelTitleHPadding);
     }
 
-    // 빈 칸을 제외한 블럭 모양을 중앙에 그린다. 원본 모양이나 보드상의 위치는 변경하지 않는다.
-    private void DrawBlockPreview(Canvas canvas, BlockData block, double top, double height) {
+    // 빈 칸을 제외한 블럭 모양을 주어진 캔버스 중앙에 그린다. 
+    private void DrawBlockPreview(Canvas canvas, BlockData block, double top, double height) { //TODO: 함 색깔 잘 나오는지 확인
         if (block == null) return;
-        boolean[][] shape = block.GetShape(); // 블록 데이터의 true 칸만 미리보기에 표시
+        boolean[][] shape = block.GetShape(); 
         int minRow = shape.length;
         int maxRow = -1;
         int minCol = Integer.MAX_VALUE;
@@ -202,7 +220,7 @@ public class SceneRenderer  {
         if (side <= 0) return;
         double startX = (canvas.getWidth() - cols * side) / 2;
         double startY = top + (height - rows * side) / 2;
-        Color color = block.GetCurrentColor(); // 블록에 저장된 색맹 모드 색상 사용
+        Color color = block.GetCurrentColor();
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setFill(color);
         graphicsContext.setStroke(sceneRenderData.borderColor);
