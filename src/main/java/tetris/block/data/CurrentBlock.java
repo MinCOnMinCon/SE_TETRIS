@@ -27,6 +27,9 @@ public class CurrentBlock {
         this.blockHolding = blockHolding;
         this.gameScore = gameScore;
     }
+    public CurrentBlock(BlockQueueController nextBlocks, BlockHolding blockHolding, GameScore gameScore) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding, gameScore);
+    }
 
     public GameScore GetGameScore() {
         return this.gameScore;
@@ -47,10 +50,13 @@ public class CurrentBlock {
 
     }
 
-    public void BlockHold() {
+    public void BlockHold(BoardElement[][] board) {
         if (blockHolding.GetBlockHolding() == null) {
             blockHolding.SetBlockHolding(this.blockData);
             SetCurrentBlock(nextBlocks.GetNextBlock());
+            if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)) {
+            // 게임 오버 처리 로직 추가 필요
+            }
         } else {
             BlockData temp = blockHolding.GetBlockHolding();
             int x = this.blockData.GetX();
