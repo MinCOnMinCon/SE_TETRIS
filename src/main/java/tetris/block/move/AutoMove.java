@@ -16,13 +16,14 @@ public class AutoMove {
     private int level = 0; // 현재 레벨 (기본값: 0)
     private int fallSpeedLevel[] = {1000, 800, 600, 400, 200}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
     private int intervalMillis;
-    private int currentTimeMillis;
+    private int currentTimeMillis = 0;
 
     public AutoMove(CurrentBlock blockData, BoardElement[][] board, int level) {
         this.currentBlock = blockData;
         this.currentBoard = board;
         this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
         this.level = level;
+        this.currentTimeMillis = 0; // 초기화
     }
     public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
         this(blockData, board, 0); // Default level of 0
@@ -37,6 +38,10 @@ public class AutoMove {
                 currentBlock.GetGameScore().GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
             }
         }
+    }
+
+    public void ResetTimer() {
+        this.currentTimeMillis = 0;
     }
 
     
