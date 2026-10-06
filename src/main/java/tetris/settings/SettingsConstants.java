@@ -9,23 +9,23 @@ public final class SettingsConstants {
         return INPUT_SETTING_DATA; // 설정 화면과 저장소가 같은 객체를 사용
     }
 
-    // 색상 모드를 블록 팔레트의 모드 번호와 연결
+    // 색상 모드를 블록 색상 모드 번호와 연결
     public enum ColorBlindMode {
         NORMAL(0, "일반 모드"),
         RED_GREEN(1, "적록색맹 모드"),
         BLUE_YELLOW(2, "청황색맹 모드");
 
-        private final int paletteMode; // 게임 팔레트에서 사용할 번호
+        private final int colorMode; // 게임에서 사용할 색상 모드 번호
         private final String displayName; // 설정 화면에 보여줄 이름
 
-        ColorBlindMode(int paletteMode, String displayName) { // 모드의 번호와 표시명 저장
-            this.paletteMode = paletteMode; // 팔레트 모드 번호 저장
+        ColorBlindMode(int colorMode, String displayName) { // 모드의 번호와 표시명 저장
+            this.colorMode = colorMode; // 색상 모드 번호 저장
             this.displayName = displayName; // 화면 표시명 저장
         }
 
         //어느 색맹 모드인지를 구분해주는 int값 도출
-        public int getPaletteMode() {
-            return paletteMode;
+        public int getColorMode() {
+            return colorMode;
         }
 
         //재정의를 통해 읽기 힘든 주소값을 실제 저장된 값을 호출
@@ -52,16 +52,16 @@ public final class SettingsConstants {
 
     // 화면 크기 선택 옵션을 문자열 형태로 정의
     public static final String[] RESOLUTION_PRESETS = {
-        "720x1280",
-        "1080x1920",
-        "1440x2560"
+        "1280x720",
+        "1920x1080",
+        "2560x1440"
     };
 
     // 각 해상도 문자열에 대응되는 실제 픽셀 값
     public static final int[][] RESOLUTION_VALUES = {
-        {720, 1280},
-        {1080, 1920},
-        {1440, 2560}
+        {1280, 720},
+        {1920, 1080},
+        {2560, 1440}
     };
 
     private static String resolutionPreset = RESOLUTION_PRESETS[0];

@@ -26,6 +26,7 @@ public class SettingsController {
     private final KeyBindingSettings inputSettingData; // 키 배정 데이터
     private final VBox keyBindingRows; // 역할별 행 목록
     private final Label keySettingsStatus; // 키 변경 상태 표시
+    private final Button saveSettingsButton; // 현재 설정을 저장하는 버튼
     private final Map<ActionType, Button> keyButtons = new EnumMap<>(ActionType.class); // 역할과 버튼 연결
     private ActionType actionWaitingForKey; // 새 키 입력을 기다리는 역할
 
@@ -37,7 +38,8 @@ public class SettingsController {
             ComboBox<SettingsConstants.ColorBlindMode> colorBlindModeComboBox,
             KeyBindingSettings inputSettingData,
             VBox keyBindingRows,
-            Label keySettingsStatus) {
+            Label keySettingsStatus,
+            Button saveSettingsButton) {
         this.stage = stage;
         this.scene = scene;
         this.resolutionComboBox = resolutionComboBox;
@@ -45,6 +47,7 @@ public class SettingsController {
         this.inputSettingData = inputSettingData;
         this.keyBindingRows = keyBindingRows;
         this.keySettingsStatus = keySettingsStatus;
+        this.saveSettingsButton = saveSettingsButton;
     }
 
     // 화면이 열릴 때 기본값과 이벤트를 설정
@@ -64,12 +67,19 @@ public class SettingsController {
         resolutionComboBox.setOnAction(e -> {
             SettingsConstants.setResolutionPreset(resolutionComboBox.getValue());
             updateResolution();
-            SettingsStore.save();
         });
 
         colorBlindModeComboBox.setOnAction(e -> {
             SettingsConstants.setColorBlindMode(colorBlindModeComboBox.getValue());
-            SettingsStore.save();
+        });
+
+        saveSettingsButton.setOnAction(e -> { // 버튼을 눌렀을 때만 파일 저장과 객체 생성을 수행
+            GameSettings savedSettings = SettingsStore.save();
+            if (savedSettings == null) {
+                keySettingsStatus.setText("설정을 저장하지 못했습니다.");
+                return;
+            }
+            keySettingsStatus.setText("설정이 저장되었습니다.");
         });
 
         // 역할별 키 버튼을 만들고 씬에서 다음 키 입력을 감지
@@ -129,7 +139,6 @@ public class SettingsController {
             ActionType updatedAction = actionWaitingForKey;
             inputSettingData.setKeyCode(updatedAction, newKey);
             updateKeyButton(updatedAction);
-            SettingsStore.save();
             keySettingsStatus.setText(updatedAction.getDisplayName() + " 키를 " + newKey.getName() + "(으)로 변경했습니다.");
             actionWaitingForKey = null;
         }

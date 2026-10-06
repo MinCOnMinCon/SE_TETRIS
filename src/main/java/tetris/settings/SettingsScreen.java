@@ -67,9 +67,13 @@ public class SettingsScreen {
             new StartScreen().start(stage);
         });
 
+        // 해상도, 색상 모드, 키 배정을 한 번에 저장하는 버튼
+        Button saveSettingsButton = new Button("설정 저장");
+        saveSettingsButton.setPrefSize(180, 44);
+
         // 설정 항목을 세로로 묶고 스크롤할 수 있게 구성
         VBox content = new VBox(14, resolutionComboBox, colorBlindModeComboBox,
-            keySettingsTitle, keySettingsStatus, keyBindingRows);
+            keySettingsTitle, keySettingsStatus, keyBindingRows, saveSettingsButton);
         content.setAlignment(Pos.CENTER);
         content.setPadding(new Insets(20));
 
@@ -90,7 +94,8 @@ public class SettingsScreen {
         // 화면 전환을 수행하기 전에 설정 컨트롤 객체를 연결
         Scene scene = new Scene(root, 400, 600); // 설정 화면 장면 생성
         SettingsController controller = new SettingsController(stage, scene, resolutionComboBox,
-            colorBlindModeComboBox, SettingsConstants.getInputSettingData(), keyBindingRows, keySettingsStatus);
+            colorBlindModeComboBox, SettingsConstants.getInputSettingData(), keyBindingRows,
+            keySettingsStatus, saveSettingsButton);
 
         // 최종 화면 생성
         stage.setTitle("Tetris - 설정");

@@ -203,7 +203,7 @@ public class SceneRenderer  {
         int maxCol = -1;
         for (int row = 0; row < shape.length; row++) {
             for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] == false) continue;
+                if (!shape[row][col]) continue;
                 minRow = Math.min(minRow, row);
                 maxRow = Math.max(maxRow, row);
                 minCol = Math.min(minCol, col);
@@ -226,7 +226,7 @@ public class SceneRenderer  {
         graphicsContext.setStroke(sceneRenderData.borderColor);
         for (int row = minRow; row <= maxRow; row++) {
             for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] == false) continue;
+                if (!shape[row][col]) continue;
                 double x = startX + (col - minCol) * side;
                 double y = startY + (row - minRow) * side;
                 graphicsContext.fillRect(x, y, side, side);
