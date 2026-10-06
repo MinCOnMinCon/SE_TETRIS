@@ -14,9 +14,8 @@ import tetris.gamescene.score.GameScore;
 */
 
 public class UserMove {
-    public static void BlockHolding(CurrentBlock CurrentBlock, BoardElement[][] board, AutoMove autoMove) {
+    public static void BlockHolding(CurrentBlock CurrentBlock, BoardElement[][] board) {
         CurrentBlock.BlockHold(board);
-        autoMove.ResetTimer(); // 타이머 초기화
     }
     public static void MoveRight(CurrentBlock CurrentBlock, BoardElement[][] board) {
         BlockMove.MoveRight(CurrentBlock, board);

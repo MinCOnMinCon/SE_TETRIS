@@ -1,5 +1,6 @@
 package tetris.block.move;
 
+import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
@@ -18,9 +19,11 @@ public class AutoMove {
     private int fallSpeedLevel[] = {1000, 800, 600, 400, 200}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
     private int intervalMillis;
     private int currentTimeMillis = 0;
+    private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
     public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, int level) {
         this.currentBlock = currentBlock;
+        this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
         this.currentBoard = board;
         this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
         this.level = level;
@@ -32,6 +35,10 @@ public class AutoMove {
 
     public void TimeUpdate(int msTime, GameScore gameScore) {
         currentTimeMillis += msTime;
+        if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
+            prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 업데이트
+            currentTimeMillis = 0; // 블럭이 바뀌면 타이머 초기화
+        }
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
