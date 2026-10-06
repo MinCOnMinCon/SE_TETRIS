@@ -67,8 +67,7 @@ public class AutoMove {
     }
     public void SetCurrentBoard(BoardElement[][] board) {
         this.currentBoard = board;
-    }
-    public BoardElement[][] GetCurrentBoard() {
-        return this.currentBoard;
+        this.previousBlock = currentBlock.GetCurrentBlock();
+        this.elapsedTime = 0.0;
     }
 }

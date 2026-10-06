@@ -10,6 +10,7 @@ import tetris.gamescene.board.BoardElement;
  */
 public record SceneRenderState(
         BoardElement[][] board,
+        BlockData currentBlock,
         long score,
         BlockData[] blockQueue,
         BlockData blockHolding) {}
