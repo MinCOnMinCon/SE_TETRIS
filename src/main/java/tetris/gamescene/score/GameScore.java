@@ -17,10 +17,10 @@ public class GameScore{
     }
 
     public void GetBlockDownScore(int fallSpeedLevel){
-        setGameScore(blockDownScoreArr[fallSpeedLevel]);
+        SetGameScore(blockDownScoreArr[fallSpeedLevel]);
     }
 
-    private void setGameScore(long score){
+    public void SetGameScore(long score){
         if(Long.MAX_VALUE - score < gameScore){
             gameScore = Long.MAX_VALUE;
         }

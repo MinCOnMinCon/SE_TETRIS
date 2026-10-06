@@ -1,7 +1,9 @@
 package tetris.block.data;
 
-import tetris.gamescene.blockqueue.BlockQueueController;
+import tetris.block.move.CanMove;
+import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
+import tetris.gamescene.board.BoardElement;
 
 /*
     CurrentBlock 클래스는 현재 테트리스 블럭의 정보를 저장하는 클래스
@@ -14,13 +16,16 @@ import tetris.gamescene.blockholding.BlockHolding;
 
 public class CurrentBlock {
     private BlockData blockData;
-    private BlockQueueController nextBlocks;
+    private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
 
-    public CurrentBlock(BlockData blockData, BlockQueueController nextBlocks, BlockHolding blockHolding) {
+    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding) {
         this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
+    }
+    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding);
     }
 
     public BlockData GetCurrentBlock() {
@@ -30,14 +35,21 @@ public class CurrentBlock {
         this.blockData = blockData;
     }
 
-    public void MoveEnd() {
+    public void MoveEnd(BoardElement[][] board) {
         SetCurrentBlock(nextBlocks.GetNextBlock());
+        if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)){
+            // 게임 오버 처리 로직 추가 필요
+        }
+
     }
 
-    public void BlockHold() {
+    public void BlockHold(BoardElement[][] board) {
         if (blockHolding.GetBlockHolding() == null) {
             blockHolding.SetBlockHolding(this.blockData);
             SetCurrentBlock(nextBlocks.GetNextBlock());
+            if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)) {
+            // 게임 오버 처리 로직 추가 필요
+            }
         } else {
             BlockData temp = blockHolding.GetBlockHolding();
             int x = this.blockData.GetX();

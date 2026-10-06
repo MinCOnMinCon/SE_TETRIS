@@ -2,6 +2,7 @@ package tetris.block.rotate;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentShape;
+import tetris.gamescene.board.BoardElement;
 
 /*
     CanRotate 클래스는 블럭이 회전 가능한지 여부를 판단하는 기능을 제공
@@ -19,7 +20,7 @@ import tetris.block.data.CurrentShape;
 */
 
 public class CanRotate {
-    public static boolean IsNoBlock(BlockData blockData, boolean[][] board) {
+    public static boolean IsNoBlock(BlockData blockData, BoardElement[][] board) {
         int x = blockData.GetX();
         int y = blockData.GetY();
         boolean[][] shape = blockData.GetShape();
@@ -39,7 +40,7 @@ public class CanRotate {
             }
 
             // 2. 다른 블럭과의 충돌 체크
-            if (board[newY][newX]) {
+            if (board[newY][newX].isBlock()) {
                 return false; // 이미 다른 블럭이 존재하므로 이동 불가
             }
         }

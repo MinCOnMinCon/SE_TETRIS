@@ -3,56 +3,71 @@ package tetris.block.move;
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.score.GameScore;
 
 /*
-    AutoMove 클래스는 전달받은 프레임 시간을 누적하여 1초마다 블럭을 아래로 이동한다.
-    새 블럭 생성 또는 홀딩으로 현재 블럭이 교체되면 누적 시간을 초기화한다.
+    AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
+    AutoMove(BlockData, BoardElement[][], int) 생성자: 현재 블럭과 보드 상태를 설정
+        currentBlock, currentBoard, intervalMillis의 상태를 변경할 수 있는 getter/setter 제공
+    TimeUpdate(int) 메서드: 일정 시간 간격으로 블럭을 아래로 이동시키는 기능 제공
 */
 
 public class AutoMove {
-    private static final double DROP_INTERVAL = 1.0;
+    private CurrentBlock currentBlock;
+    private BoardElement[][] currentBoard;
+    private int level = 0; // 현재 레벨 (기본값: 0)
+    private int fallSpeedLevel[] = {1000, 800, 600, 400, 200}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
+    private int intervalMillis;
+    private int currentTimeMillis = 0;
+    private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
-    private final CurrentBlock currentBlock;
-    private final BoardElement[][] currentBoard;
-
-    private BlockData previousBlock;
-    private double elapsedTime;
-
-    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board) {
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, int level) {
         this.currentBlock = currentBlock;
+        this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
         this.currentBoard = board;
-        this.previousBlock = currentBlock.GetCurrentBlock();
-        this.elapsedTime = 0.0;
+        this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
+        this.level = level;
+        this.currentTimeMillis = 0; // 초기화
+    }
+    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
+        this(blockData, board, 0); // Default level of 0
     }
 
-    public void Update(double deltaTime) {
-        // 입력 등으로 블럭이 교체됐다면 새 블럭은 0초부터 시작
-        if (ResetIfBlockChanged()) {
-            return;
+    public void TimeUpdate(int msTime, GameScore gameScore) {
+        currentTimeMillis += msTime;
+        if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
+            prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 업데이트
+            currentTimeMillis = 0; // 블럭이 바뀌면 타이머 초기화
         }
-
-        elapsedTime += deltaTime;
-
-        while (elapsedTime >= DROP_INTERVAL) {
-            elapsedTime -= DROP_INTERVAL;
-            BlockMove.MoveDown(currentBlock, currentBoard);
-
-            // 내려오다가 새 블럭이 생성되면 남은 시간도 초기화
-            if (ResetIfBlockChanged()) {
-                break;
+        if (currentTimeMillis >= intervalMillis) {
+            currentTimeMillis -= intervalMillis; // Reset the timer
+            if (currentBlock != null) {
+                BlockMove.MoveDown(currentBlock, currentBoard, gameScore);
+                gameScore.GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
             }
         }
     }
 
-    private boolean ResetIfBlockChanged() {
-        BlockData block = currentBlock.GetCurrentBlock();
+    public void ResetTimer() {
+        this.currentTimeMillis = 0;
+    }
 
-        if (block == previousBlock) {
-            return false;
-        }
-
-        previousBlock = block;
-        elapsedTime = 0.0;
-        return true;
+    
+    public void SetFallSpeedLevel(int level) {
+        this.intervalMillis = fallSpeedLevel[level - 1];
+    }
+    public int GetIntervalMillis() {
+        return this.intervalMillis;
+    }
+    public void SetCurrentBlock(CurrentBlock blockData) {
+        this.currentBlock = blockData;
+    }
+    public CurrentBlock GetCurrentBlock() {
+        return this.currentBlock;
+    }
+    public void SetCurrentBoard(BoardElement[][] board) {
+        this.currentBoard = board;
+        this.previousBlock = currentBlock.GetCurrentBlock();
+        this.elapsedTime = 0.0;
     }
 }
