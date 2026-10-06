@@ -14,23 +14,27 @@ import tetris.gamescene.score.GameScore;
 */
 
 public class UserMove {
-    public static void MoveRight(CurrentBlock blockData, BoardElement[][] board) {
-        BlockMove.MoveRight(blockData, board);
+    public static void BlockHolding(CurrentBlock CurrentBlock, BoardElement[][] board, AutoMove autoMove) {
+        CurrentBlock.BlockHold(board);
+        autoMove.ResetTimer(); // 타이머 초기화
     }
-    public static void MoveLeft(CurrentBlock blockData, BoardElement[][] board) {
-        BlockMove.MoveLeft(blockData, board);
+    public static void MoveRight(CurrentBlock CurrentBlock, BoardElement[][] board) {
+        BlockMove.MoveRight(CurrentBlock, board);
     }
-    public static void MoveDown(CurrentBlock blockData, BoardElement[][] board) {
-        BlockMove.MoveDown(blockData, board);
-        blockData.GetGameScore().setGameScore(10); // 블럭이 아래로 이동할 때마다 점수 증가
+    public static void MoveLeft(CurrentBlock CurrentBlock, BoardElement[][] board) {
+        BlockMove.MoveLeft(CurrentBlock, board);
     }
-    public static void MoveDownMax(CurrentBlock blockData, BoardElement[][] board) {
+    public static void MoveDown(CurrentBlock CurrentBlock, BoardElement[][] board) {
+        BlockMove.MoveDown(CurrentBlock, board);
+        CurrentBlock.GetGameScore().setGameScore(10); // 블럭이 아래로 이동할 때마다 점수 증가
+    }
+    public static void MoveDownMax(CurrentBlock CurrentBlock, BoardElement[][] board) {
         // 블럭이 맨 아래로 이동하고 AutoMove가 돌때까지 기다림
         // 바로 다음 블럭 생성 필요 시 수정 필요
-        while (CanMove.IsNoBlock(0, blockData, board)) {
-            BlockMove.MoveDown(blockData, board);
-            blockData.GetGameScore().setGameScore(10); // 블럭이 아래로 이동할 때마다 점수 증가
+        while (CanMove.IsNoBlock(0, CurrentBlock, board)) {
+            BlockMove.MoveDown(CurrentBlock, board);
+            CurrentBlock.GetGameScore().setGameScore(11 ); // 블럭이 아래로 이동할 때마다 점수 증가
         }
-        blockData.GetGameScore().setGameScore(10); // 추가 점수
+        CurrentBlock.GetGameScore().setGameScore(10); // 추가 점수
     }
 }
