@@ -47,12 +47,12 @@ public class GameController {
 		blockQueue = new BlockQueue();
 		
 		currentBlock = new CurrentBlock(blockQueue.GetNextBlock(), blockQueue, blockHolding);
-		autoMove = new AutoMove(currentBlock, board.GetBoard());
+		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty());
 
 		renderer = new SceneRenderer(new RenderConfig(blockQueue.GetMaxQueueSize()));
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
 		playerInput = new PlayerInput(settings.keyBindings(), currentBlock, board, score, this::PauseGame);
-        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), blockHolding.GetBlockHolding());
         gameRoot = renderer.CreateRoot(state);
         gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
         playerInput.SetInputEnabled(false);
@@ -71,7 +71,7 @@ public class GameController {
             autoMove.TimeUpdate(deltaTime, score);
 
 
-			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
+			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), blockHolding.GetBlockHolding());
 			renderer.UpdateRoot(state);
 		}
 	};

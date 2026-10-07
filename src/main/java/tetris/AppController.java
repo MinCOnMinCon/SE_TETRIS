@@ -5,6 +5,7 @@ import java.util.Objects;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tetris.gamescene.GameController;
+import tetris.settings.SettingsStore;
 
 /**
  * 화면 전환과 앱의 전체 흐름을 조율한다.
@@ -27,9 +28,8 @@ public class AppController {
     }
 
     public void StartGame() {
-        // TODO: 설정을 받는 파라미터 추가
         // TODO: 게임 종료 콜백 연결
-        gameController = new GameController(this::ShowPauseScreen);
+        gameController = new GameController(this::ShowPauseScreen, SettingsStore.getGameSettings());
         // 기존 시작 화면이 Scene에 등록한 메뉴 키 입력을 제거한다.
         scene.setOnKeyPressed(null);
         scene.setRoot(gameController.GetRoot());

@@ -14,12 +14,19 @@ public record GameSettings(
         int screenWidth,
         int screenHeight,
         int colorMode,
-        Map<ActionType, List<KeyCode>> keyBindings) {
-
+        Difficulty difficulty,
+        Map<ActionType, List<KeyCode>> keyBindings)
+        {
+   
     // 전달받은 키 설정을 복사해 게임 실행 중 외부에서 바뀌지 않게 함
     public GameSettings {
         EnumMap<ActionType, List<KeyCode>> copiedBindings = new EnumMap<>(ActionType.class);
         keyBindings.forEach((action, keys) -> copiedBindings.put(action, List.copyOf(keys)));
         keyBindings = Collections.unmodifiableMap(copiedBindings);
+    }
+    public enum Difficulty{
+        EASY,
+        NORMAL,
+        HARD
     }
 }

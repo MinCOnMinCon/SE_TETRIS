@@ -1,9 +1,11 @@
 package tetris.block.move;
 
+
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
+import tetris.settings.GameSettings.Difficulty;;
 
 /*
     AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
@@ -16,22 +18,26 @@ public class AutoMove {
     private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
     private int level = 0; // 현재 레벨 (기본값: 0)
-    private int fallSpeedLevel[] = {1000, 800, 600, 400, 200}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
+    private int maxLevel = 37; // 최대 레벨, 하드 기준 최대 레벨(37)이면 간격이 100정도 된다.
+    private int basicFallInterval = 1000;// 자동으로 떨어지는 기본 간격
+    private int fallIntervalDecrese = 50; // 레벨당 줄어드는 낙하 간격
+    private double easyBonusRatio = 0.2; // 이지 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 덜 감소된다.
+    private double hardBonusRatio = 0.2; // 하드 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 더 감소된다.
+    private Difficulty difficulty; 
     private int intervalMillis;
     private int currentTimeMillis = 0;
     private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
-    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, int level) {
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty) {
         this.currentBlock = currentBlock;
         this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
         this.currentBoard = board;
-        this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
-        this.level = level;
+        this.difficulty = difficulty;
+        SetFallInterval();
+        
         this.currentTimeMillis = 0; // 초기화
     }
-    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
-        this(blockData, board, 0); // Default level of 0
-    }
+    
 
     public void TimeUpdate(int msTime, GameScore gameScore) {
         currentTimeMillis += msTime;
@@ -53,8 +59,16 @@ public class AutoMove {
     }
 
     
-    public void SetFallSpeedLevel(int level) {
-        this.intervalMillis = fallSpeedLevel[level - 1];
+    public void SetFallInterval() {
+        if(difficulty == Difficulty.EASY){
+            intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1-easyBonusRatio)); 
+        }
+        else if(difficulty == Difficulty.HARD){
+            intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1+hardBonusRatio)); 
+        }
+        else{
+            intervalMillis = basicFallInterval - level*fallIntervalDecrese; 
+        }
     }
     public int GetIntervalMillis() {
         return this.intervalMillis;
