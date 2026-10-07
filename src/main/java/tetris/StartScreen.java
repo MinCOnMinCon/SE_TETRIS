@@ -54,7 +54,7 @@ public class StartScreen extends Application {
 
         //게임 시작 버튼 클릭 시 동작
         startButton.setOnAction(e -> {
-            new GameController(stage, SettingsStore.getGameSettings()); // 저장된 설정 객체를 게임 로직에 전달
+
         });
 
         //스코어 보드 버튼 클릭 시 동작

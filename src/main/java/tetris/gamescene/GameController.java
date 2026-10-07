@@ -7,23 +7,28 @@ import javafx.scene.Parent;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.blockholding.BlockHolding;
-import tetris.gamescene.blockqueue.BlockQueueController;
+import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
 import tetris.block.move.AutoMove;
 import tetris.settingData.InputSettingData;
+import tetris.settings.GameSettings;
 
 
 public class GameController {
 
 	private final GameBoard board;
 	private final GameScore score;
-	private final BlockQueueController blockQueueController;
+	private final BlockQueue blockQueue;
 	private final BlockHolding blockHolding;
 	private final CurrentBlock currentBlock;
+
 	private final AutoMove autoMove;
-	private final SceneRenderer renderer;
 	private final PlayerInput playerInput;
+
+	private final SceneRenderer renderer;
 	private final Parent gameRoot;
+
+	private final GameSettings gameSettings;
 
 	
 	
@@ -31,22 +36,23 @@ public class GameController {
     private boolean paused;
     private final Runnable onPauseRequested;
 
-    public GameController(Runnable onPauseRequested){
+    public GameController(Runnable onPauseRequested, GameSettings settings){
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
+
+		gameSettings = settings;
         previousFrameTime = 0;
 		board = new GameBoard();
 		score = new GameScore();
 		blockHolding = new BlockHolding();
-		blockQueueController = new BlockQueueController();
+		blockQueue = new BlockQueue();
 		
-		currentBlock = new CurrentBlock(blockQueueController.GetNextBlock(), blockQueueController, blockHolding);
+		currentBlock = new CurrentBlock(blockQueue.GetNextBlock(), blockQueue, blockHolding);
 		autoMove = new AutoMove(currentBlock, board.GetBoard());
 
-		renderer = new SceneRenderer(new RenderConfig(blockQueueController.GetBlockQueue().GetMaxQueueSize()));// TODO: 저거 GetBlockQueue 함수명 고쳐야 할듯?
+		renderer = new SceneRenderer(new RenderConfig(blockQueue.GetMaxQueueSize()));
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
-		playerInput = new PlayerInput(new InputSettingData(), currentBlock, board, this::PauseGame);
-		//TODO: 이거 SettingData 확정되면 그때 수정할 것.
-        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
+		playerInput = new PlayerInput(settings.keyBindings(), currentBlock, board, score, this::PauseGame);
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
         gameRoot = renderer.CreateRoot(state);
         gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
         playerInput.SetInputEnabled(false);
@@ -60,13 +66,12 @@ public class GameController {
                 return;
             }
 
-            double deltaTime = (now - previousFrameTime) / 1_000_000_000.0;
+            int deltaTime = (int) ((now - previousFrameTime) / 1_000_000);
             previousFrameTime = now;
-            autoMove.Update(deltaTime);
+            autoMove.TimeUpdate(deltaTime, score);
 
 
-			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueueController.GetBlockQueue().GetBlockQueue(), blockHolding.GetBlockHolding());
-			// TODO: 저거 GetBlockQueue 함수명 고쳐야 할듯?
+			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlockQueue(), blockHolding.GetBlockHolding());
 			renderer.UpdateRoot(state);
 		}
 	};

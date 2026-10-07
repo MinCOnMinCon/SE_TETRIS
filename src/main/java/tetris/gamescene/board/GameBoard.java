@@ -10,9 +10,7 @@ import javafx.scene.paint.Color;
 public class GameBoard {
     public static final int boardRow = 20;
     public static final int boardCol = 10;
-    public static final int boardRowPad = 1;
-    public static final int boardColPad = 1;
-    private final Color padColor = Color.GRAY;
+    
     
     private BoardElement [][] board;
     
@@ -25,15 +23,12 @@ public class GameBoard {
     }
 
     public void InitGameBoard(){
-        board = new BoardElement[boardRow + boardRowPad*2][boardCol + boardColPad*2];
+        board = new BoardElement[boardRow][boardCol];
         for(int row = 0; row < board.length; row++){
             for(int col = 0; col < board[row].length; col++){
-                if(row < boardRowPad || row > boardRow || col < boardColPad || col > boardCol){
-                    board[row][col] = new BoardElement(padColor, false);
-                }
-                else{
-                    board[row][col] = new BoardElement();
-                }
+                
+                board[row][col] = new BoardElement();
+                
             
             }
         }

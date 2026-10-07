@@ -45,7 +45,7 @@ public class AutoMove {
                 BlockMove.MoveDown(currentBlock, currentBoard, gameScore);
                 gameScore.GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
             }
-        }
+        } 
     }
 
     public void ResetTimer() {
@@ -67,7 +67,7 @@ public class AutoMove {
     }
     public void SetCurrentBoard(BoardElement[][] board) {
         this.currentBoard = board;
-        this.previousBlock = currentBlock.GetCurrentBlock();
-        this.elapsedTime = 0.0;
+        this.prevBlockData = currentBlock.GetCurrentBlock();
+        this.currentTimeMillis = 0;
     }
 }

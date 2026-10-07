@@ -4,6 +4,7 @@ import tetris.settings.GameSettings; // 저장된 게임 해상도와 색상 모
 public class RenderConfig{
     public double gameSceneWidth = 800; // 게임 씬 전체의 너비(px)
     public double gameSceneHeight = 1000; // 게임 씬 전체의 높이(px)
+
     public double blockSide = 22; // 게임 보드 한 칸의 가로·세로 크기(px)
     
 
