@@ -14,7 +14,7 @@ public class BlockDelete {
                 DeleteLine(board, delLine);
                 scoreIndex++;
             }
-            gameScore.SetGameScore(delScoreArr[scoreIndex]); // 제거된 줄 수에 따라 점수 증가
+            if(scoreIndex != -1) gameScore.SetGameScore(delScoreArr[scoreIndex]); // 제거된 줄 수에 따라 점수 증가
 
     }
 

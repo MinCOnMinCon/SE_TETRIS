@@ -26,9 +26,7 @@ public class RenderConfig{
     public int blockQueueDisplayCount;
     public double blockQueueCanvasWidth = 128; // 다음 블럭 큐 캔버스의 너비(px)
     // 다음 블럭 큐 캔버스의 높이(px): 제목 + 하단 여백 + 슬롯 개수만큼의 높이 + 슬롯 사이 간격
-    public double blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
-            + blockQueueDisplayCount * previewSlotHeight
-            + (blockQueueDisplayCount - 1) * previewSlotGap;
+    public double blockQueueCanvasHeight;
 
     public double blockHoldingCanvasWidth = 128; // 홀딩 캔버스의 너비(px)
     public double blockHoldingCanvasHeight = panelTitleHeight + previewSlotHeight + panelBottomPadding; // 홀딩 캔버스의 높이(px): 제목 + 미리보기 영역 + 하단 여백
@@ -51,6 +49,9 @@ public class RenderConfig{
     }
     public RenderConfig(int queueDisplayCount){
         blockQueueDisplayCount = queueDisplayCount;
+        blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
+                + blockQueueDisplayCount * previewSlotHeight
+                + Math.max(0, blockQueueDisplayCount - 1) * previewSlotGap;
     }
 
     // 저장된 사용자 설정을 렌더링 설정에 반영

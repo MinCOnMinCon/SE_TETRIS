@@ -92,6 +92,15 @@ public class BlockQueue {
         return this.blockQueue;
     }
 
+    // front부터 실제로 꺼내는 순서대로 화면에 전달할 배열을 만든다. 렌더러가 화면에 표시하기 위한 함수
+    public BlockData[] GetBlocksInQueueOrder() {
+        BlockData[] orderedBlocks = new BlockData[this.queueFRS[2]];
+        for (int i = 0; i < orderedBlocks.length; i++) {
+            orderedBlocks[i] = this.blockQueue[(this.queueFRS[0] + i) % this.maxQueueSize];
+        }
+        return orderedBlocks;
+    }
+
     public BlockData GetBlock(int index) {
         return this.blockQueue[index];
     }
