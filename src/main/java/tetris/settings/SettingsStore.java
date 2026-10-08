@@ -38,8 +38,8 @@ public final class SettingsStore {
             return;
         }
 
-        SettingsConstants.setResolutionPreset(properties.getProperty(
-                "resolution", SettingsConstants.getResolutionPreset()));
+        GameSettings.setResolutionPreset(properties.getProperty(
+                "resolution", GameSettings.getResolutionPreset()));
 
         try {
             SettingsConstants.setDifficulty(GameSettings.Difficulty.valueOf(
@@ -51,14 +51,14 @@ public final class SettingsStore {
         String colorMode = properties.getProperty("colorBlindMode");
         if (colorMode != null) {
             try {
-                SettingsConstants.setColorBlindMode(
-                        SettingsConstants.ColorBlindMode.valueOf(colorMode));
+                GameSettings.setColorBlindMode(
+                        GameSettings.ColorBlindMode.valueOf(colorMode));
             } catch (IllegalArgumentException e) {
                 System.err.println("저장된 색상 모드를 읽을 수 없습니다: " + colorMode);
             }
         }
 
-        KeyBindingSettings inputSettings = SettingsConstants.getInputSettingData();
+        KeyBindingSettings inputSettings = GameSettings.getInputSettingData();
         for (ActionType actionType : ActionType.values()) {
             String savedKeys = properties.getProperty("key." + actionType.name());
             if (savedKeys == null || savedKeys.isBlank()) {
@@ -80,11 +80,10 @@ public final class SettingsStore {
     // 현재 해상도, 색상 모드, 모든 역할의 키 배정을 저장하고 게임 설정 객체 반환
     public static GameSettings save() { // 저장 버튼에서 호출해 파일과 실행용 설정을 함께 갱신
         Properties properties = new Properties(); // 저장할 key=value 모음
-        properties.setProperty("resolution", SettingsConstants.getResolutionPreset());
-        properties.setProperty("colorBlindMode", SettingsConstants.getColorBlindMode().name());
-        properties.setProperty("difficulty", SettingsConstants.getDifficulty().name());
+        properties.setProperty("resolution", GameSettings.getResolutionPreset());
+        properties.setProperty("colorBlindMode", GameSettings.getColorBlindMode().name());
 
-        SettingsConstants.getInputSettingData().getAllBindings().forEach((actionType, keyCodes) -> {
+        GameSettings.getInputSettingData().getAllBindings().forEach((actionType, keyCodes) -> {
             String values = keyCodes.stream()
                     .map(KeyCode::name)
                     .collect(Collectors.joining(","));
@@ -116,12 +115,12 @@ public final class SettingsStore {
     // 공유 설정값을 해상도, 색상 모드, 키 배정이 포함된 객체로 복사
     private static GameSettings createGameSettings() {
         return new GameSettings(
-                SettingsConstants.getResolutionPreset(),
-                SettingsConstants.getScreenWidth(),
-                SettingsConstants.getScreenHeight(),
-                SettingsConstants.getColorBlindMode().getColorMode(),
-                SettingsConstants.getDifficulty(),
-                SettingsConstants.getInputSettingData().getAllBindings());
+                GameSettings.getResolutionPreset(),
+                GameSettings.getScreenWidth(),
+                GameSettings.getScreenHeight(),
+                GameSettings.getColorBlindMode().getColorMode(),
+                GameSettings.getInputSettingData().getAllBindings()
+                );
     }
 
     private static KeyCode parseKeyCode(String value) { // 문자열을 JavaFX 키 코드로 변환

@@ -1,5 +1,6 @@
 package tetris.settings;
 
+import javafx.event.EventHandler; // 키 입력 필터 해제에 같은 인스턴스를 쓰기 위함
 import javafx.scene.control.ComboBox; // 해상도와 색상 모드 선택 상자
 import javafx.scene.Scene; // 키 입력을 감지할 화면
 import javafx.scene.control.Button; // 역할별 키 버튼
@@ -22,20 +23,21 @@ public class SettingsController {
     private final Stage stage; // 현재 앱 창
     private final Scene scene; // 현재 설정 화면
     private final ComboBox<String> resolutionComboBox; // 해상도 선택 상자
-    private final ComboBox<SettingsConstants.ColorBlindMode> colorBlindModeComboBox; // 색상 모드 선택 상자
+    private final ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox; // 색상 모드 선택 상자
     private final KeyBindingSettings inputSettingData; // 키 배정 데이터
     private final VBox keyBindingRows; // 역할별 행 목록
     private final Label keySettingsStatus; // 키 변경 상태 표시
     private final Button saveSettingsButton; // 현재 설정을 저장하는 버튼
     private final Map<ActionType, Button> keyButtons = new EnumMap<>(ActionType.class); // 역할과 버튼 연결
     private ActionType actionWaitingForKey; // 새 키 입력을 기다리는 역할
+    private final EventHandler<KeyEvent> keyCaptureHandler = this::captureKeyBinding;
 
     // 생성자: 필요한 UI 객체를 받아 저장
     public SettingsController(
             Stage stage,
             Scene scene,
             ComboBox<String> resolutionComboBox,
-            ComboBox<SettingsConstants.ColorBlindMode> colorBlindModeComboBox,
+            ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox,
             KeyBindingSettings inputSettingData,
             VBox keyBindingRows,
             Label keySettingsStatus,
@@ -55,22 +57,22 @@ public class SettingsController {
         SettingsStore.load(); // 저장된 설정을 먼저 복원
 
         // 해상도 옵션을 드롭다운에 추가
-        resolutionComboBox.getItems().addAll(SettingsConstants.RESOLUTION_PRESETS);
+        resolutionComboBox.getItems().addAll(GameSettings.RESOLUTION_PRESETS);
 
         // 저장된 해상도와 색상 모드를 선택 상태로 표시
-        resolutionComboBox.setValue(SettingsConstants.getResolutionPreset());
-        colorBlindModeComboBox.getItems().setAll(SettingsConstants.ColorBlindMode.values());
-        colorBlindModeComboBox.setValue(SettingsConstants.getColorBlindMode());
+        resolutionComboBox.setValue(GameSettings.getResolutionPreset());
+        colorBlindModeComboBox.getItems().setAll(GameSettings.ColorBlindMode.values());
+        colorBlindModeComboBox.setValue(GameSettings.getColorBlindMode());
         updateResolution();
 
         // 해상도 선택 시 이벤트 연결
         resolutionComboBox.setOnAction(e -> {
-            SettingsConstants.setResolutionPreset(resolutionComboBox.getValue());
+            GameSettings.setResolutionPreset(resolutionComboBox.getValue());
             updateResolution();
         });
 
         colorBlindModeComboBox.setOnAction(e -> {
-            SettingsConstants.setColorBlindMode(colorBlindModeComboBox.getValue());
+            GameSettings.setColorBlindMode(colorBlindModeComboBox.getValue());
         });
 
         saveSettingsButton.setOnAction(e -> { // 버튼을 눌렀을 때만 파일 저장과 객체 생성을 수행
@@ -84,7 +86,12 @@ public class SettingsController {
 
         // 역할별 키 버튼을 만들고 씬에서 다음 키 입력을 감지
         createKeyBindingRows();
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, this::captureKeyBinding);
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
+    }
+
+    // 같은 Scene을 다른 화면과 공유하므로, 설정 화면을 떠날 때 키 필터를 제거한다.
+    public void dispose() {
+        scene.removeEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
     }
 
     // 선택된 해상도에 맞춰 창 크기 변경
@@ -93,8 +100,8 @@ public class SettingsController {
         int index = -1;
 
         // 선택 값이 어떤 해상도인지 찾기
-        for (int i = 0; i < SettingsConstants.RESOLUTION_PRESETS.length; i++) {
-            if (SettingsConstants.RESOLUTION_PRESETS[i].equals(selected)) {
+        for (int i = 0; i < GameSettings.RESOLUTION_PRESETS.length; i++) {
+            if (GameSettings.RESOLUTION_PRESETS[i].equals(selected)) {
                 index = i;
                 break;
             }
@@ -102,8 +109,8 @@ public class SettingsController {
 
         // 유효한 해상도면 창 크기 조절
         if (index >= 0) {
-            int width = SettingsConstants.RESOLUTION_VALUES[index][0];
-            int height = SettingsConstants.RESOLUTION_VALUES[index][1];
+            int width = GameSettings.RESOLUTION_VALUES[index][0];
+            int height = GameSettings.RESOLUTION_VALUES[index][1];
             stage.setWidth(width);
             stage.setHeight(height);
         }

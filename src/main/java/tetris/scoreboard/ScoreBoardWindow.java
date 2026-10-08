@@ -12,20 +12,13 @@ import javafx.scene.control.cell.PropertyValueFactory; // 객체 속성을 표 �
 import javafx.scene.layout.BorderPane; // 전체 화면 배치
 import javafx.scene.layout.VBox; // 세로로 컴포넌트를 배치하는 레이아웃
 import javafx.stage.Stage; // 창 객체
-import tetris.StartScreen; // 메인 화면으로 돌아가기 위해 필요
 
 import java.util.Comparator; // 정렬을 위해 사용하는 클래스
 import java.util.List; // 리스트 자료형
 
 // 점수판 화면을 생성하고 표시하는 클래스
 public class ScoreBoardWindow {
-    public void show(Stage stage) { // 현재 창을 점수판 화면으로 전환
-        // 화면 전환 전의 창과 장면 크기를 저장
-        double windowWidth = stage.getWidth();
-        double windowHeight = stage.getHeight();
-        double sceneWidth = stage.getScene().getWidth();
-        double sceneHeight = stage.getScene().getHeight();
-
+    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 점수판으로 바꾼다
         // 저장된 점수 목록을 불러온 뒤, 점수 기준으로 내림차순 정렬
         List<ScoreRecord> scores = new ScoreLoader().loadScores();
         scores.sort(Comparator.comparingInt(ScoreRecord::getScore).reversed());
@@ -64,9 +57,7 @@ public class ScoreBoardWindow {
         // 뒤로가기 버튼 생성
         Button backButton = new Button("뒤로가기");
         backButton.setPrefSize(180, 50);
-        backButton.setOnAction(e -> {
-            new StartScreen().start(stage);
-        });
+        backButton.setOnAction(e -> onBack.run());
 
         // 제목과 표를 세로로 배치하는 루트 컨테이너
         VBox content = new VBox(10);
@@ -79,12 +70,8 @@ public class ScoreBoardWindow {
         root.setStyle("-fx-background-color: black;");
         root.setCenter(content);
 
-        // 스코어 보드 화면 타이틀, 화면 전환
-        //화면 사이즈는 기존의 크기를 유지
+        // 공유 Scene의 루트만 교체하고, 창 크기는 유지한다.
         stage.setTitle("Top 3 Scores");
-        stage.setScene(new Scene(root, sceneWidth, sceneHeight)); // 기존 장면 크기로 새 화면 생성
-        stage.setWidth(windowWidth);
-        stage.setHeight(windowHeight);
-        stage.show();
+        scene.setRoot(root);
     }
 }

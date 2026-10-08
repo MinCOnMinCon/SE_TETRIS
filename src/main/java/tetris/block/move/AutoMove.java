@@ -57,9 +57,6 @@ public class AutoMove {
         } 
     }
 
-    public void ResetTimer() {
-        this.currentTimeMillis = 0;
-    }
 
     
     public void SetFallInterval() {
