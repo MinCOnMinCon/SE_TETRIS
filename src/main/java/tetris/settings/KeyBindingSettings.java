@@ -45,6 +45,26 @@ public final class KeyBindingSettings {
         bindings.put(ActionType.PAUSE, List.of(KeyCode.ESCAPE));
     }
 
+    // 동작 순서와 같은 길이의 키 배열로 각 역할의 대표 키를 지정
+    public KeyBindingSettings(KeyCode[] keyCodes) {
+        this();
+        ActionType[] actionTypes = ActionType.values();
+        if (keyCodes == null || keyCodes.length != actionTypes.length) {
+            throw new IllegalArgumentException("keyCodes must contain one value for each ActionType");
+        }
+        for (int index = 0; index < actionTypes.length; index++) {
+            setKeyCode(actionTypes[index], keyCodes[index]);
+        }
+    }
+
+    public KeyCode getKeyCode(ActionType actionType) { // 역할에 배정된 첫 키 반환
+        List<KeyCode> keyCodes = getKeyCodes(actionType);
+        if (keyCodes.isEmpty()) {
+            return null;
+        }
+        return keyCodes.get(0);
+    }
+
     public List<KeyCode> getKeyCodes(ActionType actionType) { // 특정 역할의 키 목록 반환
         return bindings.getOrDefault(actionType, List.of()); // 없으면 빈 목록 반환
     }

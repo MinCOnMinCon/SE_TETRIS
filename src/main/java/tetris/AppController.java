@@ -5,47 +5,49 @@ import java.util.Objects;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tetris.gamescene.GameController;
+import tetris.scoreboard.ScoreBoardWindow;
+import tetris.settings.SettingsScreen;
 
 /**
- * 화면 전환과 앱의 전체 흐름을 조율한다.
- * 게임 화면 전환을 처리하며, 나머지 화면과의 연결은 이후 구현한다.
+ * Scene과 Stage를 가진 시작 화면 루트를 받아, 하나의 창에서 화면을 전환한다.
  */
 public class AppController {
     private final Stage stage;
     private final Scene scene;
-    private StartScreen startScreen;
+    private final StartScreen startScreen;
     private GameController gameController;
 
-    public AppController(Stage stage, Scene scene, StartScreen startScreen) {
-        this.stage = Objects.requireNonNull(stage);
-        this.scene = Objects.requireNonNull(scene);
-        this.startScreen = Objects.requireNonNull(startScreen);
+    public AppController(StartScreen root) {
+        this.startScreen = Objects.requireNonNull(root);
+        this.stage = Objects.requireNonNull(root.getStage());
+        this.scene = Objects.requireNonNull(root.getScene());
     }
 
-    public void ShowStartScreen() {
-        // TODO: StartScreen이 루트를 제공하도록 변경한 뒤 scene.setRoot(...)로 표시
+    public void showStartScreen() {
+        scene.setOnKeyPressed(null);
+        scene.setRoot(startScreen.createRoot(this::showGame, this::showScoreBoard, this::showSettings));
+        scene.getRoot().requestFocus();
     }
 
-    public void StartGame() {
-        // TODO: 설정을 받는 파라미터 추가
-        // TODO: 게임 종료 콜백 연결
-        gameController = new GameController(this::ShowPauseScreen);
-        // 기존 시작 화면이 Scene에 등록한 메뉴 키 입력을 제거한다.
+    public void showGame() {
+        gameController = new GameController(this::showPauseScreen);
         scene.setOnKeyPressed(null);
         scene.setRoot(gameController.GetRoot());
-        gameController.GetRoot().requestFocus(); // 해당 루트에 등록된 핸들러로 키 입력이 가도록 조정함.
+        gameController.GetRoot().requestFocus();
         gameController.GameStart();
     }
 
-    public void ShowSettingsScreen() {
-        // TODO: 설정 화면의 루트를 표시
+    public void showSettings() {
+        scene.setOnKeyPressed(null);
+        new SettingsScreen().show(stage, scene, this::showStartScreen);
     }
 
-    public void ShowScoreBoard() {
-        // TODO: 스코어 보드 화면의 루트를 표시
+    public void showScoreBoard() {
+        scene.setOnKeyPressed(null);
+        new ScoreBoardWindow().show(stage, scene, this::showStartScreen);
     }
 
-    public void ShowPauseScreen() {
+    public void showPauseScreen() {
         // GameController가 게임을 멈춘 뒤 호출할 화면 전환 콜백
         // TODO: 일시정지 화면이 만들어지면 해당 루트를 표시
     }

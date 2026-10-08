@@ -12,12 +12,11 @@ import javafx.scene.layout.Priority; // 키 버튼이 남은 너비를 사용하
 import javafx.scene.layout.VBox; // 세로 배치 레이아웃
 import javafx.scene.control.ScrollPane; // 설정 항목이 창보다 많을 때 스크롤
 import javafx.stage.Stage; // 창 객체
-import tetris.StartScreen; // 메인 화면으로 돌아가기 위해 필요
 import tetris.settings.KeyBindingSettings.ActionType; // 키 역할 목록
 
 // 설정 화면을 보여주는 클래스
 public class SettingsScreen {
-    public void show(Stage stage) { // 설정 화면을 구성하고 현재 Stage에 표시
+    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 설정 화면으로 바꾼다
         // 화면 제목 라벨
         Label title = new Label("설정");
         //글자의 폰트와 크기
@@ -34,7 +33,7 @@ public class SettingsScreen {
         resolutionComboBox.setPrefWidth(220);//드롭다운의 크기를 220픽셀로 설정
 
         // 일반, 적록색맹, 청황색맹 모드 선택 상자
-        ComboBox<SettingsConstants.ColorBlindMode> colorBlindModeComboBox = new ComboBox<>();//새로운 드롭다운 객체 생성
+        ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox = new ComboBox<>();//새로운 드롭다운 객체 생성
         colorBlindModeComboBox.setPromptText("색상 모드 선택");//색맹 모드 드롭다운 설명
         colorBlindModeComboBox.setPrefWidth(220);//드롭다운의 크기를 220픽셀로 설정
 
@@ -63,9 +62,6 @@ public class SettingsScreen {
         // 뒤로가기 버튼
         Button backButton = new Button("뒤로가기");
         backButton.setPrefSize(180, 50);
-        backButton.setOnAction(e -> { // 뒤로가기 버튼 클릭 처리
-            new StartScreen().start(stage);
-        });
 
         // 해상도, 색상 모드, 키 배정을 한 번에 저장하는 버튼
         Button saveSettingsButton = new Button("설정 저장");
@@ -92,15 +88,17 @@ public class SettingsScreen {
         BorderPane.setMargin(backButton, new Insets(12));
 
         // 화면 전환을 수행하기 전에 설정 컨트롤 객체를 연결
-        Scene scene = new Scene(root, 400, 600); // 설정 화면 장면 생성
         SettingsController controller = new SettingsController(stage, scene, resolutionComboBox,
-            colorBlindModeComboBox, SettingsConstants.getInputSettingData(), keyBindingRows,
+            colorBlindModeComboBox, GameSettings.getInputSettingData(), keyBindingRows,
             keySettingsStatus, saveSettingsButton);
+        backButton.setOnAction(e -> { // 뒤로가기 버튼 클릭 처리
+            controller.dispose();
+            onBack.run();
+        });
 
-        // 최종 화면 생성
+        // 공유 Scene의 루트만 교체한다.
         stage.setTitle("Tetris - 설정");
-        stage.setScene(scene);
+        scene.setRoot(root);
         controller.initialize();
-        stage.show();
     }
 }
