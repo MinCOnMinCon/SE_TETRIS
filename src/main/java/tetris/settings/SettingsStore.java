@@ -41,6 +41,13 @@ public final class SettingsStore {
         SettingsConstants.setResolutionPreset(properties.getProperty(
                 "resolution", SettingsConstants.getResolutionPreset()));
 
+        try {
+            SettingsConstants.setDifficulty(GameSettings.Difficulty.valueOf(
+                    properties.getProperty("difficulty", SettingsConstants.getDifficulty().name())));
+        } catch (IllegalArgumentException e) {
+            System.err.println("저장된 난이도를 읽을 수 없습니다.");
+        }
+
         String colorMode = properties.getProperty("colorBlindMode");
         if (colorMode != null) {
             try {
@@ -75,6 +82,7 @@ public final class SettingsStore {
         Properties properties = new Properties(); // 저장할 key=value 모음
         properties.setProperty("resolution", SettingsConstants.getResolutionPreset());
         properties.setProperty("colorBlindMode", SettingsConstants.getColorBlindMode().name());
+        properties.setProperty("difficulty", SettingsConstants.getDifficulty().name());
 
         SettingsConstants.getInputSettingData().getAllBindings().forEach((actionType, keyCodes) -> {
             String values = keyCodes.stream()
@@ -112,6 +120,7 @@ public final class SettingsStore {
                 SettingsConstants.getScreenWidth(),
                 SettingsConstants.getScreenHeight(),
                 SettingsConstants.getColorBlindMode().getColorMode(),
+                SettingsConstants.getDifficulty(),
                 SettingsConstants.getInputSettingData().getAllBindings());
     }
 

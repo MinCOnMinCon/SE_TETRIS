@@ -25,15 +25,14 @@ public class UserMove {
     }
     public static void MoveDown(CurrentBlock CurrentBlock, BoardElement[][] board, GameScore gameScore) {
         BlockMove.MoveDown(CurrentBlock, board, gameScore);
-        gameScore.SetGameScore(10); // 블럭이 아래로 이동할 때마다 점수 증가
     }
     public static void MoveDownMax(CurrentBlock CurrentBlock, BoardElement[][] board, GameScore gameScore) {
         // 블럭이 맨 아래로 이동하고 AutoMove가 돌때까지 기다림
         // 바로 다음 블럭 생성 필요 시 수정 필요
         while (CanMove.IsNoBlock(0, CurrentBlock, board)) {
             BlockMove.MoveDown(CurrentBlock, board, gameScore);
-            gameScore.SetGameScore(11 ); // 블럭이 아래로 이동할 때마다 점수 증가
+            gameScore.AddGameScore(1); // 하드 드롭의 한 칸당 추가 점수
         }
-        gameScore.SetGameScore(10); // 추가 점수
+        //gameScore.AddGameScore(10); // 추가 점수
     }
 }

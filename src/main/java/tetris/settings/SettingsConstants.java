@@ -2,6 +2,19 @@ package tetris.settings;
 
 // 설정 화면에서 공통으로 쓰이는 값을 한 곳에 모아 둔 클래스
 public final class SettingsConstants {
+    // 테스트용 기본 난이도. 난이도 선택 UI에서 setter로 변경할 수 있다.
+    private static GameSettings.Difficulty difficulty = GameSettings.Difficulty.NORMAL;
+
+    public static GameSettings.Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public static void setDifficulty(GameSettings.Difficulty value) {
+        if (value != null) {
+            difficulty = value;
+        }
+    }
+
     // 설정 화면과 게임 입력 처리에서 공유하는 키 설정
     private static final KeyBindingSettings INPUT_SETTING_DATA = new KeyBindingSettings();
 

@@ -5,7 +5,9 @@ import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
-import tetris.settings.GameSettings.Difficulty;;
+import tetris.gamescene.GameProgress;
+import java.util.Objects;
+import tetris.settings.GameSettings.Difficulty;
 
 /*
     AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
@@ -17,8 +19,8 @@ import tetris.settings.GameSettings.Difficulty;;
 public class AutoMove {
     private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
-    private int level = 0; // 현재 레벨 (기본값: 0)
-    private int maxLevel = 37; // 최대 레벨, 하드 기준 최대 레벨(37)이면 간격이 100정도 된다.
+    private final GameProgress progress;
+    private final int minFallInterval = 100;
     private int basicFallInterval = 1000;// 자동으로 떨어지는 기본 간격
     private int fallIntervalDecrese = 50; // 레벨당 줄어드는 낙하 간격
     private double easyBonusRatio = 0.2; // 이지 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 덜 감소된다.
@@ -28,7 +30,8 @@ public class AutoMove {
     private int currentTimeMillis = 0;
     private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
-    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty) {
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty, GameProgress progress) {
+        this.progress = Objects.requireNonNull(progress);
         this.currentBlock = currentBlock;
         this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
         this.currentBoard = board;
@@ -40,6 +43,7 @@ public class AutoMove {
     
 
     public void TimeUpdate(int msTime, GameScore gameScore) {
+        SetFallInterval();
         currentTimeMillis += msTime;
         if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
             prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 업데이트
@@ -49,7 +53,6 @@ public class AutoMove {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
                 BlockMove.MoveDown(currentBlock, currentBoard, gameScore);
-                gameScore.GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
             }
         } 
     }
@@ -60,6 +63,7 @@ public class AutoMove {
 
     
     public void SetFallInterval() {
+        int level = progress.GetLevel();
         if(difficulty == Difficulty.EASY){
             intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1-easyBonusRatio)); 
         }
@@ -69,8 +73,10 @@ public class AutoMove {
         else{
             intervalMillis = basicFallInterval - level*fallIntervalDecrese; 
         }
+        intervalMillis = Math.max(minFallInterval, intervalMillis);
     }
     public int GetIntervalMillis() {
+        SetFallInterval();
         return this.intervalMillis;
     }
     public void SetCurrentBlock(CurrentBlock blockData) {

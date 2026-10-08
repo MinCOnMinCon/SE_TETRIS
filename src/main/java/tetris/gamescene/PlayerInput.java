@@ -62,10 +62,10 @@ public class PlayerInput {
 				BlockMove.MoveRight(currentBlock, board.GetBoard());
 				break;
 			case SOFT_DROP:
-				BlockMove.MoveDown(currentBlock, board.GetBoard(), score);
+				UserMove.MoveDown(currentBlock, board.GetBoard(), score);
 				break;
 			case HARD_DROP:
-				UserMove.MoveDownMax(currentBlock, board.GetBoard(),score);
+				UserMove.MoveDownMax(currentBlock, board.GetBoard(), score);
 				break;
 			case ROTATE_CLOCK:
 				BlockRotate.Rotate(currentBlock.GetCurrentBlock(), board.GetBoard(), 0);

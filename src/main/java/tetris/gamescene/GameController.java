@@ -10,7 +10,7 @@ import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
 import tetris.block.move.AutoMove;
-import tetris.settingData.InputSettingData;
+
 import tetris.settings.GameSettings;
 
 
@@ -18,6 +18,7 @@ public class GameController {
 
 	private final GameBoard board;
 	private final GameScore score;
+	private final GameProgress progress;
 	private final BlockQueue blockQueue;
 	private final BlockHolding blockHolding;
 	private final CurrentBlock currentBlock;
@@ -42,12 +43,13 @@ public class GameController {
 		gameSettings = settings;
         previousFrameTime = 0;
 		board = new GameBoard();
-		score = new GameScore();
+		progress = new GameProgress();
+		score = new GameScore(progress);
 		blockHolding = new BlockHolding();
-		blockQueue = new BlockQueue();
+		blockQueue = new BlockQueue(progress);
 		
 		currentBlock = new CurrentBlock(blockQueue.GetNextBlock(), blockQueue, blockHolding);
-		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty());
+		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress);
 
 		renderer = new SceneRenderer(new RenderConfig(blockQueue.GetMaxQueueSize()));
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.

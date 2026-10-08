@@ -10,10 +10,9 @@ import javafx.scene.layout.BorderPane; // 화면을 상·중·하로 나누는 �
 import javafx.scene.layout.VBox; // 버튼을 세로로 배치하는 레이아웃
 import javafx.stage.Stage; // 실제 앱 창
 import tetris.scoreboard.ScoreBoardWindow; // 점수판 화면
-import tetris.gamescene.GameController; // 저장된 설정으로 게임 화면을 시작
 import tetris.settings.SettingsConstants; // 저장된 화면 크기
 import tetris.settings.SettingsScreen; // 설정 화면
-import tetris.settings.SettingsStore; // 게임용 설정 객체 조회
+
 
 // 테트리스의 시작 메뉴 화면
 public class StartScreen extends Application {

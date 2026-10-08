@@ -1,16 +1,17 @@
 package tetris.test;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tetris.gamescene.GameController;
+import tetris.pausescene.PauseScene;
 import tetris.settings.SettingsStore;
 
 // 시작 메뉴를 거치지 않고 게임 화면을 직접 확인한다.
 public class GameSceneTest extends Application {
     private GameController gameController;
+    private PauseScene pauseScene;
 
     public static void Run(String... args) {
         SettingsStore.load();
@@ -30,14 +31,15 @@ public class GameSceneTest extends Application {
     }
 
     private void ShowPauseScreen(Scene scene) {
-        Button resumeButton = new Button("계속하기");
-        resumeButton.setOnAction(event -> {
-            scene.setRoot(gameController.GetRoot());
-            gameController.GetRoot().requestFocus();
-            gameController.ResumeGame();
-        });
-        scene.setRoot(new StackPane(resumeButton));
-        resumeButton.requestFocus();
+        if (pauseScene == null) {
+            pauseScene = new PauseScene(() -> {
+                scene.setRoot(gameController.GetRoot());
+                gameController.GetRoot().requestFocus();
+                gameController.ResumeGame();
+            }, Platform::exit);
+        }
+        scene.setRoot(pauseScene.GetRoot());
+        pauseScene.GetRoot().requestFocus();
     }
 
     @Override

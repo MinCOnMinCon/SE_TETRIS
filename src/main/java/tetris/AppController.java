@@ -2,9 +2,11 @@ package tetris;
 
 import java.util.Objects;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tetris.gamescene.GameController;
+import tetris.pausescene.PauseScene;
 import tetris.settings.SettingsStore;
 
 /**
@@ -16,6 +18,7 @@ public class AppController {
     private final Scene scene;
     private StartScreen startScreen;
     private GameController gameController;
+    private PauseScene pauseScene;
 
     public AppController(Stage stage, Scene scene, StartScreen startScreen) {
         this.stage = Objects.requireNonNull(stage);
@@ -46,8 +49,14 @@ public class AppController {
     }
 
     public void ShowPauseScreen() {
-        // GameController가 게임을 멈춘 뒤 호출할 화면 전환 콜백
-        // TODO: 일시정지 화면이 만들어지면 해당 루트를 표시
+        
+        if (pauseScene == null) {
+            pauseScene = new PauseScene(this::ResumeGame, Platform::exit);
+        }
+
+        scene.setOnKeyPressed(null);
+        scene.setRoot(pauseScene.GetRoot());
+        pauseScene.GetRoot().requestFocus();
     }
 
     public void ResumeGame() {

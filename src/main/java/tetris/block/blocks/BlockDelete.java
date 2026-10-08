@@ -7,14 +7,13 @@ public class BlockDelete {
     public static void DelCompleteLines(BoardElement[][] board, GameScore gameScore) {
             int index[] = FindDelLines(board);
             int scoreIndex = -1;
-            int[] delScoreArr = {100, 300, 500, 800}; // 제거된 줄 수에 따른 점수 배열
             
             for (int delLine : index) {
                 if (delLine == -1) break; // 제거할 행이 없으면 종료
                 DeleteLine(board, delLine);
                 scoreIndex++;
             }
-            if(scoreIndex != -1) gameScore.SetGameScore(delScoreArr[scoreIndex]); // 제거된 줄 수에 따라 점수 증가
+            if(scoreIndex != -1) gameScore.AddLineClearScore(scoreIndex + 1);
 
     }
 
