@@ -16,9 +16,9 @@ public class AutoMove {
     private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
     private int level = 0; // 현재 레벨 (기본값: 0)
-    private int fallSpeedLevel[] = {1000, 800, 600, 400, 200}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
-    private int intervalMillis;
-    private int currentTimeMillis = 0;
+    private double fallSpeedLevel[] = {1000.0, 800.0, 600.0, 400.0, 200.0}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
+    private double intervalMillis;
+    private double currentTimeMillis = 0;
     private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
     public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, int level) {
@@ -27,17 +27,17 @@ public class AutoMove {
         this.currentBoard = board;
         this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
         this.level = level;
-        this.currentTimeMillis = 0; // 초기화
+        this.currentTimeMillis = 0.0; // 초기화
     }
     public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
         this(blockData, board, 0); // Default level of 0
     }
 
-    public void TimeUpdate(int msTime, GameScore gameScore) {
+    public void TimeUpdate(double msTime, GameScore gameScore) {
         currentTimeMillis += msTime;
         if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
             prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 업데이트
-            currentTimeMillis = 0; // 블럭이 바뀌면 타이머 초기화
+            currentTimeMillis = 0.0; // 블럭이 바뀌면 타이머 초기화
         }
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
@@ -49,14 +49,14 @@ public class AutoMove {
     }
 
     public void ResetTimer() {
-        this.currentTimeMillis = 0;
+        this.currentTimeMillis = 0.0;
     }
 
     
     public void SetFallSpeedLevel(int level) {
-        this.intervalMillis = fallSpeedLevel[level - 1];
+        this.intervalMillis = fallSpeedLevel[level];
     }
-    public int GetIntervalMillis() {
+    public double GetIntervalMillis() {
         return this.intervalMillis;
     }
     public void SetCurrentBlock(CurrentBlock blockData) {
@@ -67,7 +67,7 @@ public class AutoMove {
     }
     public void SetCurrentBoard(BoardElement[][] board) {
         this.currentBoard = board;
-        this.previousBlock = currentBlock.GetCurrentBlock();
-        this.elapsedTime = 0.0;
+        this.prevBlockData = currentBlock.GetCurrentBlock();
+        this.currentTimeMillis = 0.0;
     }
 }
