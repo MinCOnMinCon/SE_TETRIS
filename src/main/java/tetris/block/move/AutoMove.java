@@ -1,9 +1,13 @@
 package tetris.block.move;
 
+
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
+import tetris.gamescene.GameProgress;
+import java.util.Objects;
+import tetris.settings.GameSettings.Difficulty;
 
 /*
     AutoMove 클래스는 테트리스 블럭의 자동 이동 기능을 제공하는 클래스
@@ -15,48 +19,61 @@ import tetris.gamescene.score.GameScore;
 public class AutoMove {
     private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
-    private int level = 0; // 현재 레벨 (기본값: 0)
-    private double fallSpeedLevel[] = {1000.0, 800.0, 600.0, 400.0, 200.0}; // 각 레벨별 블럭 낙하 속도 (밀리초 단위)
-    private double intervalMillis;
-    private double currentTimeMillis = 0;
+    private final GameProgress progress;
+    private final int minFallInterval = 100;
+    private int basicFallInterval = 1000;// 자동으로 떨어지는 기본 간격
+    private int fallIntervalDecrese = 50; // 레벨당 줄어드는 낙하 간격
+    private double easyBonusRatio = 0.2; // 이지 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 덜 감소된다.
+    private double hardBonusRatio = 0.2; // 하드 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 더 감소된다.
+    private Difficulty difficulty; 
+    private int intervalMillis;
+    private int currentTimeMillis = 0;
     private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
-    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, int level) {
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty, GameProgress progress) {
+        this.progress = Objects.requireNonNull(progress);
         this.currentBlock = currentBlock;
         this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
         this.currentBoard = board;
-        this.intervalMillis = fallSpeedLevel[level]; // level 0부터 시작
-        this.level = level;
-        this.currentTimeMillis = 0.0; // 초기화
+        this.difficulty = difficulty;
+        SetFallInterval();
+        
+        this.currentTimeMillis = 0; // 초기화
     }
-    public AutoMove(CurrentBlock blockData, BoardElement[][] board) {
-        this(blockData, board, 0); // Default level of 0
-    }
+    
 
-    public void TimeUpdate(double msTime, GameScore gameScore) {
+    public void TimeUpdate(int msTime, GameScore gameScore) {
+        SetFallInterval();
         currentTimeMillis += msTime;
         if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
             prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 업데이트
-            currentTimeMillis = 0.0; // 블럭이 바뀌면 타이머 초기화
+            currentTimeMillis = 0; // 블럭이 바뀌면 타이머 초기화
         }
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
                 BlockMove.MoveDown(currentBlock, currentBoard, gameScore);
-                gameScore.GetBlockDownScore(this.level); // 블럭이 아래로 이동할 때마다 점수 증가
             }
-        }
+        } 
     }
 
-    public void ResetTimer() {
-        this.currentTimeMillis = 0.0;
-    }
 
     
-    public void SetFallSpeedLevel(int level) {
-        this.intervalMillis = fallSpeedLevel[level];
+    public void SetFallInterval() {
+        int level = progress.GetLevel();
+        if(difficulty == Difficulty.EASY){
+            intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1-easyBonusRatio)); 
+        }
+        else if(difficulty == Difficulty.HARD){
+            intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1+hardBonusRatio)); 
+        }
+        else{
+            intervalMillis = basicFallInterval - level*fallIntervalDecrese; 
+        }
+        intervalMillis = Math.max(minFallInterval, intervalMillis);
     }
-    public double GetIntervalMillis() {
+    public int GetIntervalMillis() {
+        SetFallInterval();
         return this.intervalMillis;
     }
     public void SetCurrentBlock(CurrentBlock blockData) {
@@ -68,6 +85,6 @@ public class AutoMove {
     public void SetCurrentBoard(BoardElement[][] board) {
         this.currentBoard = board;
         this.prevBlockData = currentBlock.GetCurrentBlock();
-        this.currentTimeMillis = 0.0;
+        this.currentTimeMillis = 0;
     }
 }

@@ -41,6 +41,13 @@ public final class SettingsStore {
         GameSettings.setResolutionPreset(properties.getProperty(
                 "resolution", GameSettings.getResolutionPreset()));
 
+        try {
+            SettingsConstants.setDifficulty(GameSettings.Difficulty.valueOf(
+                    properties.getProperty("difficulty", SettingsConstants.getDifficulty().name())));
+        } catch (IllegalArgumentException e) {
+            System.err.println("저장된 난이도를 읽을 수 없습니다.");
+        }
+
         String colorMode = properties.getProperty("colorBlindMode");
         if (colorMode != null) {
             try {
@@ -112,7 +119,8 @@ public final class SettingsStore {
                 GameSettings.getScreenWidth(),
                 GameSettings.getScreenHeight(),
                 GameSettings.getColorBlindMode().getColorMode(),
-                GameSettings.getInputSettingData().getAllBindings());
+                GameSettings.getInputSettingData().getAllBindings()
+                );
     }
 
     private static KeyCode parseKeyCode(String value) { // 문자열을 JavaFX 키 코드로 변환

@@ -1,9 +1,11 @@
 package tetris.gamescene.blockqueue;
 
 import java.util.Random;
+import java.util.Objects;
 
 import tetris.block.blocks.BlockCreate;
 import tetris.block.data.BlockData;
+import tetris.gamescene.GameProgress;
 
 /*
     **큐는 원형 큐로 구현되어 있으며, front, rear, size를 관리하여 블럭을 추가하고 제거**
@@ -21,10 +23,12 @@ import tetris.block.data.BlockData;
 public class BlockQueue {
     private BlockData[] blockQueue;
     private final int maxQueueSize;
+    private final GameProgress progress;
     private int[] queueFRS = new int[3]; // [0]: front, [1]: rear, [2]: size
     private int colorMode = 0; // 0: 일반, 1: 적록, 2: 청황
 
-    public BlockQueue(int colorMode) {
+    public BlockQueue(int colorMode, GameProgress progress) {
+        this.progress = Objects.requireNonNull(progress);
         this.maxQueueSize = 3;
         this.colorMode = colorMode;
         this.queueFRS[0] = 0; // front
@@ -38,13 +42,24 @@ public class BlockQueue {
     }
 
     public BlockQueue() {
-        this(0);
+        this(0, new GameProgress());
+    }
+
+    public BlockQueue(int colorMode) {
+        this(colorMode, new GameProgress());
+    }
+
+    public BlockQueue(GameProgress progress) {
+        this(0, progress);
     }
 
     public BlockData GetNextBlock() {
         BlockData nextBlock = DeQ();
         BlockData blockData = BlockCreate.Block(GetRandomBlockIndex(), this.colorMode).GetBlockData();
         EnQ(blockData);
+        if (nextBlock != null) {
+            progress.OnBlockSpawned();
+        }
         return nextBlock;
     }
 
@@ -90,6 +105,15 @@ public class BlockQueue {
 
     public BlockData[] GetBlockQueue() {
         return this.blockQueue;
+    }
+
+    // front부터 실제로 꺼내는 순서대로 화면에 전달할 배열을 만든다. 렌더러가 화면에 표시하기 위한 함수
+    public BlockData[] GetBlocksInQueueOrder() {
+        BlockData[] orderedBlocks = new BlockData[this.queueFRS[2]];
+        for (int i = 0; i < orderedBlocks.length; i++) {
+            orderedBlocks[i] = this.blockQueue[(this.queueFRS[0] + i) % this.maxQueueSize];
+        }
+        return orderedBlocks;
     }
 
     public BlockData GetBlock(int index) {

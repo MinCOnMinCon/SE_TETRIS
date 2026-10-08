@@ -26,9 +26,11 @@ public class BlockMove {
             currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() - 1);
         }
     }
+    // 실제로 한 칸 내려갔을 때만 기본 낙하 점수를 추가한다.
     public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore) {
         if (CanMove.IsNoBlock(0, currentBlock, board)) {
             currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
+            gameScore.AddBlockDownScore();
         }
         else {
             boolean[][] shape = currentBlock.GetCurrentBlock().GetShape();

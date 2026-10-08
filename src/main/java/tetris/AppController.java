@@ -2,9 +2,12 @@ package tetris;
 
 import java.util.Objects;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tetris.gamescene.GameController;
+import tetris.pausescene.PauseScene;
+import tetris.settings.SettingsStore;
 import tetris.scoreboard.ScoreBoardWindow;
 import tetris.settings.SettingsScreen;
 
@@ -16,6 +19,7 @@ public class AppController {
     private final Scene scene;
     private final StartScreen startScreen;
     private GameController gameController;
+    private PauseScene pauseScene;
 
     public AppController(StartScreen root) {
         this.startScreen = Objects.requireNonNull(root);
@@ -23,33 +27,41 @@ public class AppController {
         this.scene = Objects.requireNonNull(root.getScene());
     }
 
-    public void showStartScreen() {
+    public void ShowStartScreen() {
         scene.setOnKeyPressed(null);
-        scene.setRoot(startScreen.createRoot(this::showGame, this::showScoreBoard, this::showSettings));
+        scene.setRoot(startScreen.createRoot(this::ShowGame, this::ShowScoreBoard, this::ShowSettings));
         scene.getRoot().requestFocus();
     }
 
-    public void showGame() {
-        gameController = new GameController(this::showPauseScreen);
+    public void ShowGame() {
+        // TODO: 게임 종료 콜백 연결
+        gameController = new GameController(this::ShowPauseScreen, SettingsStore.getGameSettings());
+        // 기존 시작 화면이 Scene에 등록한 메뉴 키 입력을 제거한다.
         scene.setOnKeyPressed(null);
         scene.setRoot(gameController.GetRoot());
         gameController.GetRoot().requestFocus();
         gameController.GameStart();
     }
 
-    public void showSettings() {
+    public void ShowSettings() {
         scene.setOnKeyPressed(null);
-        new SettingsScreen().show(stage, scene, this::showStartScreen);
+        new SettingsScreen().show(stage, scene, this::ShowStartScreen);
     }
 
-    public void showScoreBoard() {
+    public void ShowScoreBoard() {
         scene.setOnKeyPressed(null);
-        new ScoreBoardWindow().show(stage, scene, this::showStartScreen);
+        new ScoreBoardWindow().show(stage, scene, this::ShowStartScreen);
     }
 
-    public void showPauseScreen() {
-        // GameController가 게임을 멈춘 뒤 호출할 화면 전환 콜백
-        // TODO: 일시정지 화면이 만들어지면 해당 루트를 표시
+    public void ShowPauseScreen() {
+        
+        if (pauseScene == null) {
+            pauseScene = new PauseScene(this::ResumeGame, Platform::exit);
+        }
+
+        scene.setOnKeyPressed(null);
+        scene.setRoot(pauseScene.GetRoot());
+        pauseScene.GetRoot().requestFocus();
     }
 
     public void ResumeGame() {

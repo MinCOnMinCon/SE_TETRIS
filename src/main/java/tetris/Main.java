@@ -1,5 +1,9 @@
 package tetris;
 
+import tetris.test.GameSceneTest;
+// import javafx.application.Application; // JavaFX 애플리케이션을 시작하는 클래스
+// import tetris.settings.SettingsStore; // 저장된 사용자 설정을 불러오는 클래스
+// import tetris.scoreboard.ScoreStorage; // 점수 저장 파일을 준비하는 클래스
 import javafx.application.Application; // JavaFX 애플리케이션을 시작하는 클래스
 import javafx.scene.Scene; // 화면 전환에 계속 사용하는 장면
 import javafx.scene.layout.BorderPane; // Scene 생성 시 잠시 두는 빈 루트
@@ -24,7 +28,7 @@ public class Main extends Application {
         stage.setResizable(true);
         stage.setScene(scene);
         StartScreen root = new StartScreen(stage, scene);
-        new AppController(root).showStartScreen();
+        new AppController(root).ShowStartScreen();
         stage.show();
     }
 }

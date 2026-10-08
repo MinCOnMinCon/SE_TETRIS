@@ -93,6 +93,7 @@ public final class GameSettings {
     public static int getScreenHeight() { // 현재 화면의 세로 크기 반환
         return getResolutionValues()[1];
     }
+  
 
     private static int[] getResolutionValues() {
         for (int index = 0; index < RESOLUTION_PRESETS.length; index++) {
@@ -108,6 +109,7 @@ public final class GameSettings {
     private final int screenHeight;
     private final int colorMode;
     private final Map<ActionType, List<KeyCode>> keyBindings;
+    
 
     // 저장 버튼을 누른 시점의 설정을 게임 로직에 전달하는 불변 스냅샷
     public GameSettings(
@@ -115,7 +117,8 @@ public final class GameSettings {
             int screenWidth,
             int screenHeight,
             int colorMode,
-            Map<ActionType, List<KeyCode>> keyBindings) {
+            Map<ActionType, List<KeyCode>> keyBindings
+            ) {
         this.savedResolutionPreset = resolutionPreset;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
@@ -123,6 +126,12 @@ public final class GameSettings {
         EnumMap<ActionType, List<KeyCode>> copiedBindings = new EnumMap<>(ActionType.class);
         keyBindings.forEach((action, keys) -> copiedBindings.put(action, List.copyOf(keys)));
         this.keyBindings = Collections.unmodifiableMap(copiedBindings);
+        
+    }
+    public enum Difficulty{
+        EASY,
+        NORMAL,
+        HARD
     }
 
     public String resolutionPreset() {

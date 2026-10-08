@@ -194,7 +194,7 @@ public class SceneRenderer  {
     }
 
     // 빈 칸을 제외한 블럭 모양을 주어진 캔버스 중앙에 그린다. 
-    private void DrawBlockPreview(Canvas canvas, BlockData block, double top, double height) { //TODO: 함 색깔 잘 나오는지 확인
+    private void DrawBlockPreview(Canvas canvas, BlockData block, double top, double height) { 
         if (block == null) return;
         boolean[][] shape = block.GetShape(); 
         int minRow = shape.length;
