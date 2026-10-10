@@ -1,4 +1,4 @@
-package tetris.gamescene;
+package tetris.gameoverscene;
 
 import tetris.gamescene.score.GameScore;
 import tetris.scoreboard.*;

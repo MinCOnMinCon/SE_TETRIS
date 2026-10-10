@@ -104,6 +104,15 @@ public class GameController {
 		}
 	};
 
+    // 종료 판정과 종료 화면 전환은 호출하는 쪽에서 처리한다.
+    public GameResult StopGame() {
+        gameLoop.stop();
+        playerInput.SetInputEnabled(false);
+        gameRoot.setOnKeyPressed(null);
+        // TODO: 일반·아이템 모드 구현 후 종료 결과에 게임 모드도 전달한다.
+        return new GameResult(score.GetGameScore(), gameSettings.difficulty());
+    }
+
 	public void PauseGame() {
 		if (paused) {
 			return;
