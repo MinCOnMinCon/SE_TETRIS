@@ -41,12 +41,7 @@ public final class SettingsStore {
         GameSettings.setResolutionPreset(properties.getProperty(
                 "resolution", GameSettings.getResolutionPreset()));
 
-        try {
-            SettingsConstants.setDifficulty(GameSettings.Difficulty.valueOf(
-                    properties.getProperty("difficulty", SettingsConstants.getDifficulty().name())));
-        } catch (IllegalArgumentException e) {
-            System.err.println("저장된 난이도를 읽을 수 없습니다.");
-        }
+        
 
         String colorMode = properties.getProperty("colorBlindMode");
         if (colorMode != null) {

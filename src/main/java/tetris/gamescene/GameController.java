@@ -1,6 +1,7 @@
 package tetris.gamescene;
 
 import java.util.Objects;
+import java.util.Arrays;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.Parent;
@@ -19,8 +20,7 @@ public class GameController {
 	private final GameBoard board;
 	private final GameScore score;
 	private final GameProgress progress;
-	private final BlockQueue blockQueue;
-	private final BlockHolding blockHolding;
+	
 	private final CurrentBlock currentBlock;
 
 	private final AutoMove autoMove;
@@ -35,6 +35,9 @@ public class GameController {
 	
     private long previousFrameTime;
     private boolean paused;
+    private final int lineClearEffectDuration = 1000; // 밀리초
+    private int lineClearEffectTime = 0;
+    private boolean lineClearEffectRunning = false;
     private final Runnable onPauseRequested;
 
     public GameController(Runnable onPauseRequested, GameSettings settings){
@@ -45,15 +48,19 @@ public class GameController {
 		board = new GameBoard();
 		progress = new GameProgress();
 		score = new GameScore(progress);
-		blockHolding = new BlockHolding();
-		blockQueue = new BlockQueue(progress);
 		
-		currentBlock = new CurrentBlock(blockQueue.GetNextBlock(), blockQueue, blockHolding);
-		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress);
+		BlockQueue blockQueue = new BlockQueue(progress);
+		BlockHolding blockHolding = new BlockHolding();
+		
+		currentBlock = new CurrentBlock(blockQueue, blockHolding);
 
+		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress, board.GetClearedRows()); // TODO: 난이도 받아오기. 현재는 임시 함수로 받음
+
+
+		
 		renderer = new SceneRenderer(new RenderConfig(blockQueue.GetMaxQueueSize()));
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
-		playerInput = new PlayerInput(settings.keyBindings(), currentBlock, board, score, this::PauseGame);
+		playerInput = new PlayerInput(gameSettings.keyBindings(), currentBlock, board, score, this::PauseGame);
         SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), blockHolding.GetBlockHolding());
         gameRoot = renderer.CreateRoot(state);
         gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
@@ -70,11 +77,30 @@ public class GameController {
 
             int deltaTime = (int) ((now - previousFrameTime) / 1_000_000);
             previousFrameTime = now;
-            autoMove.TimeUpdate(deltaTime, score);
+            int[] clearedRows = board.GetClearedRows();
 
+            if (clearedRows[0] != -1 || lineClearEffectRunning) {
+                if (!lineClearEffectRunning) {
+                    lineClearEffectRunning = true;
+                    lineClearEffectTime = 0;
+                    playerInput.SetInputEnabled(false);
+                }
 
-			SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), blockHolding.GetBlockHolding());
-			renderer.UpdateRoot(state);
+                renderer.DrawLineClearEffect(clearedRows, lineClearEffectTime);
+                lineClearEffectTime += deltaTime;
+
+                if (lineClearEffectTime >= lineClearEffectDuration) {
+                    Arrays.fill(clearedRows, -1);
+                    lineClearEffectRunning = false;
+                    playerInput.SetInputEnabled(true);
+                }
+            } else {
+                autoMove.TimeUpdate(deltaTime, score);
+
+                SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
+                    currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding().GetBlockHolding());
+                renderer.UpdateRoot(state);
+            }
 		}
 	};
 
@@ -96,14 +122,14 @@ public class GameController {
 
 		previousFrameTime = 0;
 		paused = false;
-		playerInput.SetInputEnabled(true);
+		playerInput.SetInputEnabled(!lineClearEffectRunning);
 		gameLoop.start();
 	}
 
 	public void GameStart() {
 		previousFrameTime = 0;
 		paused = false;
-		playerInput.SetInputEnabled(true);
+		playerInput.SetInputEnabled(!lineClearEffectRunning);
 		gameLoop.start();
 	}
 

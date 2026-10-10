@@ -1,10 +1,12 @@
 package tetris.block.blocks;
 
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
+import java.util.Arrays;
 
 public class BlockDelete {
-    public static void DelCompleteLines(BoardElement[][] board, GameScore gameScore) {
+    public static int[] DelCompleteLines(BoardElement[][] board, GameScore gameScore) {
             int index[] = FindDelLines(board);
             int scoreIndex = -1;
             
@@ -14,11 +16,13 @@ public class BlockDelete {
                 scoreIndex++;
             }
             if(scoreIndex != -1) gameScore.AddLineClearScore(scoreIndex + 1);
+            return index;
 
     }
 
     public static int[] FindDelLines(BoardElement[][] board) {
-        int index[] = {-1, -1, -1, -1}; // 최대 4개의 행이 제거될 수 있으므로 4로 설정
+        int index[] = new int[GameBoard.maxClearedLines];
+        Arrays.fill(index, -1);
         int i = 0;
         int k = 0;
         for (BoardElement[] row : board) {

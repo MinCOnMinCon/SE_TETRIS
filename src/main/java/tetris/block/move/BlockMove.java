@@ -27,7 +27,7 @@ public class BlockMove {
         }
     }
     // 실제로 한 칸 내려갔을 때만 기본 낙하 점수를 추가한다.
-    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore) {
+    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore, int[] clearedRows) {
         if (CanMove.IsNoBlock(0, currentBlock, board)) {
             currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
             gameScore.AddBlockDownScore();
@@ -46,7 +46,8 @@ public class BlockMove {
                 board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
             }
 
-            BlockDelete.DelCompleteLines(board, gameScore); // 완료된 줄 삭제
+            int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
+            System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
 
             // 테트리스가 바닥에 닿았을 때 새 블럭 생성 로직
             currentBlock.MoveEnd(board);

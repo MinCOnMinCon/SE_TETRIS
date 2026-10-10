@@ -153,4 +153,7 @@ public final class GameSettings {
     public Map<ActionType, List<KeyCode>> keyBindings() {
         return keyBindings;
     }
+    public Difficulty difficulty(){
+        return Difficulty.NORMAL; 
+    } // GameController에서 테스트로 난이도를 받기 위한 임시 코드.
 }

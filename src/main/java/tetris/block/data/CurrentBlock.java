@@ -31,6 +31,12 @@ public class CurrentBlock {
     public BlockData GetCurrentBlock() {
         return this.blockData;
     }
+    public BlockHolding GetBlockHolding(){
+        return blockHolding;
+    }
+    public BlockQueue GetBlockQueue(){
+        return nextBlocks;
+    }
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
     }
