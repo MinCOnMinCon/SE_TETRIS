@@ -46,14 +46,15 @@ public class StartScreen {
         //타이틀 스타일 설정(폰트, 굵기, 색상)
         title.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;");
         //버튼 생성
-        Button startButton = new Button("게임시작");
+        Button normalModeStartButton = new Button("일반모드 시작");
+        Button itemModeStartButton = new Button("아이템 모드 시작");
         Button rankingButton = new Button("스코어 보드");
         Button settingButton = new Button("설정");
         Button exitButton = new Button("게임 종료");
 
         //버튼 배열 초기화
         buttons = new Button[] {
-            startButton, rankingButton, settingButton, exitButton
+            normalModeStartButton, itemModeStartButton, rankingButton, settingButton, exitButton
         };
 
         //버튼 크기 설정
@@ -62,7 +63,11 @@ public class StartScreen {
         }
 
         //게임 시작 버튼 클릭 시 동작
-        startButton.setOnAction(e -> onGame.run());
+        normalModeStartButton.setOnAction(e -> onGame.run());
+
+        /*아이템 모드 시작 버튼 클릭 시 동작
+        itemModeStartButton.setOnAction(e -> onItemMode.run());
+        */
 
         //스코어 보드 버튼 클릭 시 동작
         rankingButton.setOnAction(e -> onScoreBoard.run());
@@ -88,7 +93,7 @@ public class StartScreen {
 
         //버튼을 수직 배치, 버튼 간격을 20으로 설정 및 중앙 정렬
         VBox buttonBox = new VBox(20);
-        buttonBox.getChildren().addAll(startButton, rankingButton, settingButton, exitButton);
+        buttonBox.getChildren().addAll(normalModeStartButton, itemModeStartButton, rankingButton, settingButton, exitButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         BorderPane root = new BorderPane();//전체 화면 구성

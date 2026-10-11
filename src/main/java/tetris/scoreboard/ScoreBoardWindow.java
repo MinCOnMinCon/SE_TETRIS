@@ -20,11 +20,11 @@ import java.util.List; // 리스트 자료형
 public class ScoreBoardWindow {
     public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 점수판으로 바꾼다
         // 저장된 점수 목록을 불러온 뒤, 점수 기준으로 내림차순 정렬
-        List<ScoreRecord> scores = new ScoreLoader().loadScores();
-        scores.sort(Comparator.comparingInt(ScoreRecord::getScore).reversed());
+        List<ScoreRecord> scores = new ScoreLoader().loadScores();//저장된 점수 목록을 불러옴
+        scores.sort(Comparator.comparingInt(ScoreRecord::getScore).reversed());//점수가 높은 순으로 내림차순 정렬
 
         // 상위 3개만 추출해서 표에 표시
-        List<ScoreRecord> top3 = scores.stream().limit(3).toList();
+        List<ScoreRecord> top10 = scores.stream().limit(10).toList();
 
         // JavaFX 표를 생성
         TableView<ScoreRecord> table = new TableView<>();
@@ -32,7 +32,7 @@ public class ScoreBoardWindow {
         // 순위 컬럼 생성 및 값 연결
         TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
         rankColumn.setCellValueFactory(cellData -> {
-            int index = top3.indexOf(cellData.getValue());
+            int index = top10.indexOf(cellData.getValue());
             return new javafx.beans.property.SimpleIntegerProperty(index + 1).asObject();
         });
 
@@ -47,15 +47,16 @@ public class ScoreBoardWindow {
         // 표에 3개의 컬럼 추가
         table.getColumns().addAll(rankColumn, nameColumn, scoreColumn); // 세 컬럼을 표에 추가
 
-        // top3 데이터를 표에 넣기
-        table.setItems(FXCollections.observableArrayList(top3));
+        // top10 데이터를 표에 넣기
+        table.setItems(FXCollections.observableArrayList(top10));
 
         // 제목 라벨 생성 및 스타일 지정
-        Label title = new Label("Top 3 Scores");
+        Label title = new Label("Top 10 Scores");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         // 뒤로가기 버튼 생성
         Button backButton = new Button("뒤로가기");
+
         backButton.setPrefSize(180, 50);
         backButton.setOnAction(e -> onBack.run());
 
@@ -71,7 +72,7 @@ public class ScoreBoardWindow {
         root.setCenter(content);
 
         // 공유 Scene의 루트만 교체하고, 창 크기는 유지한다.
-        stage.setTitle("Top 3 Scores");
+        stage.setTitle("Top 10 Scores");
         scene.setRoot(root);
     }
 }

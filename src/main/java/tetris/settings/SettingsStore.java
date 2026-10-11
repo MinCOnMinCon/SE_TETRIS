@@ -42,8 +42,8 @@ public final class SettingsStore {
                 "resolution", GameSettings.getResolutionPreset()));
 
         try {
-            SettingsConstants.setDifficulty(GameSettings.Difficulty.valueOf(
-                    properties.getProperty("difficulty", SettingsConstants.getDifficulty().name())));
+            GameSettings.setDifficulty(GameSettings.Difficulty.valueOf(
+                    properties.getProperty("difficulty", GameSettings.getDifficulty().name())));
         } catch (IllegalArgumentException e) {
             System.err.println("저장된 난이도를 읽을 수 없습니다.");
         }
@@ -119,7 +119,8 @@ public final class SettingsStore {
                 GameSettings.getScreenWidth(),
                 GameSettings.getScreenHeight(),
                 GameSettings.getColorBlindMode().getColorMode(),
-                GameSettings.getInputSettingData().getAllBindings()
+                GameSettings.getInputSettingData().getAllBindings(),
+                GameSettings.getDifficulty()
                 );
     }
 
