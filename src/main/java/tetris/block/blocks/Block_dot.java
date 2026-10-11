@@ -9,6 +9,6 @@ import tetris.block.data.ColorPalette;
 public class Block_dot extends Block {
     public Block_dot(int colorMode) {
         ColorPalette palette = new ColorPalette(Color.GRAY, Color.GRAY, Color.GRAY);
-        this.blockData = new BlockData(shapePalette.GetShape_dot(), palette, colorMode);
+        this.blockData = new BlockData(shapePalette.GetShape_dot(), palette, colorMode, 4, 0);
     }
 }
