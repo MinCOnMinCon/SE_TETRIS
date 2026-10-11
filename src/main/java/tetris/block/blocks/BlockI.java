@@ -13,3 +13,10 @@ public class BlockI extends Block {
         this.blockData = new BlockData(shapePalette.GetShapeI(), palette, colorMode);
     }
 }
+
+
+/* 
+    적록 모드: I의 하늘색과 S의 청록색은 둘 다 푸른 계열이라 비슷하게 느껴질 수 있고
+                L의 주황색과 O의 금색도 가까워 보일 수 있어요
+    청황 모드: I의 파랑과 J의 보라가 일부 사용자에게 혼동될 수 있어요
+*/
