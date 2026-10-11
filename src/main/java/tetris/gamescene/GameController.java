@@ -2,6 +2,7 @@ package tetris.gamescene;
 
 import java.util.Objects;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.Parent;
@@ -35,13 +36,23 @@ public class GameController {
 	
     private long previousFrameTime;
     private boolean paused;
+    private boolean stopped;
     private final int lineClearEffectDuration = 1000; // 밀리초
     private int lineClearEffectTime = 0;
     private boolean lineClearEffectRunning = false;
-    private final Runnable onPauseRequested;
 
+    private final Runnable onPauseRequested;
+    private final Consumer<GameResult> onGameEnded;
+
+    // 기존 화면 테스트의 생성자 호출을 유지한다. 테스트 필요 없으면 지워도 됨
     public GameController(Runnable onPauseRequested, GameSettings settings){
+        this(onPauseRequested, result -> {}, settings);
+    }
+
+    public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
+            GameSettings settings){
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
+        this.onGameEnded = Objects.requireNonNull(onGameEnded);
 
 		gameSettings = settings;
         previousFrameTime = 0;
@@ -49,10 +60,10 @@ public class GameController {
 		progress = new GameProgress();
 		score = new GameScore(progress);
 		
-		BlockQueue blockQueue = new BlockQueue(progress);
+		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty());
 		BlockHolding blockHolding = new BlockHolding();
 		
-		currentBlock = new CurrentBlock(blockQueue, blockHolding);
+		currentBlock = new CurrentBlock(blockQueue, blockHolding, this::StopGame);
 
 		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress, board.GetClearedRows()); // TODO: 난이도 받아오기. 현재는 임시 함수로 받음
 
@@ -70,6 +81,9 @@ public class GameController {
 	private final AnimationTimer gameLoop = new AnimationTimer() {
 		@Override
 		public void handle(long now) {
+            if (stopped || paused) {
+                return;
+            }
             if (previousFrameTime == 0) { // 첫 프레임에는 업데이트 동작을 하지 않고 이전 프레임 타임만 업데이트 함. 그 다음부터 이전 프레임 타임을 사용해 델타 타임을 계산해 사용
                 previousFrameTime = now;
                 return;
@@ -96,6 +110,9 @@ public class GameController {
                 }
             } else {
                 autoMove.TimeUpdate(deltaTime, score);
+                if (stopped) { //autoMove로 게임이 종료될 수 있으므로 검증
+                    return;
+                }
 
                 SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
                     currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding().GetBlockHolding());
@@ -104,17 +121,23 @@ public class GameController {
 		}
 	};
 
-    // 종료 판정과 종료 화면 전환은 호출하는 쪽에서 처리한다.
-    public GameResult StopGame() {
+    // 종료 결과를 확보하고 게임을 정지한 뒤 화면 전환을 요청한다.
+    public void StopGame() {
+        if (stopped) {
+            return;
+        }
+        stopped = true;
+        // TODO: 일반·아이템 모드 구현 후 종료 결과에 게임 모드도 전달한다.
+        GameResult result = new GameResult(score.GetGameScore(), gameSettings.difficulty());
+
         gameLoop.stop();
         playerInput.SetInputEnabled(false);
         gameRoot.setOnKeyPressed(null);
-        // TODO: 일반·아이템 모드 구현 후 종료 결과에 게임 모드도 전달한다.
-        return new GameResult(score.GetGameScore(), gameSettings.difficulty());
+        onGameEnded.accept(result);
     }
 
 	public void PauseGame() {
-		if (paused) {
+		if (stopped || paused) {
 			return;
 		}
 
@@ -125,7 +148,7 @@ public class GameController {
 	}
 
 	public void ResumeGame() {
-		if (!paused) {
+		if (stopped || !paused) {
 			return;
 		}
 
@@ -136,6 +159,9 @@ public class GameController {
 	}
 
 	public void GameStart() {
+        if (stopped) {
+            return;
+        }
 		previousFrameTime = 0;
 		paused = false;
 		playerInput.SetInputEnabled(!lineClearEffectRunning);

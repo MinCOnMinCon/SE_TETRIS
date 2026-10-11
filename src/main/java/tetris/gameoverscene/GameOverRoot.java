@@ -1,6 +1,6 @@
 package tetris.gameoverscene;
 
-import tetris.gamescene.score.GameScore;
+import tetris.gamescene.GameResult;
 import tetris.scoreboard.*;
 
 import javafx.geometry.Pos;
@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
 
 public class GameOverRoot extends StackPane {
     final int MAX_LENGTH = 15;  // 최대 15글자까지만 허용
@@ -33,12 +34,10 @@ public class GameOverRoot extends StackPane {
 
 
 
-    // ****TODO: 점수 타입 통합 필요****
 
 
-
-    public GameOverRoot(GameScore Score, ScoreStorage scoreStorage) {
-        int finalScore = (int) Score.GetGameScore();
+    public GameOverRoot(GameResult result, ScoreStorage scoreStorage) {
+        int finalScore = result.score();
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
 
@@ -196,12 +195,5 @@ public class GameOverRoot extends StackPane {
         this.getChildren().addAll(baseScreen, confirmPopup);
     }
 
-    // 2. 호출 함수: 데이터 전달 + 화면 전환
-    public static void GetEndScene(Scene scene, GameScore finalScore, ScoreStorage scoreStorage) {
-        // 데이터를 듬뿍 담아서 새로운 게임 오버 뼈대를 하나 찍어냄
-        GameOverRoot gameOverRoot = new GameOverRoot(finalScore, scoreStorage);
-        
-        // 넘겨받은 씬(Scene)의 뼈대를 방금 만든 게임 오버 뼈대로 갈아 끼움
-        scene.setRoot(gameOverRoot);
-    }
+    
 }

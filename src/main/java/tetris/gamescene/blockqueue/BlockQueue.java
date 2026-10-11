@@ -3,9 +3,11 @@ package tetris.gamescene.blockqueue;
 import java.util.Random;
 import java.util.Objects;
 
-import tetris.block.blocks.BlockCreate;
 import tetris.block.data.BlockData;
 import tetris.gamescene.GameProgress;
+import tetris.block.blocks.BlockGenerator;
+
+import tetris.settings.GameSettings.Difficulty;
 
 /*
     **큐는 원형 큐로 구현되어 있으며, front, rear, size를 관리하여 블럭을 추가하고 제거**
@@ -22,13 +24,15 @@ import tetris.gamescene.GameProgress;
 
 public class BlockQueue {
     private BlockData[] blockQueue;
+    private BlockGenerator blockGenerator;
     private final int maxQueueSize;
     private final GameProgress progress;
     private int[] queueFRS = new int[3]; // [0]: front, [1]: rear, [2]: size
     private int colorMode = 0; // 0: 일반, 1: 적록, 2: 청황
 
-    public BlockQueue(int colorMode, GameProgress progress) {
+    public BlockQueue(int colorMode, GameProgress progress, Difficulty difficulty) {
         this.progress = Objects.requireNonNull(progress);
+        this.blockGenerator = new BlockGenerator(difficulty, colorMode);
         this.maxQueueSize = 3;
         this.colorMode = colorMode;
         this.queueFRS[0] = 0; // front
@@ -36,26 +40,15 @@ public class BlockQueue {
         this.queueFRS[2] = 0; // size
         this.blockQueue = new BlockData[this.maxQueueSize];
         while (this.queueFRS[2] < this.maxQueueSize) {
-            BlockData blockData = BlockCreate.Block(GetRandomBlockIndex(), this.colorMode).GetBlockData();
+            BlockData blockData = blockGenerator.GetBlock().GetBlockData();
             EnQ(blockData);
         }
     }
 
-    public BlockQueue() {
-        this(0, new GameProgress());
-    }
-
-    public BlockQueue(int colorMode) {
-        this(colorMode, new GameProgress());
-    }
-
-    public BlockQueue(GameProgress progress) {
-        this(0, progress);
-    }
-
+   
     public BlockData GetNextBlock() {
         BlockData nextBlock = DeQ();
-        BlockData blockData = BlockCreate.Block(GetRandomBlockIndex(), this.colorMode).GetBlockData();
+        BlockData blockData = blockGenerator.GetBlock().GetBlockData();
         EnQ(blockData);
         if (nextBlock != null) {
             progress.OnBlockSpawned();
@@ -123,9 +116,5 @@ public class BlockQueue {
         this.blockQueue[index] = blockData;
     }
 
-    public int GetRandomBlockIndex() {
-    Random random = new Random();
-    // nextInt(7)은 0 이상 7 미만의 정수를 반환하므로 0~6이 나옵니다.
-    return random.nextInt(7); 
-    }
+    
 }

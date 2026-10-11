@@ -1,5 +1,7 @@
 package tetris.block.data;
 
+import java.util.Objects;
+
 import tetris.block.move.CanMove;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
@@ -18,14 +20,17 @@ public class CurrentBlock {
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
+    private final Runnable onGameOver;
 
-    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding) {
+    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding,
+            Runnable onGameOver) {
         this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
+        this.onGameOver = Objects.requireNonNull(onGameOver);
     }
-    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
-        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding);
+    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, Runnable onGameOver) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding, onGameOver);
     }
 
     public BlockData GetCurrentBlock() {
@@ -44,7 +49,8 @@ public class CurrentBlock {
     public void MoveEnd(BoardElement[][] board) {
         SetCurrentBlock(nextBlocks.GetNextBlock());
         if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)){
-            // 게임 오버 처리 로직 추가 필요
+            onGameOver.run();
+            return;
         }
 
     }
@@ -53,9 +59,6 @@ public class CurrentBlock {
         if (blockHolding.GetBlockHolding() == null) {
             blockHolding.SetBlockHolding(this.blockData);
             SetCurrentBlock(nextBlocks.GetNextBlock());
-            if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)) {
-            // 게임 오버 처리 로직 추가 필요
-            }
         } else {
             BlockData temp = blockHolding.GetBlockHolding();
             int x = this.blockData.GetX();

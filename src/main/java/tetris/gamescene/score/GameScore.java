@@ -11,7 +11,7 @@ public class GameScore{
     private final GameProgress progress;
     private final int[] lineClearScores = {100, 300, 500, 800};
 
-    private long gameScore;
+    private int gameScore;
     
     
     public GameScore(GameProgress progress){
@@ -19,24 +19,24 @@ public class GameScore{
         gameScore = 0;
     }
 
-    public long GetGameScore(){
+    public int GetGameScore(){
         return gameScore;
     }
 
     public void AddBlockDownScore(){
-        AddGameScore(basicDownScore + (long) downScoreIncrese * progress.GetLevel());
+        AddGameScore(basicDownScore +  downScoreIncrese * progress.GetLevel());
     }
 
     public void AddLineClearScore(int clearedLines){
         if (clearedLines < 1 || clearedLines > lineClearScores.length) {
             throw new IllegalArgumentException("clearedLines must be between 1 and 4");
         }
-        AddGameScore(lineClearScores[clearedLines - 1] * (progress.GetLevel() + 1L));
+        AddGameScore(lineClearScores[clearedLines - 1] * (progress.GetLevel() + 1));
     }
 
-    public void AddGameScore(long score){
+    public void AddGameScore(int score){
         if(Long.MAX_VALUE - score < gameScore){
-            gameScore = Long.MAX_VALUE;
+            gameScore = Integer.MAX_VALUE;
         }
         else{
             gameScore += score;
