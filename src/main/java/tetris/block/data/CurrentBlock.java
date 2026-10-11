@@ -79,21 +79,20 @@ public class CurrentBlock {
 
     public void BlockHold(BoardElement[][] board) {
         if (blockHolding.GetBlockHolding() == null) {
-            blockHolding.SetBlockHolding(this.blockData);
-            SetCurrentBlock(nextBlocks.GetNextBlock());
-            if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)) {
-            // 게임 오버 처리 로직 추가 필요
-            }
+            SaveHold();
+            MoveEnd(board);
         } else {
             BlockData temp = blockHolding.GetBlockHolding();
-            int x = this.blockData.GetX();
-            int y = this.blockData.GetY();
-            this.blockData.SetX(3);
-            this.blockData.SetY(0);
-            temp.SetX(x);
-            temp.SetY(y);
-            blockHolding.SetBlockHolding(this.blockData);
+            SaveHold();
             SetCurrentBlock(temp);
         }
+    }
+    private void SaveHold() {
+        boolean[][] dot = {{true}};
+            this.blockData.SetX(3);
+            this.blockData.SetY(0);
+            if (blockData.GetShape() == dot)
+                this.blockData.SetX(4);
+            blockHolding.SetBlockHolding(this.blockData);
     }
 }
