@@ -52,4 +52,7 @@ public class ShapePalette {
             {false, true, true}
         };
     }
+    public boolean[][] GetShape_dot() {
+        return new boolean[][] { {true} };
+    }
 }
