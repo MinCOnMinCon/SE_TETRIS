@@ -37,13 +37,13 @@ public class GameOverRoot extends StackPane {
 
 
 
-    public GameOverRoot(GameScore Score, ScoreStorage scoreStorage) {
+    public GameOverRoot(GameScore Score) {
         int finalScore = (int) Score.GetGameScore();
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore, scoreStorage);
+        bindEvents(finalScore);
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
@@ -89,7 +89,8 @@ public class GameOverRoot extends StackPane {
         confirmButtonBox.setAlignment(Pos.CENTER);
     }
 
-    private void bindEvents(int finalScore, ScoreStorage scoreStorage) {
+    private void bindEvents(int finalScore) {
+        ScoreStorage scoreStorage = new ScoreStorage();
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -105,12 +106,6 @@ public class GameOverRoot extends StackPane {
             if (playerName.isEmpty())
                 playerName = "익명";
             else playerName = nameField.getText();
-            
-            
-            // ****TODO: 앞/뒤 공백 포함 이름 처리****
-
-
- 
 
             confirmMessage.setText("[" + playerName + "] 님으로 등록하시겠습니까?");
             confirmPopup.setVisible(true);
@@ -130,6 +125,8 @@ public class GameOverRoot extends StackPane {
             confirmPopup.setVisible(false);
             baseScreen.setDisable(false);
             nameField.setDisable(true); // 중복 등록 방지
+
+            
         });
         // 팝업 [다시 입력] 버튼 클릭 시 -> 팝업 닫고 입력창 복귀
         noButton.setOnAction(e -> {
@@ -165,24 +162,9 @@ public class GameOverRoot extends StackPane {
         // 1. 텍스트 추가 (Label)
         baseVbox.getChildren().addAll(titleLabel, scoreLabel);
 
-        // 2. 상위 점수 이름 입력받기 (TextField)
-        int ranking = 0;
-        ScoreLoader SL = new ScoreLoader();
-
+        // 점수 저장
+        baseVbox.getChildren().addAll(nameField);
         
-
-        // ****TODO: ScoreLoader NULL값 확인 필요****
-
-
-
-        for (ScoreRecord scoreRecord : SL.loadScores()){
-            int score = scoreRecord.getScore();
-            ranking += (finalScore > score) ? 0 : 1;
-        }
-        // 상위 점수 저장
-        if(ranking < RANKER) {
-            baseVbox.getChildren().addAll(nameField);
-        }
 
         // 3. 시작화면 버튼 추가 (Button)
         baseVbox.getChildren().addAll(startMenuButton);
@@ -197,9 +179,9 @@ public class GameOverRoot extends StackPane {
     }
 
     // 2. 호출 함수: 데이터 전달 + 화면 전환
-    public static void GetEndScene(Scene scene, GameScore finalScore, ScoreStorage scoreStorage) {
+    public static void GetEndScene(Scene scene, GameScore finalScore) {
         // 데이터를 듬뿍 담아서 새로운 게임 오버 뼈대를 하나 찍어냄
-        GameOverRoot gameOverRoot = new GameOverRoot(finalScore, scoreStorage);
+        GameOverRoot gameOverRoot = new GameOverRoot(finalScore);
         
         // 넘겨받은 씬(Scene)의 뼈대를 방금 만든 게임 오버 뼈대로 갈아 끼움
         scene.setRoot(gameOverRoot);
