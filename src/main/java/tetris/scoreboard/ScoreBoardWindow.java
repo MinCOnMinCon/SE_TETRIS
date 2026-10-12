@@ -13,18 +13,28 @@ import javafx.scene.layout.BorderPane; // 전체 화면 배치
 import javafx.scene.layout.VBox; // 세로로 컴포넌트를 배치하는 레이아웃
 import javafx.stage.Stage; // 창 객체
 
+
 import java.util.Comparator; // 정렬을 위해 사용하는 클래스
 import java.util.List; // 리스트 자료형
 
 // 점수판 화면을 생성하고 표시하는 클래스
 public class ScoreBoardWindow {
-    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 점수판으로 바꾼다
-        // 저장된 점수 목록을 불러온 뒤, 점수 기준으로 내림차순 정렬
-        List<ScoreRecord> scores = new ScoreLoader().loadScores();//저장된 점수 목록을 불러옴
-        scores.sort(Comparator.comparingInt(ScoreRecord::getScore).reversed());//점수가 높은 순으로 내림차순 정렬
+    private VBox content;
 
-        // 상위 3개만 추출해서 표에 표시
-        List<ScoreRecord> top10 = scores.stream().limit(10).toList();
+    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 점수판으로 바꾼다
+        // 전체 화면을 감싸는 BorderPane
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: black;");
+        root.setCenter(content);
+
+        // 공유 Scene의 루트만 교체하고, 창 크기는 유지한다.
+        stage.setTitle("Top 10 Scores");
+        scene.setRoot(root);
+    }
+
+    public void make(Stage stage, Scene scene, Runnable onBack) {
+        // ScoreStorage에서 점수 목록 그대로 가져오기
+        List<ScoreRecord> top10 = new ScoreLoader().loadScores(); // 저장된 점수 목록을 불러옴
 
         // JavaFX 표를 생성
         TableView<ScoreRecord> table = new TableView<>();
@@ -75,4 +85,9 @@ public class ScoreBoardWindow {
         stage.setTitle("Top 10 Scores");
         scene.setRoot(root);
     }
+
+
+    public VBox getContent() {
+        return content;
+    }    
 }
