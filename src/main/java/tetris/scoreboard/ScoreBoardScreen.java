@@ -15,6 +15,7 @@ import java.util.List; // 리스트 자료형
 // 점수판 화면을 생성하고 표시하는 클래스
 public class ScoreBoardScreen {
     private BorderPane root;
+    private TableView<ScoreRecord> table;
 
     //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
     public void makeSB(Runnable onBack) {
@@ -22,7 +23,7 @@ public class ScoreBoardScreen {
         List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
 
         // JavaFX 표를 생성
-        TableView<ScoreRecord> table = new TableView<>();
+        table = new TableView<>();
 
         // 순위 컬럼 생성 및 값 연결
         TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
@@ -69,5 +70,9 @@ public class ScoreBoardScreen {
 
     public BorderPane showSB() {
         return root;
+    }
+
+    public TableView<ScoreRecord> getTable() {
+        return table;
     }
 }
