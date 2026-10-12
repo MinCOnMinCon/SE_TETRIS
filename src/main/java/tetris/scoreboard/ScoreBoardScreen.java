@@ -3,7 +3,6 @@ package tetris.scoreboard;
 import javafx.collections.FXCollections; // JavaFX의 ObservableList를 쉽게 다루기 위한 클래스
 import javafx.geometry.Insets; // 컴포넌트 여백 설정
 import javafx.geometry.Pos; // 정렬 위치
-import javafx.scene.Scene; // 화면을 구성하는 Scene 객체
 import javafx.scene.control.Button; // 뒤로가기 버튼
 import javafx.scene.control.Label; // 텍스트 라벨
 import javafx.scene.control.TableColumn; // 표의 열
@@ -11,30 +10,16 @@ import javafx.scene.control.TableView; // 표 전체
 import javafx.scene.control.cell.PropertyValueFactory; // 객체 속성을 표 컬럼과 연결하는 도구
 import javafx.scene.layout.BorderPane; // 전체 화면 배치
 import javafx.scene.layout.VBox; // 세로로 컴포넌트를 배치하는 레이아웃
-import javafx.stage.Stage; // 창 객체
-
-
-import java.util.Comparator; // 정렬을 위해 사용하는 클래스
 import java.util.List; // 리스트 자료형
 
 // 점수판 화면을 생성하고 표시하는 클래스
-public class ScoreBoardWindow {
-    private VBox content;
+public class ScoreBoardScreen {
+    private BorderPane root;
 
-    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 점수판으로 바꾼다
-        // 전체 화면을 감싸는 BorderPane
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: black;");
-        root.setCenter(content);
-
-        // 공유 Scene의 루트만 교체하고, 창 크기는 유지한다.
-        stage.setTitle("Top 10 Scores");
-        scene.setRoot(root);
-    }
-
-    public void make(Stage stage, Scene scene, Runnable onBack) {
-        // ScoreStorage에서 점수 목록 그대로 가져오기
-        List<ScoreRecord> top10 = new ScoreLoader().loadScores(); // 저장된 점수 목록을 불러옴
+    //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
+    public void makeSB(Runnable onBack) {
+        // 상위 10개만 추출해서 표에 표시
+        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
 
         // JavaFX 표를 생성
         TableView<ScoreRecord> table = new TableView<>();
@@ -77,17 +62,12 @@ public class ScoreBoardWindow {
         content.getChildren().addAll(title, table, backButton);
 
         // 전체 화면을 감싸는 BorderPane
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
         root.setStyle("-fx-background-color: black;");
         root.setCenter(content);
-
-        // 공유 Scene의 루트만 교체하고, 창 크기는 유지한다.
-        stage.setTitle("Top 10 Scores");
-        scene.setRoot(root);
     }
 
-
-    public VBox getContent() {
-        return content;
-    }    
+    public BorderPane showSB() {
+        return root;
+    }
 }

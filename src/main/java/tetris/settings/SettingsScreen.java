@@ -16,16 +16,22 @@ import tetris.settings.KeyBindingSettings.ActionType; // 키 역할 목록
 
 // 설정 화면을 보여주는 클래스
 public class SettingsScreen {
-    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 설정 화면으로 바꾼다
+    private BorderPane root;
+    private SettingsController controller;
+
+    public BorderPane showSS() {
+        return root;
+    }
+
+    public void activate() {
+        controller.activate();
+    }
+
+    public void makeSS(Stage stage, Scene scene, Runnable onBack) {
         // 화면 제목 라벨
         Label title = new Label("설정");
         //글자의 폰트와 크기
         title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-        /* 설명 문구(추가할지 말지는 회의에서 결정->설정 text와 겹치는 뜻의 내용이라)
-        Label description = new Label("게임 환경 설정 화면입니다.");
-        description.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
-        */
 
         // 해상도 선택 드롭다운 생성
         ComboBox<String> resolutionComboBox = new ComboBox<>();//새로운 드롭다운 객체 생성
@@ -78,7 +84,7 @@ public class SettingsScreen {
         scrollPane.setStyle("-fx-background: black; -fx-background-color: black;");
 
         // 설정 화면의 전체 배치 구조
-        BorderPane root = new BorderPane();//보더 페인으로 설정
+        root = new BorderPane();//보더 페인으로 설정
         root.setStyle("-fx-background-color: black;");//배경을 검은색으로 설정
         root.setTop(title);//위에서 선언한 title을 위쪽에 배치
         BorderPane.setAlignment(title, Pos.CENTER);//배치할 때 중앙에 배치
@@ -88,7 +94,7 @@ public class SettingsScreen {
         BorderPane.setMargin(backButton, new Insets(12));
 
         // 화면 전환을 수행하기 전에 설정 컨트롤 객체를 연결
-        SettingsController controller = new SettingsController(stage, scene, resolutionComboBox,
+        controller = new SettingsController(stage, scene, resolutionComboBox,
             colorBlindModeComboBox, GameSettings.getInputSettingData(), keyBindingRows,
             keySettingsStatus, saveSettingsButton);
         backButton.setOnAction(e -> { // 뒤로가기 버튼 클릭 처리
@@ -96,9 +102,6 @@ public class SettingsScreen {
             onBack.run();
         });
 
-        // 공유 Scene의 루트만 교체한다.
-        stage.setTitle("Tetris - 설정");
-        scene.setRoot(root);
         controller.initialize();
     }
 }
