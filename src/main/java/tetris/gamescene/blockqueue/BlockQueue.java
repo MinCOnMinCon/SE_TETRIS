@@ -1,6 +1,6 @@
 package tetris.gamescene.blockqueue;
 
-import java.util.Random;
+
 import java.util.Objects;
 
 import tetris.block.data.BlockData;
