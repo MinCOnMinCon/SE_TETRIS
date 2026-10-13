@@ -57,18 +57,18 @@ public class GameOverRoot extends StackPane {
         
         if (oldScoreBoard==null)
             oldScoreBoard = new ScoreBoardScreen();
-        
+
         // 1. 노드 생성 및 스타일 설정 (디자인)
-        setNodes(finalScore, oldScoreBoard);
+        setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore);
+        bindEvents(finalScore, oldScoreBoard);
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
     }
 
-    private void setNodes(int finalScore, ScoreBoardScreen oldScoreBoard) {
+    private void setNodes(int finalScore) {
         baseScreen = new BorderPane();
         baseScreen.setStyle("-fx-background-color: black;");
         
@@ -115,11 +115,6 @@ public class GameOverRoot extends StackPane {
         scoreBoard.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); 
         scoreBoard.setVisible(false); // 처음에는 투명하게 숨겨둠
 
-
-        // 함수명 확인 필요
-        
-        // 1. 이전 스코어 보드 로드 (상위 n등)
-        oldScore = oldScoreBoard.getTable();
         
         // 2. 내 등수표 생성
         newScore = new HBox();
@@ -131,8 +126,15 @@ public class GameOverRoot extends StackPane {
         myRank.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold;");
         myName.setStyle("-fx-text-fill: white;");
         myScore.setStyle("-fx-text-fill: white;");
+
+
         // 🌟 핵심 팁: 위쪽 TableView의 컬럼 너비와 동일하게 강제 고정!
+
+        // 화면 비율 맞는지 확인
+
         // (표의 컬럼 너비를 50, 100, 100으로 설정했다고 가정)
+
+
         myRank.setPrefWidth(50);
         myName.setPrefWidth(100);
         myScore.setPrefWidth(100);
@@ -149,7 +151,7 @@ public class GameOverRoot extends StackPane {
         scoreBoard.getChildren().addAll(oldScore, newScore, backButton);
     }
 
-    private void bindEvents(int finalScore) {
+    private void bindEvents(int finalScore, ScoreBoardScreen oldScoreBoard) {
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -181,6 +183,10 @@ public class GameOverRoot extends StackPane {
             ScoreStorage scoreStorage = new ScoreStorage();
             scoreStorage.saveScore(playerName, finalScore);
             System.out.println("플레이어: " + playerName + " / 획득 점수: " + finalScore + " 저장 완료");
+
+
+            // 1. 이전 스코어 보드 로드 (상위 n등)
+            oldScore = oldScoreBoard.makeSB();
 
             confirmPopup.setVisible(false);
             nameField.setDisable(true); // 중복 등록 방지

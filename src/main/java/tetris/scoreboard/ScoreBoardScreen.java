@@ -16,9 +16,10 @@ import java.util.List; // 리스트 자료형
 public class ScoreBoardScreen {
     private BorderPane root;
     private TableView<ScoreRecord> table;
+    private Button backButton;
 
     //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
-    public void makeSB(Runnable onBack) {
+    public TableView<ScoreRecord> makeSB() {
         // 상위 10개만 추출해서 표에 표시
         List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
 
@@ -51,10 +52,10 @@ public class ScoreBoardScreen {
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         // 뒤로가기 버튼 생성
-        Button backButton = new Button("뒤로가기");
+        backButton = new Button("뒤로가기");
 
         backButton.setPrefSize(180, 50);
-        backButton.setOnAction(e -> onBack.run());
+        
 
         // 제목과 표를 세로로 배치하는 루트 컨테이너
         VBox content = new VBox(10);
@@ -66,9 +67,14 @@ public class ScoreBoardScreen {
         root = new BorderPane();
         root.setStyle("-fx-background-color: black;");
         root.setCenter(content);
+
+        return table;
     }
 
-    public BorderPane showSB() {
+    public BorderPane showSB(Runnable onBack) {
+        if (backButton != null) {
+            backButton.setOnAction(e -> onBack.run());
+        }
         return root;
     }
 
