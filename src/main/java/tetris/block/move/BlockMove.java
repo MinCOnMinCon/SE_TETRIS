@@ -102,7 +102,7 @@ public class BlockMove {
             board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
         }
     }
-    public static void SetCanHMove(boolean can){
-        canMoveH = can;
+    public static void SetCanHMove(boolean isCan){
+        canMoveH = isCan;
     }
 }
