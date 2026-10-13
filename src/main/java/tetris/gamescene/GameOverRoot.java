@@ -48,11 +48,15 @@ public class GameOverRoot extends StackPane {
     // 스코어보드 팝업 추가 (뒤로가기 버튼도)
 
 
-
-    public GameOverRoot(GameScore Score, ScoreBoardWindow ScoreBoard) {
+                        // 변경
+    public GameOverRoot(GameResult Score, ScoreBoardWindow oldScoreBoard) {
         int finalScore = (int) Score.GetGameScore();
+
+        if (oldScoreBoard==null)
+
+
         // 1. 노드 생성 및 스타일 설정 (디자인)
-        setNodes(finalScore);
+        setNodes(finalScore, oldScoreBoard);
 
         // 2. 이벤트(동작) 연결 (로직)
         bindEvents(finalScore);
