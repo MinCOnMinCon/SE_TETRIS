@@ -3,6 +3,7 @@ package tetris.block.blocks;
 public class BlockCreate {
     public static Block Block(int idx, int colorMode) {
         switch (idx) {
+            case -1:    return new Block_dot(colorMode);
             case 0:     return new BlockI(colorMode);
             case 1:     return new BlockJ(colorMode);
             case 2:     return new BlockL(colorMode);

@@ -5,6 +5,7 @@ import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.board.BoardElement;
 
+
 /*
     CurrentBlock 클래스는 현재 테트리스 블럭의 정보를 저장하는 클래스
     CurrentBlock(BlockData, BlockQueueController, BlockHolding) 현재 블럭, 다음 블럭 큐, 홀딩 블럭을 설정
@@ -15,17 +16,32 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class CurrentBlock {
+    public enum ItemType {
+        NORMAL,
+        DEL_HLINE,
+        DEL_VLINE,
+        DEL_4VLINE,
+        DEL_VEMPTY,
+        DEL_AEMPTY
+    }
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
+    private boolean item;
+    private ItemType itemType;
+    private int[] itemPos; //x, y
+    
 
-    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding) {
-        this.blockData = blockData;
+    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, boolean item, ItemType itemType, int[] itemPos) {
+        this.blockData = nextBlocks.GetNextBlock();
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
+        this.item = item;
+        this.itemType = itemType;
+        this.itemPos = itemPos;
     }
     public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
-        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding);
+        this(nextBlocks, blockHolding, false, ItemType.NORMAL, null);
     }
 
     public BlockData GetCurrentBlock() {
@@ -33,6 +49,24 @@ public class CurrentBlock {
     }
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
+    }
+    public boolean IsItem() {
+        return this.item;
+    }
+    public void SetItem(boolean item) {
+        this.item = item;
+    }
+    public ItemType GetItemType() {
+        return this.itemType;
+    }
+    public void SetItemType(ItemType itemType) {
+        this.itemType = itemType;
+    }
+    public int[] GetItemPos() {
+        return this.itemPos;
+    }
+    public void SetItemPos(int[] itemPos) {
+        this.itemPos = itemPos;
     }
 
     public void MoveEnd(BoardElement[][] board) {
@@ -45,21 +79,20 @@ public class CurrentBlock {
 
     public void BlockHold(BoardElement[][] board) {
         if (blockHolding.GetBlockHolding() == null) {
-            blockHolding.SetBlockHolding(this.blockData);
-            SetCurrentBlock(nextBlocks.GetNextBlock());
-            if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)) {
-            // 게임 오버 처리 로직 추가 필요
-            }
+            SaveHold();
+            MoveEnd(board);
         } else {
             BlockData temp = blockHolding.GetBlockHolding();
-            int x = this.blockData.GetX();
-            int y = this.blockData.GetY();
-            this.blockData.SetX(3);
-            this.blockData.SetY(0);
-            temp.SetX(x);
-            temp.SetY(y);
-            blockHolding.SetBlockHolding(this.blockData);
+            SaveHold();
             SetCurrentBlock(temp);
         }
+    }
+    private void SaveHold() {
+        boolean[][] dot = {{true}};
+            this.blockData.SetX(3);
+            this.blockData.SetY(0);
+            if (blockData.GetShape() == dot)
+                this.blockData.SetX(4);
+            blockHolding.SetBlockHolding(this.blockData);
     }
 }
