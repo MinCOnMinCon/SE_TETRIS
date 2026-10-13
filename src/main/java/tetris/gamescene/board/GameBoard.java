@@ -1,5 +1,6 @@
 package tetris.gamescene.board;
 import javafx.scene.paint.Color;
+import java.util.Arrays;
 
 
 
@@ -10,9 +11,11 @@ import javafx.scene.paint.Color;
 public class GameBoard {
     public static final int boardRow = 20;
     public static final int boardCol = 10;
+    public static final int maxClearedLines = 4;
     
     
     private BoardElement [][] board;
+    private final int[] clearedRows = new int[maxClearedLines];
     
     public GameBoard(){
         InitGameBoard();
@@ -22,7 +25,13 @@ public class GameBoard {
         return board;
     }
 
+    // 이동 함수와 공유하는 배열. -1은 삭제된 행이 없는 칸을 뜻한다.
+    public int[] GetClearedRows(){
+        return clearedRows;
+    }
+
     public void InitGameBoard(){
+        Arrays.fill(clearedRows, -1);
         board = new BoardElement[boardRow][boardCol];
         for(int row = 0; row < board.length; row++){
             for(int col = 0; col < board[row].length; col++){

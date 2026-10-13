@@ -19,6 +19,7 @@ import tetris.settings.GameSettings.Difficulty;
 public class AutoMove {
     private CurrentBlock currentBlock;
     private BoardElement[][] currentBoard;
+    private final int[] clearedRows;
     private final GameProgress progress;
     private final int minFallInterval = 100;
     private int basicFallInterval = 1000;// 자동으로 떨어지는 기본 간격
@@ -30,7 +31,8 @@ public class AutoMove {
     private int currentTimeMillis = 0;
     private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
-    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty, GameProgress progress) {
+    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty, GameProgress progress, int[] clearedRows) {
+        this.clearedRows = clearedRows;
         this.progress = Objects.requireNonNull(progress);
         this.currentBlock = currentBlock;
         this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
@@ -52,7 +54,7 @@ public class AutoMove {
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
-                BlockMove.MoveDown(currentBlock, currentBoard, gameScore);
+                BlockMove.MoveDown(currentBlock, currentBoard, gameScore, clearedRows);
             }
         } 
     }

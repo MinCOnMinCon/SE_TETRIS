@@ -1,5 +1,7 @@
 package tetris.block.data;
 
+import java.util.Objects;
+
 import tetris.block.move.CanMove;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
@@ -27,52 +29,38 @@ public class CurrentBlock {
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
-    private boolean item;
-    private ItemType itemType;
-    private int[] itemPos; //x, y
-    
+    private final Runnable onGameOver;
 
-    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, boolean item, ItemType itemType, int[] itemPos) {
-        this.blockData = nextBlocks.GetNextBlock();
+    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding,
+            Runnable onGameOver) {
+        this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
-        this.item = item;
-        this.itemType = itemType;
-        this.itemPos = itemPos;
+        this.onGameOver = Objects.requireNonNull(onGameOver);
     }
-    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
-        this(nextBlocks, blockHolding, false, ItemType.NORMAL, null);
+    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, Runnable onGameOver) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding, onGameOver);
     }
 
     public BlockData GetCurrentBlock() {
         return this.blockData;
     }
+    public BlockHolding GetBlockHolding(){
+        return blockHolding;
+    }
+    public BlockQueue GetBlockQueue(){
+        return nextBlocks;
+    }
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
     }
-    public boolean IsItem() {
-        return this.item;
-    }
-    public void SetItem(boolean item) {
-        this.item = item;
-    }
-    public ItemType GetItemType() {
-        return this.itemType;
-    }
-    public void SetItemType(ItemType itemType) {
-        this.itemType = itemType;
-    }
-    public int[] GetItemPos() {
-        return this.itemPos;
-    }
-    public void SetItemPos(int[] itemPos) {
-        this.itemPos = itemPos;
-    }
+    
 
     public void MoveEnd(BoardElement[][] board) {
         SetCurrentBlock(nextBlocks.GetNextBlock());
         if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)){
-            // 게임 오버 처리 로직 추가 필요
+            onGameOver.run();
+            return;
         }
 
     }

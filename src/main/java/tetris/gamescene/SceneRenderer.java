@@ -68,6 +68,20 @@ public class SceneRenderer  {
         }
     }
 
+    // 기존 화면을 유지하면서 삭제된 행만 100ms마다 흰색/검은색으로 덮는다.
+    public void DrawLineClearEffect(int[] clearedRows, int elapsedMillis) {
+        GraphicsContext graphicsContext = boardCanvas.getGraphicsContext2D();
+        double blockSide = sceneRenderData.blockSide;
+        graphicsContext.setFill((elapsedMillis / 100) % 2 == 0
+            ? Color.WHITE : Color.BLACK);
+
+        for (int row : clearedRows) {
+            if (row == -1) break;
+            graphicsContext.fillRect(0, row * blockSide,
+                boardCanvas.getWidth(), blockSide);
+        }
+    }
+
     // 원본 보드는 수정하지 않고, 현재 블록을 합친 렌더링용 임시 보드를 만든다.
     private BoardElement[][] MergeBoardAndCurrentBlock(BoardElement[][] board, BlockData currentBlock) {
         BoardElement[][] renderBoard = new BoardElement[board.length][];

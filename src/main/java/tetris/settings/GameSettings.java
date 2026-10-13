@@ -172,4 +172,5 @@ public final class GameSettings {
     public Map<ActionType, List<KeyCode>> keyBindings() {
         return keyBindings;
     }
+    
 }

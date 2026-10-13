@@ -5,7 +5,11 @@ import java.util.Objects;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.Parent;
+
+import tetris.gameoverscene.GameOverRoot;
 import tetris.gamescene.GameController;
+import tetris.gamescene.GameResult;
 import tetris.pausescene.PauseScene;
 import tetris.settings.SettingsStore;
 import tetris.scoreboard.ScoreBoardScreen;
@@ -22,6 +26,7 @@ public class AppController {
     private final SettingsScreen settingsScreen;
     private GameController gameController;
     private PauseScene pauseScene;
+    private GameOverRoot gameOverRoot;
 
     public AppController(StartScreen startScreen) {
         this.startScreen = Objects.requireNonNull(startScreen, "startScreen cannot be null");//생성자에 전달된 startScreen이 null인지 확인후 저장
@@ -46,8 +51,8 @@ public class AppController {
     }
 
     public void ShowGame() {
-        // TODO: 게임 종료 콜백 연결
-        gameController = new GameController(this::ShowPauseScreen, SettingsStore.getGameSettings());
+        gameController = new GameController(
+                this::ShowPauseScreen, this::ShowEndGame, SettingsStore.getGameSettings());
         // 기존 시작 화면이 Scene에 등록한 메뉴 키 입력을 제거한다.
         scene.setOnKeyPressed(null);
         scene.setRoot(gameController.GetRoot());
@@ -75,8 +80,9 @@ public class AppController {
         }
 
         scene.setOnKeyPressed(null);
-        scene.setRoot(pauseScene.GetRoot());
-        pauseScene.GetRoot().requestFocus();
+        Parent pauseSceneRoot = pauseScene.GetRoot();
+        scene.setRoot(pauseSceneRoot);
+        pauseSceneRoot.requestFocus();
     }
 
     public void ResumeGame() {
@@ -85,19 +91,18 @@ public class AppController {
         }
 
         scene.setOnKeyPressed(null);
-        scene.setRoot(gameController.GetRoot());
-        gameController.GetRoot().requestFocus();
+        Parent gameSceneRoot = gameController.GetRoot();
+        scene.setRoot(gameSceneRoot);
+        gameSceneRoot.requestFocus();
         gameController.ResumeGame();
     }
 
-    public void EndGame() {
-        // TODO: 결과를 받는 파라미터 추가
-
-
-        // TODO: 게임 정지, 점수 저장 요청, 시작 화면에 결과 전달
-
-
-        // TODO: 시작 화면으로 전환한 뒤 게임 참조 정리
-
+    public void ShowEndGame(GameResult result) {
+        scene.setOnKeyPressed(null);
+        gameOverRoot = new GameOverRoot(result, null); // TODO:스코어 스토리지는 임시로 생성. 나중에 결정되면 실제 스코어 스토리지를 제공할 것
+        scene.setRoot(gameOverRoot);
+        gameOverRoot.requestFocus();
+        gameController = null;
+        pauseScene = null;
     }
 }
