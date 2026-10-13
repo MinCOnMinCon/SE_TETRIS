@@ -77,6 +77,9 @@ public class ScoreBoardScreen {
         }
         return root;
     }
+    public BorderPane showSB() {
+        return root;
+    }
 
     public TableView<ScoreRecord> getTable() {
         return table;
