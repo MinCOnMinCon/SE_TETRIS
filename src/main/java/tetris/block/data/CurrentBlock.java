@@ -7,6 +7,7 @@ import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.board.BoardElement;
 
+
 /*
     CurrentBlock 클래스는 현재 테트리스 블럭의 정보를 저장하는 클래스
     CurrentBlock(BlockData, BlockQueueController, BlockHolding) 현재 블럭, 다음 블럭 큐, 홀딩 블럭을 설정
@@ -17,6 +18,14 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class CurrentBlock {
+    public enum ItemType {
+        NORMAL,
+        DEL_HLINE,
+        DEL_VLINE,
+        DEL_4VLINE,
+        DEL_VEMPTY,
+        DEL_AEMPTY
+    }
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
@@ -45,6 +54,7 @@ public class CurrentBlock {
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
     }
+    
 
     public void MoveEnd(BoardElement[][] board) {
         SetCurrentBlock(nextBlocks.GetNextBlock());
@@ -57,18 +67,20 @@ public class CurrentBlock {
 
     public void BlockHold(BoardElement[][] board) {
         if (blockHolding.GetBlockHolding() == null) {
-            blockHolding.SetBlockHolding(this.blockData);
-            SetCurrentBlock(nextBlocks.GetNextBlock());
+            SaveHold();
+            MoveEnd(board);
         } else {
             BlockData temp = blockHolding.GetBlockHolding();
-            int x = this.blockData.GetX();
-            int y = this.blockData.GetY();
-            this.blockData.SetX(3);
-            this.blockData.SetY(0);
-            temp.SetX(x);
-            temp.SetY(y);
-            blockHolding.SetBlockHolding(this.blockData);
+            SaveHold();
             SetCurrentBlock(temp);
         }
+    }
+    private void SaveHold() {
+        boolean[][] dot = {{true}};
+            this.blockData.SetX(3);
+            this.blockData.SetY(0);
+            if (blockData.GetShape() == dot)
+                this.blockData.SetX(4);
+            blockHolding.SetBlockHolding(this.blockData);
     }
 }

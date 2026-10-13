@@ -31,6 +31,7 @@ public class SettingsController {
     private final Map<ActionType, Button> keyButtons = new EnumMap<>(ActionType.class); // 역할과 버튼 연결
     private ActionType actionWaitingForKey; // 새 키 입력을 기다리는 역할
     private final EventHandler<KeyEvent> keyCaptureHandler = this::captureKeyBinding;
+    private boolean keyCaptureActive;
 
     // 생성자: 필요한 UI 객체를 받아 저장
     public SettingsController(
@@ -86,12 +87,22 @@ public class SettingsController {
 
         // 역할별 키 버튼을 만들고 씬에서 다음 키 입력을 감지
         createKeyBindingRows();
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
+    }
+
+    public void activate() {
+        if (!keyCaptureActive) {
+            scene.addEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
+            keyCaptureActive = true;
+        }
     }
 
     // 같은 Scene을 다른 화면과 공유하므로, 설정 화면을 떠날 때 키 필터를 제거한다.
     public void dispose() {
-        scene.removeEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
+        if (keyCaptureActive) {
+            scene.removeEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
+            keyCaptureActive = false;
+        }
+        actionWaitingForKey = null;
     }
 
     // 선택된 해상도에 맞춰 창 크기 변경

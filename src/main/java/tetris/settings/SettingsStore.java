@@ -114,7 +114,8 @@ public final class SettingsStore {
                 GameSettings.getScreenWidth(),
                 GameSettings.getScreenHeight(),
                 GameSettings.getColorBlindMode().getColorMode(),
-                GameSettings.getInputSettingData().getAllBindings()
+                GameSettings.getInputSettingData().getAllBindings(),
+                GameSettings.getDifficulty()
                 );
     }
 

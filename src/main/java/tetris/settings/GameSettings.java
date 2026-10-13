@@ -109,6 +109,7 @@ public final class GameSettings {
     private final int screenHeight;
     private final int colorMode;
     private final Map<ActionType, List<KeyCode>> keyBindings;
+    private final Difficulty savedDifficulty;
     
 
     // 저장 버튼을 누른 시점의 설정을 게임 로직에 전달하는 불변 스냅샷
@@ -117,12 +118,14 @@ public final class GameSettings {
             int screenWidth,
             int screenHeight,
             int colorMode,
-            Map<ActionType, List<KeyCode>> keyBindings
+            Map<ActionType, List<KeyCode>> keyBindings,
+            Difficulty savedDifficulty
             ) {
         this.savedResolutionPreset = resolutionPreset;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.colorMode = colorMode;
+        this.savedDifficulty = savedDifficulty;
         EnumMap<ActionType, List<KeyCode>> copiedBindings = new EnumMap<>(ActionType.class);
         keyBindings.forEach((action, keys) -> copiedBindings.put(action, List.copyOf(keys)));
         this.keyBindings = Collections.unmodifiableMap(copiedBindings);
@@ -132,6 +135,22 @@ public final class GameSettings {
         EASY,
         NORMAL,
         HARD
+    }
+
+    public static Difficulty currentDifficulty = Difficulty.NORMAL;
+
+    public static Difficulty getDifficulty() {
+        return currentDifficulty;
+    }
+
+    public static void setDifficulty(Difficulty value) {
+        if (value != null) {
+            currentDifficulty = value;
+        }
+    }
+
+    public Difficulty difficulty() {
+        return savedDifficulty;
     }
 
     public String resolutionPreset() {
