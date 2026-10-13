@@ -1,7 +1,6 @@
 package tetris.block.move;
 
 import tetris.block.blocks.BlockDelete;
-import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.CurrentShape;
 import tetris.block.data.CurrentBlock.ItemType;
