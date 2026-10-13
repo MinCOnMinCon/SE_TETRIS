@@ -2,6 +2,7 @@ package tetris.block.data;
 
 import java.util.Objects;
 
+import tetris.block.move.BlockMove;
 import tetris.block.move.CanMove;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
@@ -62,6 +63,7 @@ public class CurrentBlock {
             onGameOver.run();
             return;
         }
+        BlockMove.SetCanHMove(true);
 
     }
 

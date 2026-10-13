@@ -32,7 +32,7 @@ public class BlockMove {
     public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore, int[] clearedRows) {
         if (CanMove.IsNoBlock(0, currentBlock, board)) {
             currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
-            if (canMoveH)   gameScore.AddBlockDownScore();
+            if (canMoveH || (!currentBlock.GetCurrentBlock().IsItem()&&!canMoveH))   gameScore.AddBlockDownScore();
             else BlockDelete.Delete4VLines(board, currentBlock.GetCurrentBlock());
         }
         else if (currentBlock.GetCurrentBlock().IsItem()) {
