@@ -48,7 +48,7 @@ public class GameController {
 		blockHolding = new BlockHolding();
 		blockQueue = new BlockQueue(progress);
 		
-		currentBlock = new CurrentBlock(blockQueue.GetNextBlock(), blockQueue, blockHolding);
+		currentBlock = new CurrentBlock(blockQueue, blockHolding);
 		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress);
 
 		renderer = new SceneRenderer(new RenderConfig(blockQueue.GetMaxQueueSize()));
