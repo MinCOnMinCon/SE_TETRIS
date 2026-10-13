@@ -36,7 +36,8 @@ public class AppController {
 
         //ScoreBoardScreen과 SettingsScreen도 StartScreen과 동일하게 생성하고 콜백함수 전달
         this.scoreBoardScreen = new ScoreBoardScreen();
-        this.scoreBoardScreen.makeSB(this::ShowStartScreen);
+        this.scoreBoardScreen.makeSB();
+        this.scoreBoardScreen.showSB(this::ShowStartScreen);
 
         this.settingsScreen = new SettingsScreen();
         this.settingsScreen.makeSS(stage, scene, this::ShowStartScreen);
