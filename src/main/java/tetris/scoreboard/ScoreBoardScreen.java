@@ -3,7 +3,6 @@ package tetris.scoreboard;
 import javafx.collections.FXCollections; // JavaFX의 ObservableList를 쉽게 다루기 위한 클래스
 import javafx.geometry.Insets; // 컴포넌트 여백 설정
 import javafx.geometry.Pos; // 정렬 위치
-import javafx.scene.Scene; // 화면을 구성하는 Scene 객체
 import javafx.scene.control.Button; // 뒤로가기 버튼
 import javafx.scene.control.Label; // 텍스트 라벨
 import javafx.scene.control.TableColumn; // 표의 열
@@ -11,28 +10,25 @@ import javafx.scene.control.TableView; // 표 전체
 import javafx.scene.control.cell.PropertyValueFactory; // 객체 속성을 표 컬럼과 연결하는 도구
 import javafx.scene.layout.BorderPane; // 전체 화면 배치
 import javafx.scene.layout.VBox; // 세로로 컴포넌트를 배치하는 레이아웃
-import javafx.stage.Stage; // 창 객체
-
-import java.util.Comparator; // 정렬을 위해 사용하는 클래스
 import java.util.List; // 리스트 자료형
 
 // 점수판 화면을 생성하고 표시하는 클래스
-public class ScoreBoardWindow {
-    public void show(Stage stage, Scene scene, Runnable onBack) { // 공유 Scene의 루트를 점수판으로 바꾼다
-        // 저장된 점수 목록을 불러온 뒤, 점수 기준으로 내림차순 정렬
-        List<ScoreRecord> scores = new ScoreLoader().loadScores();
-        scores.sort(Comparator.comparingInt(ScoreRecord::getScore).reversed());
+public class ScoreBoardScreen {
+    private BorderPane root;
+    private TableView<ScoreRecord> table;
 
-        // 상위 3개만 추출해서 표에 표시
-        List<ScoreRecord> top3 = scores.stream().limit(3).toList();
+    //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
+    public void makeSB(Runnable onBack) {
+        // 상위 10개만 추출해서 표에 표시
+        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
 
         // JavaFX 표를 생성
-        TableView<ScoreRecord> table = new TableView<>();
+        table = new TableView<>();
 
         // 순위 컬럼 생성 및 값 연결
         TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
         rankColumn.setCellValueFactory(cellData -> {
-            int index = top3.indexOf(cellData.getValue());
+            int index = top10.indexOf(cellData.getValue());
             return new javafx.beans.property.SimpleIntegerProperty(index + 1).asObject();
         });
 
@@ -47,15 +43,16 @@ public class ScoreBoardWindow {
         // 표에 3개의 컬럼 추가
         table.getColumns().addAll(rankColumn, nameColumn, scoreColumn); // 세 컬럼을 표에 추가
 
-        // top3 데이터를 표에 넣기
-        table.setItems(FXCollections.observableArrayList(top3));
+        // top10 데이터를 표에 넣기
+        table.setItems(FXCollections.observableArrayList(top10));
 
         // 제목 라벨 생성 및 스타일 지정
-        Label title = new Label("Top 3 Scores");
+        Label title = new Label("Top 10 Scores");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         // 뒤로가기 버튼 생성
         Button backButton = new Button("뒤로가기");
+
         backButton.setPrefSize(180, 50);
         backButton.setOnAction(e -> onBack.run());
 
@@ -66,12 +63,16 @@ public class ScoreBoardWindow {
         content.getChildren().addAll(title, table, backButton);
 
         // 전체 화면을 감싸는 BorderPane
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
         root.setStyle("-fx-background-color: black;");
         root.setCenter(content);
+    }
 
-        // 공유 Scene의 루트만 교체하고, 창 크기는 유지한다.
-        stage.setTitle("Top 3 Scores");
-        scene.setRoot(root);
+    public BorderPane showSB() {
+        return root;
+    }
+
+    public TableView<ScoreRecord> getTable() {
+        return table;
     }
 }
