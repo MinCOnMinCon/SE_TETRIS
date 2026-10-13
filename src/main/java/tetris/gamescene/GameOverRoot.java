@@ -3,6 +3,8 @@ package tetris.gamescene;
 import tetris.gamescene.score.GameScore;
 import tetris.scoreboard.*;
 
+import java.util.List;
+
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -12,6 +14,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.TableView; // 표 전체
 
 public class GameOverRoot extends StackPane {
     final int MAX_LENGTH = 15;  // 최대 15글자까지만 허용
@@ -29,15 +32,24 @@ public class GameOverRoot extends StackPane {
     private Button yesButton;
     private Button noButton;
 
+    private VBox scoreBoard;        // scoreBoard
+    private Button backButton;
+    private TableView<ScoreRecord> oldScore;
+    private HBox newScore;
+    private Label myRank; 
+    private Label myName;
+    private Label myScore;
+
     // 1. 생성자: 외부에서 넘겨준 데이터를 받아서 화면을 세팅함
 
 
 
-    // ****TODO: 점수 타입 통합 필요****
+    // ****TODO: 스코어보드 table 받아서 현재 (이름, 점수) 추가 후 표시 구현****
+    // 스코어보드 팝업 추가 (뒤로가기 버튼도)
 
 
 
-    public GameOverRoot(GameScore Score) {
+    public GameOverRoot(GameScore Score, ScoreBoardWindow ScoreBoard) {
         int finalScore = (int) Score.GetGameScore();
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
@@ -49,7 +61,7 @@ public class GameOverRoot extends StackPane {
         setScene(finalScore);
     }
 
-    private void setNodes(int finalScore) {
+    private void setNodes(int finalScore, ScoreBoardWindow oldScoreBoard) {
         baseScreen = new BorderPane();
         baseScreen.setStyle("-fx-background-color: black;");
         
@@ -87,10 +99,50 @@ public class GameOverRoot extends StackPane {
         // 버튼 2개를 가로로 나란히 배치하기 위해 HBox 사용
         confirmButtonBox = new HBox(20, yesButton, noButton);
         confirmButtonBox.setAlignment(Pos.CENTER);
+
+
+
+        // 5. 스코어 보드 추가 (VBox)
+        scoreBoard = new VBox(20);
+        scoreBoard.setAlignment(Pos.CENTER);
+        scoreBoard.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); 
+        scoreBoard.setVisible(false); // 처음에는 투명하게 숨겨둠
+
+
+        // 함수명 확인 필요
+        
+        // 1. 이전 스코어 보드 로드 (상위 n등)
+        oldScore = oldScoreBoard.getTable();
+        
+        // 2. 내 등수표 생성
+        newScore = new HBox();
+        newScore.setAlignment(Pos.CENTER);
+        newScore.setStyle("-fx-background-color: #333333; -fx-padding: 10px;"); // 위쪽 표와 구분되도록 약간의 배경색/여백 추가
+        myRank = new Label(); 
+        myName = new Label();
+        myScore = new Label();
+        myRank.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold;");
+        myName.setStyle("-fx-text-fill: white;");
+        myScore.setStyle("-fx-text-fill: white;");
+        // 🌟 핵심 팁: 위쪽 TableView의 컬럼 너비와 동일하게 강제 고정!
+        // (표의 컬럼 너비를 50, 100, 100으로 설정했다고 가정)
+        myRank.setPrefWidth(50);
+        myName.setPrefWidth(100);
+        myScore.setPrefWidth(100);
+        // 중앙 정렬 (선택 사항)
+        myRank.setAlignment(Pos.CENTER);
+        myName.setAlignment(Pos.CENTER);
+        myScore.setAlignment(Pos.CENTER);
+        // HBox에 조립
+        newScore.getChildren().addAll(myRank, myName, myScore);
+
+        // 3. 뒤로가기 버튼 생성
+        backButton = new Button("뒤로가기");
+
+        scoreBoard.getChildren().addAll(oldScore, newScore, backButton);
     }
 
     private void bindEvents(int finalScore) {
-        ScoreStorage scoreStorage = new ScoreStorage();
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -112,19 +164,37 @@ public class GameOverRoot extends StackPane {
             baseScreen.setDisable(true);
         });
 
-        // 팝업 [등록] 버튼 클릭 시 -> 실제 저장 로직
+        // 팝업 [등록] 버튼 클릭 시 -> 실제 저장, 스코어 보드 로드 로직
         yesButton.setOnAction(e -> {
             String playerName = nameField.getText().trim();
             if (playerName.isEmpty())
                 playerName = "익명";
             else playerName = nameField.getText();
 
+            ScoreStorage scoreStorage = new ScoreStorage();
             scoreStorage.saveScore(playerName, finalScore);
             System.out.println("플레이어: " + playerName + " / 획득 점수: " + finalScore + " 저장 완료");
 
             confirmPopup.setVisible(false);
-            baseScreen.setDisable(false);
             nameField.setDisable(true); // 중복 등록 방지
+
+
+            // 스코어보드
+            // 1. 전체 점수 리스트(scores)에서 내 순위 찾기
+            int myRankCount = 1;
+            List<ScoreRecord> scores = new ScoreLoader().loadScores();
+            for (ScoreRecord tmp : scores) {
+                if (tmp.getName().equals(nameField.getText()) && tmp.getScore() == finalScore) {
+                    break; // 내 기록을 찾으면 카운트 멈춤
+                }
+                myRankCount++;
+            }
+            myRank.setText(myRankCount + "위");
+            myName.setText(playerName);
+            myScore.setText(finalScore + "점");
+
+            
+            scoreBoard.setVisible(true);
 
             
         });
@@ -134,6 +204,13 @@ public class GameOverRoot extends StackPane {
             baseScreen.setDisable(false);
             nameField.requestFocus();
         });
+
+        // 스코어 보드 [뒤로가기] 버튼 클릭 시 -> 스코어 보드 닫고 게임 오버창 복귀
+        backButton.setOnAction(e -> {
+            scoreBoard.setVisible(false);
+            baseScreen.setDisable(false);
+        });
+        
         
         // 버튼 클릭 시 루트 시작화면으로 변경 이벤트
         startMenuButton.setOnAction(e -> {
