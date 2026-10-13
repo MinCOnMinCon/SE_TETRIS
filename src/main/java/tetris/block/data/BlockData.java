@@ -39,7 +39,7 @@ public class BlockData {
     public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y) {
         this(shape, null, 0, x, y, false, ItemType.NORMAL, null);
     }
-    public BlockData(boolean[][] shape, int colorMode, int x, int y) {
+    public BlockData(boolean[][] shape, int x, int y) {
         this(shape, null, 0, x, y, false, ItemType.NORMAL, null);
     }
 
