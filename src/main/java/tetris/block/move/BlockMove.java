@@ -39,12 +39,12 @@ public class BlockMove {
             if (canMoveH)   gameScore.AddBlockDownScore();
             else BlockDelete.Delete4VLines(board, currentBlock.GetCurrentBlock());
         }
-        else if (currentBlock.IsItem()) {
+        else if (currentBlock.GetCurrentBlock().IsItem()) {
             int itemX, itemY;
-            switch (currentBlock.GetItemType()) {
+            switch (currentBlock.GetCurrentBlock().GetItemType()) {
                 case DEL_HLINE: // 가로선 삭제
                     MoveFix(currentBlock, board);
-                    itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetItemPos()[1];
+                    itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetCurrentBlock().GetItemPos()[1];
                     BlockDelete.DeleteHLine(board, itemY);
                     break;
                 case DEL_4VLINE: // 무게추 세로 4줄 삭제
@@ -59,25 +59,25 @@ public class BlockMove {
                     break;
                 case DEL_VLINE: // 세로선 삭제
                     MoveFix(currentBlock, board);
-                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetItemPos()[0];
+                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetCurrentBlock().GetItemPos()[0];
                     BlockDelete.DeleteVLine(board, itemX);
                     break;
                 case DEL_VEMPTY: // 세로 공백 삭제
                     MoveFix(currentBlock, board);
-                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetItemPos()[0];
+                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetCurrentBlock().GetItemPos()[0];
                     BlockDelete.DeleteVEmpty(board, itemX);
                     break;
                 case DEL_AEMPTY: // 주변 공백 삭제
                     MoveFix(currentBlock, board);
-                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetItemPos()[0];
-                    itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetItemPos()[1];
+                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetCurrentBlock().GetItemPos()[0];
+                    itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetCurrentBlock().GetItemPos()[1];
                     BlockDelete.DeleteAroundEmpty(board, itemX, itemY);
                     break;
                 default:
                     break;
                 }
 
-            if(currentBlock.GetItemType() != ItemType.DEL_4VLINE || canMoveH) {
+            if(currentBlock.GetCurrentBlock().GetItemType() != ItemType.DEL_4VLINE || canMoveH) {
                 BlockDelete.DelCompleteLines(board, gameScore);
                 currentBlock.MoveEnd(board);
             }
@@ -103,5 +103,8 @@ public class BlockMove {
             board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
             board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
         }
+    }
+    public static void SetCanHMove(boolean can){
+        canMoveH = can;
     }
 }

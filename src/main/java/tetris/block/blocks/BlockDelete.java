@@ -81,7 +81,7 @@ public class BlockDelete {
     }
     // ItemType.DEL_AEMPTY 역 폭탄
     public static void DeleteAroundEmpty(BoardElement[][] board, int line, int row) {
-        BlockData dot = BlockCreate.Block(-1).GetBlockData();
+        BlockData dot = new Block_dot(1).GetBlockData();
         for (int i = (line-1); i<(line+2); i++){
             for (int j = (row-1); j < (row+2); j++) {
                 if(!board[j][i].isBlock()) {

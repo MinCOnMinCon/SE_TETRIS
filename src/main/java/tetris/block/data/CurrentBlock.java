@@ -27,21 +27,13 @@ public class CurrentBlock {
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
-    private boolean item;
-    private ItemType itemType;
-    private int[] itemPos; //x, y
+    
     
 
-    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, boolean item, ItemType itemType, int[] itemPos) {
+    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
         this.blockData = nextBlocks.GetNextBlock();
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
-        this.item = item;
-        this.itemType = itemType;
-        this.itemPos = itemPos;
-    }
-    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding) {
-        this(nextBlocks, blockHolding, false, ItemType.NORMAL, null);
     }
 
     public BlockData GetCurrentBlock() {
@@ -50,24 +42,7 @@ public class CurrentBlock {
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
     }
-    public boolean IsItem() {
-        return this.item;
-    }
-    public void SetItem(boolean item) {
-        this.item = item;
-    }
-    public ItemType GetItemType() {
-        return this.itemType;
-    }
-    public void SetItemType(ItemType itemType) {
-        this.itemType = itemType;
-    }
-    public int[] GetItemPos() {
-        return this.itemPos;
-    }
-    public void SetItemPos(int[] itemPos) {
-        this.itemPos = itemPos;
-    }
+    
 
     public void MoveEnd(BoardElement[][] board) {
         SetCurrentBlock(nextBlocks.GetNextBlock());
