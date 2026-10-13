@@ -55,8 +55,8 @@ public class GameOverRoot extends StackPane {
     public GameOverRoot(GameResult result, ScoreBoardScreen oldScoreBoard) {
         int finalScore =  result.score();
         
-        if (oldScoreBoard==null)
-            oldScoreBoard = new ScoreBoardScreen();
+        // if (oldScoreBoard==null)
+        //     oldScoreBoard = new ScoreBoardScreen();
 
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);

@@ -35,9 +35,7 @@ public class AppController {
         this.startScreen.makeStartScreen(this::ShowGame, this::ShowScoreBoard, this::ShowSettings);//StartScreen의 makeStartScreen에 콜백함수 전달, 버튼 클릭시 화면 전환
 
         //ScoreBoardScreen과 SettingsScreen도 StartScreen과 동일하게 생성하고 콜백함수 전달
-        this.scoreBoardScreen = new ScoreBoardScreen();
-        this.scoreBoardScreen.makeSB();
-        this.scoreBoardScreen.showSB(this::ShowStartScreen);
+        this.scoreBoardScreen = new ScoreBoardScreen(this::ShowStartScreen);
 
         this.settingsScreen = new SettingsScreen();
         this.settingsScreen.makeSS(stage, scene, this::ShowStartScreen);

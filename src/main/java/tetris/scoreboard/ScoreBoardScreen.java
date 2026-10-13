@@ -18,6 +18,11 @@ public class ScoreBoardScreen {
     private TableView<ScoreRecord> table;
     private Button backButton;
 
+    public ScoreBoardScreen(Runnable onBack) {
+        makeSB();
+        this.backButton.setOnAction(e -> onBack.run());
+    }
+
     //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
     public TableView<ScoreRecord> makeSB() {
         // 상위 10개만 추출해서 표에 표시
@@ -71,12 +76,6 @@ public class ScoreBoardScreen {
         return table;
     }
 
-    public BorderPane showSB(Runnable onBack) {
-        if (backButton != null) {
-            backButton.setOnAction(e -> onBack.run());
-        }
-        return root;
-    }
     public BorderPane showSB() {
         return root;
     }
