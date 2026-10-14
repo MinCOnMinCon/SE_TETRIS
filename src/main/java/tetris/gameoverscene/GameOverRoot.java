@@ -55,8 +55,8 @@ public class GameOverRoot extends StackPane {
     public GameOverRoot(GameResult result, ScoreBoardScreen oldScoreBoard) {
         int finalScore =  result.score();
         
-        // if (oldScoreBoard==null)
-        //     oldScoreBoard = new ScoreBoardScreen();
+        if (oldScoreBoard==null)
+            oldScoreBoard = new ScoreBoardScreen(null);
 
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
@@ -114,6 +114,8 @@ public class GameOverRoot extends StackPane {
         scoreBoard.setAlignment(Pos.CENTER);
         scoreBoard.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); 
         scoreBoard.setVisible(false); // 처음에는 투명하게 숨겨둠
+
+        oldScore = new TableView<ScoreRecord>();
 
         
         // 2. 내 등수표 생성
@@ -208,6 +210,7 @@ public class GameOverRoot extends StackPane {
 
             
             scoreBoard.setVisible(true);
+            System.out.println(myRank.getText() + myName.getText() + myScore.getText());
 
             
         });
@@ -265,7 +268,7 @@ public class GameOverRoot extends StackPane {
         confirmPopup.getChildren().addAll(confirmMessage, confirmButtonBox);
 
         // 최종 조립: StackPane에 바탕화면과 팝업을 겹쳐서 올림
-        this.getChildren().addAll(baseScreen, confirmPopup);
+        this.getChildren().addAll(baseScreen, confirmPopup, scoreBoard);
     }
 
     
