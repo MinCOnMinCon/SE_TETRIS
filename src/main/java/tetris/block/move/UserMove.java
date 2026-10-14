@@ -33,6 +33,7 @@ public class UserMove {
             BlockMove.MoveDown(CurrentBlock, board, gameScore, clearedRows);
             gameScore.AddGameScore(1); // 하드 드롭의 한 칸당 추가 점수
         }
+        BlockMove.MoveDown(CurrentBlock, board, gameScore, clearedRows);
         //gameScore.AddGameScore(10); // 추가 점수 - 그냥 스페이스 계속 누르면 무조건 이 점수는 얻을 수 있어서 주석 처리
     }
 }

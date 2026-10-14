@@ -2,6 +2,7 @@ package tetris.block.data;
 
 import java.util.Objects;
 
+import tetris.block.move.BlockMove;
 import tetris.block.move.CanMove;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.blockholding.BlockHolding;
@@ -29,6 +30,8 @@ public class CurrentBlock {
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;
+    private boolean canMoveH;
+    private boolean isHolded;
     private final Runnable onGameOver;
 
     public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding,
@@ -36,6 +39,8 @@ public class CurrentBlock {
         this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
+        canMoveH = true;
+        isHolded = false;
         this.onGameOver = Objects.requireNonNull(onGameOver);
     }
     public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, Runnable onGameOver) {
@@ -54,33 +59,47 @@ public class CurrentBlock {
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
     }
+    public boolean GetCanMoveH() {
+        return this.canMoveH;
+    }
+    public void SetCanMoveH(boolean isCan) {
+        this.canMoveH = isCan;
+    }
+    public void SetFalseIsHolded() {
+        this.isHolded = false;
+    }
     
 
-    public void MoveEnd(BoardElement[][] board) {
-        SetCurrentBlock(nextBlocks.GetNextBlock());
+    public void MoveEnd(BoardElement[][] board, BlockData blockData) {
+        SetCurrentBlock(blockData);
         if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)){
             onGameOver.run();
             return;
         }
-
+        this.canMoveH = true;
+    }
+    public void MoveEnd(BoardElement[][] board) {
+        MoveEnd(board, nextBlocks.GetNextBlock());
     }
 
     public void BlockHold(BoardElement[][] board) {
-        if (blockHolding.GetBlockHolding() == null) {
-            SaveHold();
-            MoveEnd(board);
-        } else {
-            BlockData temp = blockHolding.GetBlockHolding();
-            SaveHold();
-            SetCurrentBlock(temp);
+        if(!isHolded) {
+            isHolded = true;
+            if (blockHolding.GetBlockHolding() == null) {
+                SaveHold();
+                MoveEnd(board);
+            } else {
+                BlockData temp = blockHolding.GetBlockHolding();
+                SaveHold();
+                MoveEnd(board, temp);
+            }
         }
     }
     private void SaveHold() {
-        boolean[][] dot = {{true}};
-            this.blockData.SetX(3);
-            this.blockData.SetY(0);
-            if (blockData.GetShape() == dot)
-                this.blockData.SetX(4);
-            blockHolding.SetBlockHolding(this.blockData);
+        this.blockData.SetX(3);
+        this.blockData.SetY(0);
+        if (blockData.GetShape() == new ShapePalette().GetShape_dot())
+            this.blockData.SetX(4);
+        blockHolding.SetBlockHolding(this.blockData);
     }
 }
