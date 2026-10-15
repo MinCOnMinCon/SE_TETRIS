@@ -99,6 +99,13 @@ public final class SettingsStore {
         return gameSettings; // 생성한 객체를 게임 시작 흐름에서 사용
     }
 
+        public static GameSettings resetToDefaults() {
+            GameSettings.setResolutionPreset(GameSettings.RESOLUTION_PRESETS[0]);
+            GameSettings.setColorBlindMode(GameSettings.ColorBlindMode.NORMAL);
+            GameSettings.getInputSettingData().resetToDefaults();
+            return save();
+        }
+
     // 게임 시작 화면에서 마지막 저장 설정 객체를 조회
     public static GameSettings getGameSettings() {
         if (gameSettings == null) {

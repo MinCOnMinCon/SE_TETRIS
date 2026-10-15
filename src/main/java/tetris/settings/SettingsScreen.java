@@ -28,30 +28,24 @@ public class SettingsScreen {
     }
 
     public void makeSS(Stage stage, Scene scene, Runnable onBack) {
-        // 화면 제목 라벨
         Label title = new Label("설정");
-        //글자의 폰트와 크기
         title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        // 해상도 선택 드롭다운 생성
-        ComboBox<String> resolutionComboBox = new ComboBox<>();//새로운 드롭다운 객체 생성
-        resolutionComboBox.setPromptText("화면 해상도 선택");//화면 사이즈 드롭다운 설명
-        resolutionComboBox.setPrefWidth(220);//드롭다운의 크기를 220픽셀로 설정
+        ComboBox<String> resolutionComboBox = new ComboBox<>();
+        resolutionComboBox.setPromptText("화면 해상도 선택");
+        resolutionComboBox.setPrefWidth(220);
 
-        // 일반, 적록색맹, 청황색맹 모드 선택 상자
-        ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox = new ComboBox<>();//새로운 드롭다운 객체 생성
-        colorBlindModeComboBox.setPromptText("색상 모드 선택");//색맹 모드 드롭다운 설명
-        colorBlindModeComboBox.setPrefWidth(220);//드롭다운의 크기를 220픽셀로 설정
+        ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox = new ComboBox<>();
+        colorBlindModeComboBox.setPromptText("색상 모드 선택");
+        colorBlindModeComboBox.setPrefWidth(220);
 
-        // 키 설정 항목을 담을 세로 목록
         Label keySettingsTitle = new Label("키 설정");
         keySettingsTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
         Label keySettingsStatus = new Label("역할 버튼을 누른 뒤 새 키를 입력하세요.");
         keySettingsStatus.setStyle("-fx-text-fill: white;");
         VBox keyBindingRows = new VBox(8);
 
-        // 역할을 왼쪽, 현재 배정된 키를 오른쪽에 표시
-        for (ActionType actionType : ActionType.values()) { // 모든 키 역할을 한 줄씩 생성
+        for (ActionType actionType : ActionType.values()) {
             Label actionLabel = new Label(actionType.getDisplayName());
             actionLabel.setStyle("-fx-text-fill: white;");
             actionLabel.setPrefWidth(190);
@@ -65,39 +59,45 @@ public class SettingsScreen {
             keyBindingRows.getChildren().add(row);
         }
 
-        // 뒤로가기 버튼
         Button backButton = new Button("뒤로가기");
         backButton.setPrefSize(180, 50);
 
-        // 해상도, 색상 모드, 키 배정을 한 번에 저장하는 버튼
         Button saveSettingsButton = new Button("설정 저장");
         saveSettingsButton.setPrefSize(180, 44);
 
-        // 설정 항목을 세로로 묶고 스크롤할 수 있게 구성
+        Button resetSettingsButton = new Button("설정 초기화");
+        resetSettingsButton.setPrefSize(180, 50);
+
+        Button resetScoreButton = new Button("스코어보드 초기화");
+        resetScoreButton.setPrefSize(180, 50);
+
         VBox content = new VBox(14, resolutionComboBox, colorBlindModeComboBox,
-            keySettingsTitle, keySettingsStatus, keyBindingRows, saveSettingsButton);
+                keySettingsTitle, keySettingsStatus, keyBindingRows,
+                saveSettingsButton, resetSettingsButton);
         content.setAlignment(Pos.CENTER);
         content.setPadding(new Insets(20));
 
-        ScrollPane scrollPane = new ScrollPane(content); // 긴 설정 목록을 스크롤 가능하게 구성
+        ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background: black; -fx-background-color: black;");
 
-        // 설정 화면의 전체 배치 구조
-        root = new BorderPane();//보더 페인으로 설정
-        root.setStyle("-fx-background-color: black;");//배경을 검은색으로 설정
-        root.setTop(title);//위에서 선언한 title을 위쪽에 배치
-        BorderPane.setAlignment(title, Pos.CENTER);//배치할 때 중앙에 배치
-        root.setCenter(scrollPane);//스크롤 가능한 설정 내용을 중앙에 배치
-        root.setBottom(backButton);//뒤로가기 버튼은 화면 아래에 고정
-        BorderPane.setAlignment(backButton, Pos.CENTER);
-        BorderPane.setMargin(backButton, new Insets(12));
+        root = new BorderPane();
+        root.setStyle("-fx-background-color: black;");
+        root.setTop(title);
+        BorderPane.setAlignment(title, Pos.CENTER);
+        root.setCenter(scrollPane);
 
-        // 화면 전환을 수행하기 전에 설정 컨트롤 객체를 연결
+        VBox bottomButtons = new VBox(10, resetScoreButton, backButton);
+        bottomButtons.setAlignment(Pos.CENTER);
+        root.setBottom(bottomButtons);
+        BorderPane.setAlignment(bottomButtons, Pos.BOTTOM_CENTER);
+        BorderPane.setMargin(bottomButtons, new Insets(12));
+
         controller = new SettingsController(stage, scene, resolutionComboBox,
-            colorBlindModeComboBox, GameSettings.getInputSettingData(), keyBindingRows,
-            keySettingsStatus, saveSettingsButton);
-        backButton.setOnAction(e -> { // 뒤로가기 버튼 클릭 처리
+                colorBlindModeComboBox, GameSettings.getInputSettingData(), keyBindingRows,
+            keySettingsStatus, saveSettingsButton, resetSettingsButton, resetScoreButton,
+            backButton);
+        backButton.setOnAction(e -> {
             controller.dispose();
             onBack.run();
         });

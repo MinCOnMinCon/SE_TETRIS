@@ -52,17 +52,14 @@ public class GameOverRoot extends StackPane {
 
 
 
-    public GameOverRoot(GameResult result, ScoreBoardScreen oldScoreBoard) {
+    public GameOverRoot(GameResult result) {
         int finalScore =  result.score();
-        
-        // if (oldScoreBoard==null)
-        //     oldScoreBoard = new ScoreBoardScreen();
 
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore, oldScoreBoard);
+        bindEvents(finalScore);
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
@@ -148,10 +145,11 @@ public class GameOverRoot extends StackPane {
         // 3. 뒤로가기 버튼 생성
         backButton = new Button("뒤로가기");
 
+        oldScore = ScoreBoardScreen.createScoreTableView();
         scoreBoard.getChildren().addAll(oldScore, newScore, backButton);
     }
 
-    private void bindEvents(int finalScore, ScoreBoardScreen oldScoreBoard) {
+    private void bindEvents(int finalScore) {
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -186,7 +184,9 @@ public class GameOverRoot extends StackPane {
 
 
             // 1. 이전 스코어 보드 로드 (상위 n등)
-            oldScore = oldScoreBoard.makeSB();
+            int tableIndex = scoreBoard.getChildren().indexOf(oldScore);
+            oldScore = ScoreBoardScreen.createScoreTableView();
+            scoreBoard.getChildren().set(tableIndex, oldScore);
 
             confirmPopup.setVisible(false);
             nameField.setDisable(true); // 중복 등록 방지

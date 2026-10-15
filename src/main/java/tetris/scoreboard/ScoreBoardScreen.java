@@ -25,32 +25,7 @@ public class ScoreBoardScreen {
 
     //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
     public TableView<ScoreRecord> makeSB() {
-        // 상위 10개만 추출해서 표에 표시
-        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
-
-        // JavaFX 표를 생성
-        table = new TableView<>();
-
-        // 순위 컬럼 생성 및 값 연결
-        TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
-        rankColumn.setCellValueFactory(cellData -> {
-            int index = top10.indexOf(cellData.getValue());
-            return new javafx.beans.property.SimpleIntegerProperty(index + 1).asObject();
-        });
-
-        // 이름 컬럼 생성 및 ScoreRecord의 name 필드와 연결
-        TableColumn<ScoreRecord, String> nameColumn = new TableColumn<>("이름");
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        // 점수 컬럼 생성 및 ScoreRecord의 score 필드와 연결
-        TableColumn<ScoreRecord, Integer> scoreColumn = new TableColumn<>("점수");
-        scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
-
-        // 표에 3개의 컬럼 추가
-        table.getColumns().addAll(rankColumn, nameColumn, scoreColumn); // 세 컬럼을 표에 추가
-
-        // top10 데이터를 표에 넣기
-        table.setItems(FXCollections.observableArrayList(top10));
+        table = createScoreTableView();
 
         // 제목 라벨 생성 및 스타일 지정
         Label title = new Label("Top 10 Scores");
@@ -76,8 +51,33 @@ public class ScoreBoardScreen {
         return table;
     }
 
+    public static TableView<ScoreRecord> createScoreTableView() {
+        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
+        TableView<ScoreRecord> scoreTable = new TableView<>();
+
+        TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
+        rankColumn.setCellValueFactory(cellData -> {
+            int index = top10.indexOf(cellData.getValue());
+            return new javafx.beans.property.SimpleIntegerProperty(index + 1).asObject();
+        });
+
+        TableColumn<ScoreRecord, String> nameColumn = new TableColumn<>("이름");
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<ScoreRecord, Integer> scoreColumn = new TableColumn<>("점수");
+        scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
+
+        scoreTable.getColumns().addAll(rankColumn, nameColumn, scoreColumn);
+        scoreTable.setItems(FXCollections.observableArrayList(top10));
+        return scoreTable;
+    }
+
     public BorderPane showSB() {
         return root;
+    }
+
+    public void focusBackButton() {
+        backButton.requestFocus();
     }
 
     public TableView<ScoreRecord> getTable() {

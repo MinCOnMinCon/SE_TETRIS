@@ -61,4 +61,16 @@ public class ScoreStorage {
             return -1;
         }
     }
+
+    public boolean clearScores() {
+        try {
+            Files.createDirectories(SCORE_FILE.getParent());
+            Files.writeString(SCORE_FILE, "", StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return true;
+        } catch (IOException e) {
+            System.err.println("점수 파일을 초기화하지 못했습니다: " + e.getMessage());
+            return false;
+        }
+    }
 }

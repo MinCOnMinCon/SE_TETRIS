@@ -30,8 +30,7 @@ public class Main extends Application{
         stage.setTitle("Tetris");
         stage.setResizable(true);
         stage.setScene(scene);
-        StartScreen root = new StartScreen(stage, scene);
-        new AppController(root).ShowStartScreen();
+        new AppController(stage, scene).ShowStartScreen();
         stage.show();
     }
    
