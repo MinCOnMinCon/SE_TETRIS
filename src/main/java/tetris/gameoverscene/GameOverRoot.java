@@ -3,7 +3,6 @@ package tetris.gameoverscene;
 import tetris.gamescene.GameResult;
 import tetris.settings.GameSettings;
 import tetris.scoreboard.*;
-import tetris.settings.GameSettings;
 
 import java.util.List;
 
@@ -45,6 +44,7 @@ public class GameOverRoot extends StackPane {
     private Label myName;
     private Label myScore;
     private Label myDifficulty;
+    private Label myGameMode;
 
     // 1. 생성자: 외부에서 넘겨준 데이터를 받아서 화면을 세팅함
 
@@ -58,15 +58,13 @@ public class GameOverRoot extends StackPane {
     public GameOverRoot(GameResult result) {
         int finalScore =  result.score();
         GameSettings.Difficulty gameDifficulty = result.difficulty();
+        GameSettings.GameMode gameMode = result.gameMode();
         
-        if (oldScoreBoard==null)
-            oldScoreBoard = new ScoreBoardScreen(null);
-
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore, gameDifficulty, oldScoreBoard);
+        bindEvents(finalScore, gameDifficulty, gameMode);
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
@@ -134,28 +132,33 @@ public class GameOverRoot extends StackPane {
         myName = new Label();
         myScore = new Label();
         myDifficulty = new Label();
+        myGameMode = new Label();
         myRank.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold; -fx-font-size: 22px;");
         myName.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
         myScore.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
         myDifficulty.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
+        myGameMode.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
 
 
         myRank.setPrefWidth(50);
         myName.setPrefWidth(100);
         myScore.setPrefWidth(100);
         myDifficulty.setPrefWidth(100);
+        myGameMode.setPrefWidth(120);
         
         // 중앙 정렬 (선택 사항)
         myRank.setAlignment(Pos.CENTER);
         myName.setAlignment(Pos.CENTER);
         myScore.setAlignment(Pos.CENTER);
         myDifficulty.setAlignment(Pos.CENTER);
+        myGameMode.setAlignment(Pos.CENTER);
         
         // 뒤로가기 버튼 생성
         backButton = new Button("뒤로가기");
     }
 
-    private void bindEvents(int finalScore, GameSettings.Difficulty difficulty, ScoreBoardScreen oldScoreBoard) {
+        private void bindEvents(int finalScore, GameSettings.Difficulty difficulty,
+            GameSettings.GameMode gameMode) {
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -185,14 +188,12 @@ public class GameOverRoot extends StackPane {
             else playerName = nameField.getText();
 
             ScoreStorage scoreStorage = new ScoreStorage();
-            scoreStorage.saveScore(playerName, finalScore, difficulty);
+            scoreStorage.saveScore(playerName, finalScore, difficulty, gameMode);
             System.out.println("플레이어: " + playerName + " / 획득 점수: " + finalScore + " 저장 완료");
 
 
-            // 1. 이전 스코어 보드 로드 (상위 n등)
-            int tableIndex = scoreBoard.getChildren().indexOf(oldScore);
+            // 점수 저장 후 최신 기록으로 표를 만든다.
             oldScore = ScoreBoardScreen.createScoreTableView();
-            scoreBoard.getChildren().set(tableIndex, oldScore);
 
             // 스코어보드
             // 1. 전체 점수 리스트(scores)에서 내 순위 찾기
@@ -208,6 +209,7 @@ public class GameOverRoot extends StackPane {
             myName.setText("'" + playerName + "'");
             myScore.setText(finalScore + "점");
             myDifficulty.setText(difficulty.toString());
+            myGameMode.setText(gameMode.toString());
             switch (difficulty) {
                 case EASY:
                     myDifficulty.setStyle("-fx-text-fill: yellow;");
@@ -284,7 +286,7 @@ public class GameOverRoot extends StackPane {
         confirmPopup.getChildren().addAll(confirmMessage, confirmButtonBox);
 
         // 5. 스코어 보드 추가
-        newScore.getChildren().addAll(myRank, myName, myScore, myDifficulty);
+        newScore.getChildren().addAll(myRank, myName, myScore, myDifficulty, myGameMode);
 
         // 최종 조립: StackPane에 바탕화면과 팝업을 겹쳐서 올림
         this.getChildren().addAll(baseScreen, confirmPopup);

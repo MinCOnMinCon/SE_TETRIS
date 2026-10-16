@@ -11,7 +11,9 @@ import tetris.gameoverscene.GameOverRoot;
 import tetris.gamescene.GameController;
 import tetris.gamescene.GameResult;
 import tetris.pausescene.PauseScene;
+import tetris.settings.GameSettings;
 import tetris.settings.SettingsStore;
+import tetris.settings.GameSettings.GameMode;
 import tetris.scoreboard.ScoreBoardScreen;
 import tetris.settings.SettingsScreen;
 
@@ -33,7 +35,8 @@ public class AppController {
 
     public void ShowStartScreen() {
         StartScreen startScreen = new StartScreen(stage, scene);
-        startScreen.makeStartScreen(this::ShowGame, this::ShowScoreBoard, this::ShowSettings);
+        startScreen.makeStartScreen(
+            this::ShowGame, this::ShowItemGame, this::ShowScoreBoard, this::ShowSettings);
         scene.setOnKeyPressed(null);
         stage.setTitle("Tetris");
         scene.setRoot(startScreen.showStartScreen());
@@ -41,8 +44,17 @@ public class AppController {
     }
 
     public void ShowGame() {
+        startGame(GameMode.NORMAL);
+    }
+
+    public void ShowItemGame() {
+        startGame(GameMode.ITEM);
+    }
+
+    private void startGame(GameMode gameMode) {
+        GameSettings settings = SettingsStore.setGameMode(gameMode);
         gameController = new GameController(
-                this::ShowPauseScreen, this::ShowEndGame, SettingsStore.getGameSettings());
+                this::ShowPauseScreen, this::ShowEndGame, settings);
         // 기존 시작 화면이 Scene에 등록한 메뉴 키 입력을 제거한다.
         scene.setOnKeyPressed(null);
         scene.setRoot(gameController.GetRoot());
@@ -97,7 +109,7 @@ public class AppController {
 
     public void ShowEndGame(GameResult result) {
         scene.setOnKeyPressed(null);
-        gameOverRoot = new GameOverRoot(result, scoreBoardScreen); 
+        gameOverRoot = new GameOverRoot(result);
         scene.setRoot(gameOverRoot);
         gameOverRoot.requestFocus();
         gameController = null;

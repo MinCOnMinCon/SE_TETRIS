@@ -140,8 +140,8 @@ public class GameController {
             return;
         }
         stopped = true;
-        // TODO: 일반·아이템 모드 구현 후 종료 결과에 게임 모드도 전달한다.
-        GameResult result = new GameResult(score.GetGameScore(), gameSettings.difficulty());
+        GameResult result = new GameResult(
+            score.GetGameScore(), gameSettings.difficulty(), gameSettings.gameMode());
 
         gameLoop.stop();
         playerInput.SetInputEnabled(false);

@@ -12,6 +12,7 @@ import java.util.stream.Collectors; // 키 목록을 문자열로 변환
 
 import javafx.scene.input.KeyCode; // 키 이름 변환
 import tetris.settings.KeyBindingSettings.ActionType; // 역할 목록
+import tetris.settings.GameSettings.GameMode;
 
 // 사용자 설정을 홈 디렉터리의 properties 파일에 저장하고 불러오는 클래스
 public final class SettingsStore {
@@ -24,6 +25,7 @@ public final class SettingsStore {
 
     // 저장된 설정을 현재 공유 설정 객체에 적용
     public static void load() { // 파일의 설정을 메모리로 불러옴
+        GameSettings.setGameMode(GameMode.NORMAL);
         if (!Files.exists(SETTINGS_FILE)) {
             gameSettings = createGameSettings(); // 설정 파일이 없으면 기본값 스냅샷을 생성
             return;
@@ -53,6 +55,13 @@ public final class SettingsStore {
             }
         }
 
+        String gameMode = properties.getProperty("gameMode", GameMode.NORMAL.name());
+        try {
+            GameSettings.setGameMode(GameMode.valueOf(gameMode));
+        } catch (IllegalArgumentException e) {
+            System.err.println("저장된 게임 모드를 읽을 수 없습니다: " + gameMode);
+        }
+
         KeyBindingSettings inputSettings = GameSettings.getInputSettingData();
         for (ActionType actionType : ActionType.values()) {
             String savedKeys = properties.getProperty("key." + actionType.name());
@@ -77,6 +86,7 @@ public final class SettingsStore {
         Properties properties = new Properties(); // 저장할 key=value 모음
         properties.setProperty("resolution", GameSettings.getResolutionPreset());
         properties.setProperty("colorBlindMode", GameSettings.getColorBlindMode().name());
+        properties.setProperty("gameMode", GameSettings.getGameMode().name());
 
         GameSettings.getInputSettingData().getAllBindings().forEach((actionType, keyCodes) -> {
             String values = keyCodes.stream()
@@ -99,12 +109,19 @@ public final class SettingsStore {
         return gameSettings; // 생성한 객체를 게임 시작 흐름에서 사용
     }
 
-        public static GameSettings resetToDefaults() {
-            GameSettings.setResolutionPreset(GameSettings.RESOLUTION_PRESETS[0]);
-            GameSettings.setColorBlindMode(GameSettings.ColorBlindMode.NORMAL);
-            GameSettings.getInputSettingData().resetToDefaults();
-            return save();
-        }
+    public static GameSettings setGameMode(GameMode gameMode) {
+        GameSettings.setGameMode(gameMode);
+        GameSettings savedSettings = save();
+        return savedSettings == null ? createGameSettings() : savedSettings;
+    }
+
+    public static GameSettings resetToDefaults() {
+        GameSettings.setResolutionPreset(GameSettings.RESOLUTION_PRESETS[0]);
+        GameSettings.setColorBlindMode(GameSettings.ColorBlindMode.NORMAL);
+        GameSettings.setGameMode(GameMode.NORMAL);
+        GameSettings.getInputSettingData().resetToDefaults();
+        return save();
+    }
 
     // 게임 시작 화면에서 마지막 저장 설정 객체를 조회
     public static GameSettings getGameSettings() {
@@ -122,7 +139,8 @@ public final class SettingsStore {
                 GameSettings.getScreenHeight(),
                 GameSettings.getColorBlindMode().getColorMode(),
                 GameSettings.getInputSettingData().getAllBindings(),
-                GameSettings.getDifficulty()
+                GameSettings.getDifficulty(),
+                GameSettings.getGameMode()
                 );
     }
 
