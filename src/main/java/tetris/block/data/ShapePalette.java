@@ -55,4 +55,11 @@ public class ShapePalette {
     public boolean[][] GetShape_dot() {
         return new boolean[][] { {true} };
     }
+
+    public boolean[][] GetShape_4VLines(){
+        return new boolean[][] 
+        {{false, true, true, false},
+        { true, true, true, true}        
+    };
+    }
 }

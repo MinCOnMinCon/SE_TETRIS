@@ -24,8 +24,8 @@ public class AutoMove {
     private final int minFallInterval = 100;
     private int basicFallInterval = 1000;// 자동으로 떨어지는 기본 간격
     private int fallIntervalDecrese = 50; // 레벨당 줄어드는 낙하 간격
-    private double easyBonusRatio = 0.2; // 이지 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 덜 감소된다.
-    private double hardBonusRatio = 0.2; // 하드 모드일때 줄어드는 낙하 간격 * 이 비율만큼 낙하 간격이 더 감소된다.
+    private double easyBonusRatio = 0.2; // 이지 모드일때, (줄어드는 낙하 간격 * 이 비율)만큼 낙하 간격이 덜 감소된다.
+    private double hardBonusRatio = 0.2; // 하드 모드일때, (줄어드는 낙하 간격 * 이 비율)만큼 낙하 간격이 더 감소된다.
     private Difficulty difficulty; 
     private int intervalMillis;
     private int currentTimeMillis = 0;
@@ -54,7 +54,7 @@ public class AutoMove {
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
-                BlockMove.MoveDown(currentBlock, currentBoard, gameScore, clearedRows);
+                BlockMove.MoveDown(currentBlock, currentBoard, gameScore, clearedRows, progress);
             }
         } 
     }
@@ -64,15 +64,15 @@ public class AutoMove {
     public void SetFallInterval() {
         int level = progress.GetLevel();
         if(difficulty == Difficulty.EASY){
-            intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1-easyBonusRatio)); 
+            intervalMillis = basicFallInterval - (int)(level* (fallIntervalDecrese * (1-easyBonusRatio))); 
         }
         else if(difficulty == Difficulty.HARD){
-            intervalMillis = basicFallInterval - (int)((level*fallIntervalDecrese) * (1+hardBonusRatio)); 
+            intervalMillis = basicFallInterval - (int)(level* (fallIntervalDecrese * (1+hardBonusRatio))); 
         }
         else{
             intervalMillis = basicFallInterval - level*fallIntervalDecrese; 
         }
-        intervalMillis = Math.max(minFallInterval, intervalMillis);
+        intervalMillis = Math.max(minFallInterval, intervalMillis); // 최소값보다 더 떨어지지는 않는다.
     }
     public int GetIntervalMillis() {
         SetFallInterval();

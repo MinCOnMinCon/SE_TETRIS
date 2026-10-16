@@ -22,6 +22,7 @@ public class BlockData {
     private boolean item;
     private ItemType itemType;
     private int[] itemPos; //x, y
+    private PatternType patternType = PatternType.NONE;
 
     public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos) {
         this.shape = shape;
@@ -37,7 +38,7 @@ public class BlockData {
         this(shape, colorPalette, colorMode, 3, 0, false, ItemType.NORMAL, null); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
     }
     public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y) {
-        this(shape, null, 0, x, y, false, ItemType.NORMAL, null);
+        this(shape, colorPalette, colorMode, x, y, false, ItemType.NORMAL, null);
     }
     public BlockData(boolean[][] shape, int x, int y) {
         this(shape, null, 0, x, y, false, ItemType.NORMAL, null);
@@ -64,6 +65,14 @@ public class BlockData {
 
     public boolean[][] GetShape() {
         return this.shape;
+    }
+
+    public PatternType GetPatternType() {
+        return this.patternType;
+    }
+
+    public void SetPatternType(PatternType patternType) {
+        this.patternType = patternType;
     }
 
     public void SetShape(boolean[][] shape) {

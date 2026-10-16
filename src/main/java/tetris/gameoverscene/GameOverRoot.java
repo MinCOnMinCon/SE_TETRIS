@@ -3,7 +3,7 @@ package tetris.gameoverscene;
 import tetris.gamescene.GameResult;
 import tetris.settings.GameSettings;
 import tetris.scoreboard.*;
-
+import tetris.settings.GameSettings;
 
 import java.util.List;
 
@@ -36,6 +36,7 @@ public class GameOverRoot extends StackPane {
     private Button yesButton;
     private Button noButton;
 
+    private Label titleLabel_SB;    // Score Board
     private VBox scoreBoard;        // scoreBoard
     private Button backButton;
     private TableView<ScoreRecord> oldScore;
@@ -43,6 +44,7 @@ public class GameOverRoot extends StackPane {
     private Label myRank; 
     private Label myName;
     private Label myScore;
+    private Label myDifficulty;
 
     // 1. 생성자: 외부에서 넘겨준 데이터를 받아서 화면을 세팅함
 
@@ -55,12 +57,16 @@ public class GameOverRoot extends StackPane {
 
     public GameOverRoot(GameResult result) {
         int finalScore =  result.score();
+        GameSettings.Difficulty gameDifficulty = result.difficulty();
+        
+        if (oldScoreBoard==null)
+            oldScoreBoard = new ScoreBoardScreen(null);
 
         // 1. 노드 생성 및 스타일 설정 (디자인)
         setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore, result.difficulty());
+        bindEvents(finalScore, gameDifficulty, oldScoreBoard);
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
@@ -113,44 +119,43 @@ public class GameOverRoot extends StackPane {
         scoreBoard.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); 
         scoreBoard.setVisible(false); // 처음에는 투명하게 숨겨둠
 
+
+        // 타이틀 생성
+        titleLabel_SB = new Label("Score Board");
+        titleLabel_SB.setStyle("-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: yellow;");
         
-        // 2. 내 등수표 생성
+        // 현재 등수표
+        //oldScore = oldScoreBoard.getTable();
+        // 내 등수표 생성
         newScore = new HBox();
         newScore.setAlignment(Pos.CENTER);
         newScore.setStyle("-fx-background-color: #333333; -fx-padding: 10px;"); // 위쪽 표와 구분되도록 약간의 배경색/여백 추가
         myRank = new Label(); 
         myName = new Label();
         myScore = new Label();
-        myRank.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold;");
-        myName.setStyle("-fx-text-fill: white;");
-        myScore.setStyle("-fx-text-fill: white;");
-
-
-        // 🌟 핵심 팁: 위쪽 TableView의 컬럼 너비와 동일하게 강제 고정!
-
-        // 화면 비율 맞는지 확인
-
-        // (표의 컬럼 너비를 50, 100, 100으로 설정했다고 가정)
+        myDifficulty = new Label();
+        myRank.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold; -fx-font-size: 22px;");
+        myName.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
+        myScore.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
+        myDifficulty.setStyle("-fx-text-fill: white; -fx-font-size: 22px;");
 
 
         myRank.setPrefWidth(50);
         myName.setPrefWidth(100);
         myScore.setPrefWidth(100);
+        myDifficulty.setPrefWidth(100);
+        
         // 중앙 정렬 (선택 사항)
         myRank.setAlignment(Pos.CENTER);
         myName.setAlignment(Pos.CENTER);
         myScore.setAlignment(Pos.CENTER);
-        // HBox에 조립
-        newScore.getChildren().addAll(myRank, myName, myScore);
-
-        // 3. 뒤로가기 버튼 생성
+        myDifficulty.setAlignment(Pos.CENTER);
+        
+        // 뒤로가기 버튼 생성
         backButton = new Button("뒤로가기");
-
-        oldScore = ScoreBoardScreen.createScoreTableView();
-        scoreBoard.getChildren().addAll(oldScore, newScore, backButton);
     }
 
-    private void bindEvents(int finalScore, GameSettings.Difficulty difficulty) {
+    private void bindEvents(int finalScore, GameSettings.Difficulty difficulty, ScoreBoardScreen oldScoreBoard) {
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -189,10 +194,6 @@ public class GameOverRoot extends StackPane {
             oldScore = ScoreBoardScreen.createScoreTableView();
             scoreBoard.getChildren().set(tableIndex, oldScore);
 
-            confirmPopup.setVisible(false);
-            nameField.setDisable(true); // 중복 등록 방지
-
-
             // 스코어보드
             // 1. 전체 점수 리스트(scores)에서 내 순위 찾기
             int myRankCount = 1;
@@ -204,13 +205,30 @@ public class GameOverRoot extends StackPane {
                 myRankCount++;
             }
             myRank.setText(myRankCount + "위");
-            myName.setText(playerName);
+            myName.setText("'" + playerName + "'");
             myScore.setText(finalScore + "점");
+            myDifficulty.setText(difficulty.toString());
+            switch (difficulty) {
+                case EASY:
+                    myDifficulty.setStyle("-fx-text-fill: yellow;");
+                    break;
+                case NORMAL:
+                    myDifficulty.setStyle("-fx-text-fill: white;");
+                    break;
+                case HARD:
+                    myDifficulty.setStyle("-fx-text-fill: red;");
+                    break;
+            }
 
             
+            confirmPopup.setVisible(false);
+            nameField.setDisable(true); // 중복 등록 방지
+
+            scoreBoard.getChildren().addAll(titleLabel_SB, oldScore, newScore, backButton);
+            this.getChildren().add(scoreBoard);
+
             scoreBoard.setVisible(true);
-
-            
+            System.out.println(myRank.getText() + myName.getText() + myScore.getText());
         });
         // 팝업 [다시 입력] 버튼 클릭 시 -> 팝업 닫고 입력창 복귀
         noButton.setOnAction(e -> {
@@ -264,6 +282,9 @@ public class GameOverRoot extends StackPane {
 
         // 4. 입력 이름 확인 창 추가 (VBox)
         confirmPopup.getChildren().addAll(confirmMessage, confirmButtonBox);
+
+        // 5. 스코어 보드 추가
+        newScore.getChildren().addAll(myRank, myName, myScore, myDifficulty);
 
         // 최종 조립: StackPane에 바탕화면과 팝업을 겹쳐서 올림
         this.getChildren().addAll(baseScreen, confirmPopup);

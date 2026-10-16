@@ -1,4 +1,4 @@
-package tetris.gamescene;
+package tetris.gamescene.SceneRender;
 
 
 import javafx.scene.Parent;
@@ -19,6 +19,8 @@ import tetris.block.data.BlockData;
 import tetris.gamescene.board.*;
 
 public class SceneRenderer  {
+    private final ItemRenderer itemRenderer = new ItemRenderer();
+    private final BlockPatternRenderer blockPatternRenderer = new BlockPatternRenderer();
     private RenderConfig sceneRenderData;
     private Canvas boardCanvas;
     private Canvas blockQueueCanvas;
@@ -29,9 +31,7 @@ public class SceneRenderer  {
     private HBox contentHBox; 
     private BorderPane sceneLayout;
 
-    public SceneRenderer() {
-        this(new RenderConfig());
-    }
+    
 
     public SceneRenderer(RenderConfig config) {
         SetRenderConfig(config);
@@ -63,8 +63,18 @@ public class SceneRenderer  {
 
                 graphicsContext.setFill(renderBoard[row][col].getElementColor());
                 graphicsContext.fillRect(x, y, blockSide, blockSide);
+                // 아이템 기호를 그리는 칸은 배경 패턴을 생략한다.
+                boolean isItemCell = itemRenderer.IsItemCell(currentBlock, col - currentBlock.GetX(), row - currentBlock.GetY());
+                if (sceneRenderData.colorMode != 0 && renderBoard[row][col].isBlock() && !isItemCell) {
+                    blockPatternRenderer.DrawPattern(graphicsContext, renderBoard[row][col].getPatternType(),
+                            x, y, blockSide, renderBoard[row][col].getElementColor());
+                }
                 graphicsContext.strokeRect(x, y, blockSide, blockSide);
             }
+        }
+        if (currentBlock != null) {
+            itemRenderer.DrawBlockItem(graphicsContext, currentBlock,
+                    currentBlock.GetX() * blockSide, currentBlock.GetY() * blockSide, blockSide);
         }
     }
 
@@ -100,7 +110,10 @@ public class SceneRenderer  {
                 int boardCol = currentBlock.GetX() + col;
                 if (boardRow < 0 || boardRow >= renderBoard.length
                         || boardCol < 0 || boardCol >= renderBoard[boardRow].length) continue;
-                renderBoard[boardRow][boardCol] = new BoardElement(color, true);
+                // 새 요소에 패턴을 복사해 원본 보드의 요소는 수정하지 않는다.
+                BoardElement element = new BoardElement(color, true);
+                element.setPatternType(currentBlock.GetPatternType());
+                renderBoard[boardRow][boardCol] = element;
             }
         }
         return renderBoard;
@@ -207,7 +220,7 @@ public class SceneRenderer  {
                 canvas.getWidth() - 2 * sceneRenderData.panelTitleHPadding);
     }
 
-    // 빈 칸을 제외한 블럭 모양을 주어진 캔버스 중앙에 그린다. 
+    // 다음에 올 블럭, 블럭 홀딩에 나타나는 블럭을 그리기 위한 함수
     private void DrawBlockPreview(Canvas canvas, BlockData block, double top, double height) { 
         if (block == null) return;
         boolean[][] shape = block.GetShape(); 
@@ -244,9 +257,15 @@ public class SceneRenderer  {
                 double x = startX + (col - minCol) * side;
                 double y = startY + (row - minRow) * side;
                 graphicsContext.fillRect(x, y, side, side);
+                if (sceneRenderData.colorMode != 0 && !itemRenderer.IsItemCell(block, col, row)) {
+                    blockPatternRenderer.DrawPattern(graphicsContext, block.GetPatternType(),
+                            x, y, side, color);
+                }
                 graphicsContext.strokeRect(x, y, side, side);
             }
         }
+        itemRenderer.DrawBlockItem(graphicsContext, block,
+                startX - minCol * side, startY - minRow * side, side);
     }
 }
 

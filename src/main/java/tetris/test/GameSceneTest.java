@@ -1,39 +1,62 @@
 package tetris.test;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import tetris.AppController;
-import tetris.scoreboard.ScoreStorage;
+import tetris.gamescene.GameController;
+import tetris.pausescene.PauseScene;
 import tetris.settings.GameSettings;
+import tetris.settings.GameSettings.ColorBlindMode;
+import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.SettingsStore;
 
-// 시작 메뉴를 건너뛰고 실제 AppController로 게임·일시정지·종료 화면을 확인한다.
+// GameController를 직접 생성해 아이템 블록을 확인한다.
 public class GameSceneTest {
+    // 10줄당 아이템 하나: 테스트 시작 시 누적 삭제 줄 수를 지정한다.
+    private static final int INITIAL_CLEARED_LINE_COUNT = 9;
+    // EASY, NORMAL, HARD 중 테스트할 난이도를 지정한다.
+    private static final Difficulty TEST_DIFFICULTY = Difficulty.HARD;
+    // NORMAL, RED_GREEN, BLUE_YELLOW 중 테스트할 색상 모드를 지정한다.
+    private static final ColorBlindMode TEST_COLOR_MODE = ColorBlindMode.RED_GREEN;
+
     public static void main(String[] args) {
         Run(args);
     }
 
     public static void Run(String... args) {
         SettingsStore.load();
-        ScoreStorage.initialize();
         Application.launch(TestApplication.class, args);
     }
 
     // 실행 진입점과 JavaFX Application을 같은 파일 안에서 분리한다.
     public static class TestApplication extends Application {
-        private AppController appController;
+        private GameController gameController;
 
         @Override
         public void start(Stage stage) {
+            GameSettings savedSettings = SettingsStore.getGameSettings();
+            GameSettings testSettings = new GameSettings(
+                    savedSettings.resolutionPreset(), savedSettings.screenWidth(), savedSettings.screenHeight(),
+                    TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY);
             Scene scene = new Scene(new BorderPane(),
                     GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
-            appController = new AppController(stage, scene);
+            PauseScene pauseScene = new PauseScene(() -> {
+                scene.setRoot(gameController.GetRoot());
+                gameController.GetRoot().requestFocus();
+                gameController.ResumeGame();
+            }, Platform::exit);
+            gameController = new GameController(() -> {
+                scene.setRoot(pauseScene.GetRoot());
+                pauseScene.GetRoot().requestFocus();
+            }, testSettings, INITIAL_CLEARED_LINE_COUNT);
+            scene.setRoot(gameController.GetRoot());
             stage.setTitle("GameSceneTest");
             stage.setScene(scene);
             stage.show();
-            appController.ShowGame();
+            gameController.GetRoot().requestFocus();
+            gameController.GameStart();
         }
     }
 }

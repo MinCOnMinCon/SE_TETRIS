@@ -1,13 +1,14 @@
 package tetris.block.blocks;
 
 import tetris.block.data.BlockData;
+import tetris.gamescene.GameProgress;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import java.util.Arrays;
 
 public class BlockDelete {
-    public static int[] DelCompleteLines(BoardElement[][] board, GameScore gameScore) {
+    public static int[] DelCompleteLines(BoardElement[][] board, GameScore gameScore, GameProgress progress) {
             int index[] = FindDelLines(board);
             int scoreIndex = -1;
             
@@ -16,7 +17,10 @@ public class BlockDelete {
                 DeleteHLine(board, delrow);
                 scoreIndex++;
             }
-            if(scoreIndex != -1) gameScore.AddLineClearScore(scoreIndex + 1);
+            if(scoreIndex != -1) {
+                gameScore.AddLineClearScore(scoreIndex + 1);
+                progress.OnLinesCleared(scoreIndex + 1);
+            }
             return index;
 
     }
