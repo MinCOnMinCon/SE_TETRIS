@@ -42,7 +42,11 @@ public class StartScreen {
         }
     }
 
-    public void makeStartScreen(Runnable onGame, Runnable onScoreBoard, Runnable onSettings) {// 메뉴 루트를 만들고 화면 전환은 콜백에 맡긴다
+        public void makeStartScreen(
+            Runnable onGame,
+            Runnable onItemGame,
+            Runnable onScoreBoard,
+            Runnable onSettings) {// 메뉴 루트를 만들고 화면 전환은 콜백에 맡긴다
         selectedIndex = 0;
         Label title = new Label("TETRIS");//타이틀 생성
         //타이틀 스타일 설정(폰트, 굵기, 색상)
@@ -67,9 +71,7 @@ public class StartScreen {
         //게임 시작 버튼 클릭 시 동작
         normalModeStartButton.setOnAction(e -> onGame.run());
 
-        /*아이템 모드 시작 버튼 클릭 시 동작
-        itemModeStartButton.setOnAction(e -> onItemMode.run());
-        */
+        itemModeStartButton.setOnAction(e -> onItemGame.run());
 
         //스코어 보드 버튼 클릭 시 동작
         rankingButton.setOnAction(e -> onScoreBoard.run());

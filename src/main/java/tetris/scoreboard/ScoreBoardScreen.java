@@ -30,12 +30,13 @@ public class ScoreBoardScreen {
 
         // 제목 라벨 생성 및 스타일 지정
         Label title = new Label("Top 10 Scores");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         // 뒤로가기 버튼 생성
         backButton = new Button("뒤로가기");
 
         backButton.setPrefSize(180, 50);
+        backButton.setStyle("-fx-font-size: 16px;");
         
 
         // 제목과 표를 세로로 배치하는 루트 컨테이너
@@ -55,6 +56,7 @@ public class ScoreBoardScreen {
     public static TableView<ScoreRecord> createScoreTableView() {
         List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
         TableView<ScoreRecord> scoreTable = new TableView<>();
+        scoreTable.setStyle("-fx-font-size: 15px;");
 
         TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
         rankColumn.setCellValueFactory(cellData -> {
@@ -72,7 +74,12 @@ public class ScoreBoardScreen {
             new TableColumn<>("난이도");
         difficultyColumn.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
 
-        scoreTable.getColumns().addAll(rankColumn, nameColumn, scoreColumn, difficultyColumn);
+        TableColumn<ScoreRecord, GameSettings.GameMode> gameModeColumn =
+            new TableColumn<>("모드");
+        gameModeColumn.setCellValueFactory(new PropertyValueFactory<>("gameMode"));
+
+        scoreTable.getColumns().addAll(
+            rankColumn, nameColumn, scoreColumn, difficultyColumn, gameModeColumn);
         scoreTable.setItems(FXCollections.observableArrayList(top10));
         return scoreTable;
     }

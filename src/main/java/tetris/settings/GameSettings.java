@@ -11,6 +11,7 @@ import tetris.settings.KeyBindingSettings.ActionType; // 키 설정 동작 종�
 // 설정 화면이 수정하는 현재 값과, 저장 시점에 게임으로 넘기는 스냅샷을 한 클래스가 가진다.
 public final class GameSettings {
     private static final KeyBindingSettings INPUT_SETTING_DATA = new KeyBindingSettings();
+    private static GameMode currentGameMode = GameMode.NORMAL;
 
     public static KeyBindingSettings getInputSettingData() { // 현재 키 설정 객체 반환
         return INPUT_SETTING_DATA; // 설정 화면과 저장소가 같은 객체를 사용
@@ -110,7 +111,7 @@ public final class GameSettings {
     private final int colorMode;
     private final Map<ActionType, List<KeyCode>> keyBindings;
     private final Difficulty savedDifficulty;
-    //private final GameMode savedGameMode;
+    private final GameMode savedGameMode;
     
 
     // 저장 버튼을 누른 시점의 설정을 게임 로직에 전달하는 불변 스냅샷
@@ -120,15 +121,25 @@ public final class GameSettings {
             int screenHeight,
             int colorMode,
             Map<ActionType, List<KeyCode>> keyBindings,
-            Difficulty savedDifficulty
-            //GameMode savedGameMode
-            ) {
+            Difficulty savedDifficulty) {
+        this(resolutionPreset, screenWidth, screenHeight, colorMode, keyBindings,
+                savedDifficulty, GameMode.NORMAL);
+    }
+
+    public GameSettings(
+            String resolutionPreset,
+            int screenWidth,
+            int screenHeight,
+            int colorMode,
+            Map<ActionType, List<KeyCode>> keyBindings,
+            Difficulty savedDifficulty,
+            GameMode savedGameMode) {
         this.savedResolutionPreset = resolutionPreset;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.colorMode = colorMode;
         this.savedDifficulty = savedDifficulty;
-        //this.savedGameMode = savedGameMode;
+        this.savedGameMode = savedGameMode == null ? GameMode.NORMAL : savedGameMode;
         EnumMap<ActionType, List<KeyCode>> copiedBindings = new EnumMap<>(ActionType.class);
         keyBindings.forEach((action, keys) -> copiedBindings.put(action, List.copyOf(keys)));
         this.keyBindings = Collections.unmodifiableMap(copiedBindings);
@@ -139,9 +150,20 @@ public final class GameSettings {
         NORMAL,
         HARD
     }
-    public enum GameMode{
-        NORMAL,
-        ITEM
+    public enum GameMode {
+        NORMAL("일반 모드"),
+        ITEM("아이템 모드");
+
+        private final String displayName;
+
+        GameMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
 
     public static Difficulty currentDifficulty = Difficulty.NORMAL;
@@ -156,8 +178,22 @@ public final class GameSettings {
         }
     }
 
+    public static GameMode getGameMode() {
+        return currentGameMode;
+    }
+
+    public static void setGameMode(GameMode value) {
+        if (value != null) {
+            currentGameMode = value;
+        }
+    }
+
     public Difficulty difficulty() {
         return savedDifficulty;
+    }
+
+    public GameMode gameMode() {
+        return savedGameMode;
     }
 
     public String resolutionPreset() {

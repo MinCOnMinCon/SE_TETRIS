@@ -31,12 +31,17 @@ public class ScoreStorage {
     }
 
     public int saveScore(String name, int score, GameSettings.Difficulty difficulty) {
+        return saveScore(name, score, difficulty, GameSettings.getGameMode());
+        }
+
+        public int saveScore(String name, int score, GameSettings.Difficulty difficulty,
+            GameSettings.GameMode gameMode) {
         String safeName = name == null ? "익명" : name.replace(',', ' ').trim();
         if (safeName.isEmpty()) {
             safeName = "익명";
         }
 
-        ScoreRecord newRecord = new ScoreRecord(safeName, score, difficulty);
+        ScoreRecord newRecord = new ScoreRecord(safeName, score, difficulty, gameMode);
 
         try {
             List<ScoreRecord> scores = new ScoreLoader().loadScores();
@@ -50,7 +55,8 @@ public class ScoreStorage {
 
             List<String> lines = scores.stream()
                 .map(record -> record.getName() + "," + record.getScore()
-                        + "," + record.getDifficulty().name())
+                    + "," + record.getDifficulty().name()
+                    + "," + record.getGameMode().name())
                 .toList();
 
             Files.write(

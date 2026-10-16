@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets; // UTF-8 점수 파일 읽기
 import java.util.ArrayList; // 동적 배열
 import java.util.List; // 리스트 인터페이스
 import tetris.settings.GameSettings.Difficulty;
+import tetris.settings.GameSettings.GameMode;
 
 // 점수 파일을 읽는 클래스
 public class ScoreLoader {
@@ -33,8 +34,8 @@ public class ScoreLoader {
                     continue; // 빈 줄은 건너뜀
                 }
 
-                String[] parts = line.split(","); // 이름과 점수를 쉼표로 분리
-                if (parts.length != 3) {
+                String[] parts = line.split(",", -1); // 이름과 점수, 모드를 쉼표로 분리
+                if (parts.length < 3 || parts.length > 4) {
                     System.err.println("난이도 정보가 없는 점수 항목을 건너뜁니다: " + line);
                     continue;
                 }
@@ -43,7 +44,9 @@ public class ScoreLoader {
                 try {
                     int score = Integer.parseInt(parts[1].trim()); // 점수 추출
                     Difficulty difficulty = Difficulty.valueOf(parts[2].trim());
-                    scores.add(new ScoreRecord(name, score, difficulty));
+                        GameMode gameMode = parts.length == 4
+                            ? GameMode.valueOf(parts[3].trim()) : GameMode.NORMAL;
+                        scores.add(new ScoreRecord(name, score, difficulty, gameMode));
                 } catch (IllegalArgumentException e) {
                     System.err.println("잘못된 점수 항목을 건너뜁니다: " + line); // 손상된 줄은 무시
                 }

@@ -29,7 +29,7 @@ public class SettingsScreen {
 
     public void makeSS(Stage stage, Scene scene, Runnable onBack) {
         Label title = new Label("설정");
-        title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;");
+        title.setStyle("-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         ComboBox<String> resolutionComboBox = new ComboBox<>();
         resolutionComboBox.setPromptText("화면 해상도 선택");
@@ -40,18 +40,19 @@ public class SettingsScreen {
         colorBlindModeComboBox.setPrefWidth(220);
 
         Label keySettingsTitle = new Label("키 설정");
-        keySettingsTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        keySettingsTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
         Label keySettingsStatus = new Label("역할 버튼을 누른 뒤 새 키를 입력하세요.");
-        keySettingsStatus.setStyle("-fx-text-fill: white;");
+        keySettingsStatus.setStyle("-fx-font-size: 15px; -fx-text-fill: white;");
         VBox keyBindingRows = new VBox(8);
 
         for (ActionType actionType : ActionType.values()) {
             Label actionLabel = new Label(actionType.getDisplayName());
-            actionLabel.setStyle("-fx-text-fill: white;");
+            actionLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
             actionLabel.setPrefWidth(190);
 
             Button keyButton = new Button();
             keyButton.setMaxWidth(Double.MAX_VALUE);
+            keyButton.setStyle("-fx-font-size: 16px;");
             HBox.setHgrow(keyButton, Priority.ALWAYS);
 
             HBox row = new HBox(12, actionLabel, keyButton);
@@ -61,20 +62,25 @@ public class SettingsScreen {
 
         Button backButton = new Button("뒤로가기");
         backButton.setPrefSize(180, 50);
+        backButton.setStyle("-fx-font-size: 16px;");
 
         Button saveSettingsButton = new Button("설정 저장");
         saveSettingsButton.setPrefSize(180, 44);
+        saveSettingsButton.setStyle("-fx-font-size: 16px;");
 
         Button resetSettingsButton = new Button("설정 초기화");
         resetSettingsButton.setPrefSize(180, 50);
+        resetSettingsButton.setStyle("-fx-font-size: 16px;");
 
         Button resetScoreButton = new Button("스코어보드 초기화");
         resetScoreButton.setPrefSize(180, 50);
+        resetScoreButton.setStyle("-fx-font-size: 16px;");
 
         VBox content = new VBox(14, resolutionComboBox, colorBlindModeComboBox,
                 keySettingsTitle, keySettingsStatus, keyBindingRows,
                 saveSettingsButton, resetSettingsButton);
         content.setAlignment(Pos.CENTER);
+        content.setFillWidth(false);
         content.setPadding(new Insets(20));
 
         ScrollPane scrollPane = new ScrollPane(content);
@@ -82,7 +88,7 @@ public class SettingsScreen {
         scrollPane.setStyle("-fx-background: black; -fx-background-color: black;");
 
         root = new BorderPane();
-        root.setStyle("-fx-background-color: black;");
+        root.setStyle("-fx-background-color: black; -fx-font-size: 16px;");
         root.setTop(title);
         BorderPane.setAlignment(title, Pos.CENTER);
         root.setCenter(scrollPane);
