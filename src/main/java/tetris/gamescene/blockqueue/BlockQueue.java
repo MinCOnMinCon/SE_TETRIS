@@ -48,7 +48,14 @@ public class BlockQueue {
    
     public BlockData GetNextBlock() {
         BlockData nextBlock = DeQ();
-        BlockData blockData = blockGenerator.GetBlock().GetBlockData();
+        BlockData blockData;
+        if (progress.GetClearedLineCount() / 10 > progress.GetMadeItemCount()  ) { // TODO: 아이템 모드일 때만 되도록
+            
+            blockData = blockGenerator.GetItemBlock();
+            progress.AddMadeItemCount(1);
+        } else {
+            blockData = blockGenerator.GetBlock().GetBlockData();
+        }
         EnQ(blockData);
         if (nextBlock != null) {
             progress.OnBlockSpawned();

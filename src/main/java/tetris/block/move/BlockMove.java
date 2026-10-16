@@ -1,9 +1,10 @@
 package tetris.block.move;
 
 import tetris.block.blocks.BlockDelete;
+import tetris.gamescene.GameProgress;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.CurrentShape;
-import tetris.block.data.CurrentBlock.ItemType;
+
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
 
@@ -28,7 +29,7 @@ public class BlockMove {
         }
     }
     // 실제로 한 칸 내려갔을 때만 기본 낙하 점수를 추가한다.
-    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore, int[] clearedRows) {
+    public static void MoveDown(CurrentBlock currentBlock, BoardElement[][] board, GameScore gameScore, int[] clearedRows, GameProgress progress) {
         if (CanMove.IsNoBlock(0, currentBlock, board)) {
             currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
             if (currentBlock.GetCanMoveH())
@@ -66,8 +67,8 @@ public class BlockMove {
                     break;
                 case DEL_AEMPTY: // 주변 공백 삭제
                     MoveFix(currentBlock, board);
-                    itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetCurrentBlock().GetItemPos()[0];
-                    itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetCurrentBlock().GetItemPos()[1];
+                    itemX = currentBlock.GetCurrentBlock().GetX();
+                    itemY = currentBlock.GetCurrentBlock().GetY();
                     BlockDelete.DeleteAroundEmpty(board, itemX, itemY);
                     break;
                 default:
@@ -75,7 +76,7 @@ public class BlockMove {
                 }
 
             if(currentBlock.GetCanMoveH()) {
-                int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore);
+                int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
                 System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);
                 currentBlock.MoveEnd(board);
             }
@@ -84,7 +85,7 @@ public class BlockMove {
         else {
             // 테트리스가 바닥에 닿았을 때 블럭 고정 및 새 블럭 생성 로직
             MoveFix(currentBlock, board);
-            int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
+            int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
             System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
 
             currentBlock.MoveEnd(board);
@@ -102,6 +103,7 @@ public class BlockMove {
             int j = coord[1];
             board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
             board[y + i][x + j].setElementColor(currentBlock.GetCurrentBlock().GetCurrentColor()); // 블럭 색상 설정
+            board[y + i][x + j].setPatternType(currentBlock.GetCurrentBlock().GetPatternType()); // 고정 후에도 패턴 유지
         }
         currentBlock.SetFalseIsHolded();
     }

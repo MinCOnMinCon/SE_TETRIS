@@ -28,6 +28,17 @@ public class BlockRotate {
         
         if (CanRotate.IsNoBlock(tmpBlockData, board)) {
             blockData.SetShape(rotatedShape);
+            int[] itemPos = blockData.GetItemPos();
+            if (blockData.IsItem() && itemPos != null) {//만약 아이템이 있을 경우 아이템 좌표도 같이 회전
+                
+                int x = itemPos[0];
+                int y = itemPos[1];
+                if (direction == 0) {
+                    blockData.SetItemPos(new int[]{rows - 1 - y, x});
+                } else if (direction == 1) {
+                    blockData.SetItemPos(new int[]{y, cols - 1 - x});
+                }
+            }
         }
     }
         
