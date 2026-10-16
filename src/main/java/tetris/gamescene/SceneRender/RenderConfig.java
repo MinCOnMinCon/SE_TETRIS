@@ -1,4 +1,4 @@
-package tetris.gamescene;
+package tetris.gamescene.SceneRender;
 import javafx.scene.paint.Color;
 import tetris.settings.GameSettings; // 저장된 게임 해상도와 색상 모드
 public class RenderConfig{
@@ -44,21 +44,19 @@ public class RenderConfig{
     public Color borderColor = Color.WHITE; // 보드 칸·미리보기 블럭·패널 테두리의 색
     
 
-    public RenderConfig(){
-        this(3);
-    }
-    public RenderConfig(int queueDisplayCount){
+    
+   
+
+    // 저장된 사용자 설정을 렌더링 설정에 반영
+    public RenderConfig(GameSettings settings, int queueDisplayCount) {
+        
+
         blockQueueDisplayCount = queueDisplayCount;
         blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
                 + blockQueueDisplayCount * previewSlotHeight
                 + Math.max(0, blockQueueDisplayCount - 1) * previewSlotGap;
-    }
-
-    // 저장된 사용자 설정을 렌더링 설정에 반영
-    public RenderConfig(GameSettings settings) {
-        this();
-        gameSceneWidth = settings.screenWidth(); // 저장된 화면 너비 적용
-        gameSceneHeight = settings.screenHeight(); // 저장된 화면 높이 적용
+        gameSceneWidth = settings.screenWidth();
+        gameSceneHeight = settings.screenHeight();
         colorMode = settings.colorMode(); // 블록 미리보기에 사용할 색상 모드 적용
     }
 }

@@ -98,7 +98,7 @@ public class AppController {
 
     public void ShowEndGame(GameResult result) {
         scene.setOnKeyPressed(null);
-        gameOverRoot = new GameOverRoot(result, null); // TODO:스코어 스토리지는 임시로 생성. 나중에 결정되면 실제 스코어 스토리지를 제공할 것
+        gameOverRoot = new GameOverRoot(result, scoreBoardScreen); 
         scene.setRoot(gameOverRoot);
         gameOverRoot.requestFocus();
         gameController = null;

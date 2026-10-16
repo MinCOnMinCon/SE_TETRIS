@@ -24,13 +24,15 @@ public class PlayerInput {
 	private final GameBoard board;
 	private final Runnable pauseGame;
 	private final GameScore score;
+	private final GameProgress progress;
 	private boolean inputEnabled = true;
 
-	public PlayerInput(Map<KeyBindingSettings.ActionType, List<KeyCode>> keyBindingData, CurrentBlock currentBlock, GameBoard board, GameScore score, Runnable pauseGame) {
+	public PlayerInput(Map<KeyBindingSettings.ActionType, List<KeyCode>> keyBindingData, CurrentBlock currentBlock, GameBoard board, GameScore score, GameProgress progress, Runnable pauseGame) {
 		this.currentBlock = currentBlock;
 		this.board = board;
 		this.pauseGame = pauseGame;
 		this.score = score;
+		this.progress = progress;
 		Map<KeyCode, KeyBindingSettings.ActionType> bindings = new HashMap<>();
 
 		keyBindingData.forEach((actionType, keyCodes) -> { // 저장한 각 동작의 키 목록을 읽음
@@ -62,10 +64,10 @@ public class PlayerInput {
 				BlockMove.MoveRight(currentBlock, board.GetBoard());
 				break;
 			case SOFT_DROP:
-				UserMove.MoveDown(currentBlock, board.GetBoard(), score, board.GetClearedRows());
+				UserMove.MoveDown(currentBlock, board.GetBoard(), score, board.GetClearedRows(), progress);
 				break;
 			case HARD_DROP:
-				UserMove.MoveDownMax(currentBlock, board.GetBoard(), score, board.GetClearedRows());
+				UserMove.MoveDownMax(currentBlock, board.GetBoard(), score, board.GetClearedRows(), progress);
 				break;
 			case ROTATE_CLOCK:
 				BlockRotate.Rotate(currentBlock.GetCurrentBlock(), board.GetBoard(), 0);

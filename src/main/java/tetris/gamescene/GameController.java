@@ -8,6 +8,9 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.Parent;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
+import tetris.gamescene.SceneRender.RenderConfig;
+import tetris.gamescene.SceneRender.SceneRenderState;
+import tetris.gamescene.SceneRender.SceneRenderer;
 import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
@@ -44,13 +47,21 @@ public class GameController {
     private final Runnable onPauseRequested;
     private final Consumer<GameResult> onGameEnded;
 
-    // 기존 화면 테스트의 생성자 호출을 유지한다. 테스트 필요 없으면 지워도 됨
-    public GameController(Runnable onPauseRequested, GameSettings settings){
-        this(onPauseRequested, result -> {}, settings);
+    
+
+    // 화면 테스트에서 누적 삭제 줄 수를 지정한다.
+    public GameController(Runnable onPauseRequested, GameSettings settings, int initialClearedLineCount){
+        this(onPauseRequested, result -> {}, settings, initialClearedLineCount);
+    }
+
+    // 앱 컨트롤러에서 사용하는 생성자 함수
+    public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
+            GameSettings settings){
+        this(onPauseRequested, onGameEnded, settings, 0);
     }
 
     public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
-            GameSettings settings){
+            GameSettings settings, int initialClearedLineCount){
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onGameEnded = Objects.requireNonNull(onGameEnded);
 
@@ -58,6 +69,7 @@ public class GameController {
         previousFrameTime = 0;
 		board = new GameBoard();
 		progress = new GameProgress();
+        progress.OnLinesCleared(initialClearedLineCount);
 		score = new GameScore(progress);
 		
 		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty());
@@ -65,13 +77,14 @@ public class GameController {
 		
 		currentBlock = new CurrentBlock(blockQueue, blockHolding, this::StopGame);
 
-		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress, board.GetClearedRows()); // TODO: 난이도 받아오기. 현재는 임시 함수로 받음
+		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress, board.GetClearedRows()); 
 
 
 		
-		renderer = new SceneRenderer(new RenderConfig(blockQueue.GetMaxQueueSize()));
+		RenderConfig renderConfig = new RenderConfig(gameSettings, blockQueue.GetMaxQueueSize());
+		renderer = new SceneRenderer(renderConfig);
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
-		playerInput = new PlayerInput(gameSettings.keyBindings(), currentBlock, board, score, this::PauseGame);
+		playerInput = new PlayerInput(gameSettings.keyBindings(), currentBlock, board, score, progress, this::PauseGame);
         SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), blockHolding.GetBlockHolding());
         gameRoot = renderer.CreateRoot(state);
         gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
