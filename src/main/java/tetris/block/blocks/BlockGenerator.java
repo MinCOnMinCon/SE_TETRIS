@@ -1,7 +1,11 @@
 package tetris.block.blocks;
 
+import java.util.Arrays;
 import java.util.Random;
 
+import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.CurrentShape;
 import tetris.settings.GameSettings.Difficulty;
 
 /*
@@ -54,7 +58,7 @@ public class BlockGenerator {
     public BlockGenerator(Difficulty difficulty, Random random, int colorMode) {
         this.random = random;
         this.colorMode = colorMode;
-        switch (difficulty) {
+        switch (difficulty) { 
             case EASY:
                 weights = new double[]{1.2, 1, 1, 1, 1, 1, 1};
                 break;
@@ -69,7 +73,7 @@ public class BlockGenerator {
         }
     }
 
-    public int GenerateBlockIndex() {
+    private int GenerateBlockIndex() {
         double totalWeight = 0;
         for (double weight : weights) {
             totalWeight += weight;
@@ -144,6 +148,42 @@ public class BlockGenerator {
             case 5:     return new BlockT(colorMode);
             case 6:     return new BlockZ(colorMode);            
             default:    throw new IllegalArgumentException("Invalid block index");
+        }
+    }
+
+    public BlockData GetItemBlock() {
+        // NORMAL을 제외한 모든 아이템을 같은 확률로 추첨한다.
+        ItemType[] candidates = Arrays.stream(ItemType.values())
+                .filter(type -> type != ItemType.NORMAL)
+                .toArray(ItemType[]::new);
+        ItemType itemType = candidates[random.nextInt(candidates.length)];
+
+        switch (itemType) {
+            case DEL_HLINE:
+            case DEL_VLINE:
+            case DEL_VEMPTY:
+                BlockData blockData = GetBlock().GetBlockData();
+                int[][] positions = CurrentShape.currentShapeIndex(blockData.GetShape());
+                int[] position = positions[random.nextInt(positions.length)]; // 테트로미노 중, 블럭이 존재하는 위치 중 동일 가중치로 아이템이 있을 위치 하나를 정함.
+
+                blockData.SetItem(true);
+                blockData.SetItemType(itemType);
+                // CurrentShape의 [행, 열]을 아이템 좌표 [x, y]로 변환한다.
+                blockData.SetItemPos(new int[]{position[1], position[0]});
+                return blockData;
+            case DEL_4VLINE:
+                BlockData weightBlock = new Block4VLines(colorMode).GetBlockData();
+                weightBlock.SetItem(true);
+                weightBlock.SetItemType(itemType);
+                return weightBlock;
+            case DEL_AEMPTY:
+                BlockData bombBlock = new Block_dot(colorMode).GetBlockData();
+                bombBlock.SetItem(true);
+                bombBlock.SetItemType(itemType);
+                bombBlock.SetItemPos(new int[]{0, 0});
+                return bombBlock;
+            default:
+                throw new IllegalArgumentException("Invalid item type: " + itemType);
         }
     }
 

@@ -22,6 +22,7 @@ public class BlockData {
     private boolean item;
     private ItemType itemType;
     private int[] itemPos; //x, y
+    private PatternType patternType = PatternType.NONE;
 
     public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos) {
         this.shape = shape;
@@ -64,6 +65,14 @@ public class BlockData {
 
     public boolean[][] GetShape() {
         return this.shape;
+    }
+
+    public PatternType GetPatternType() {
+        return this.patternType;
+    }
+
+    public void SetPatternType(PatternType patternType) {
+        this.patternType = patternType;
     }
 
     public void SetShape(boolean[][] shape) {

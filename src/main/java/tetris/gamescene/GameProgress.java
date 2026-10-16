@@ -1,12 +1,14 @@
 package tetris.gamescene;
 
 public class GameProgress {
-    private final int blocksPerLevel;
+    private final int blocksPerLevel; // 현재 레벨은 생성된 블럭 수 / 이 변수로 해서 구한다. 
     private final int maxLevel;
     private long spawnedBlockCount;
+    private long clearedLineCount;
+    private int madeItemCount;
 
-    public GameProgress() {
-        this(10, 37);
+    public GameProgress() { 
+        this(3, 20);
     }
 
     public GameProgress(int blocksPerLevel, int maxLevel) {
@@ -26,6 +28,26 @@ public class GameProgress {
 
     public long GetSpawnedBlockCount() {
         return spawnedBlockCount;
+    }
+
+    // 한 번에 삭제한 줄 수를 누적한다.
+    public void OnLinesCleared(int lineCount) {
+        if (lineCount < 0) {
+            throw new IllegalArgumentException("lineCount must be non-negative");
+        }
+        clearedLineCount += Math.min((long) lineCount, Long.MAX_VALUE - clearedLineCount);
+    }
+
+    public long GetClearedLineCount() {
+        return clearedLineCount;
+    }
+
+    public void AddMadeItemCount(int count) {
+        this.madeItemCount += count;
+    }
+
+    public int GetMadeItemCount() {
+        return madeItemCount;
     }
 
     public int GetLevel() {
