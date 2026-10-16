@@ -21,6 +21,7 @@ import tetris.settings.SettingsScreen;
 public class AppController {
     private final Stage stage;
     private final Scene scene;
+    private ScoreBoardScreen scoreBoardScreen;
     private GameController gameController;
     private PauseScene pauseScene;
     private GameOverRoot gameOverRoot;
@@ -59,7 +60,11 @@ public class AppController {
     }
 
     public void ShowScoreBoard() {
-        ScoreBoardScreen scoreBoardScreen = new ScoreBoardScreen(this::ShowStartScreen);
+        if (scoreBoardScreen == null) {
+            scoreBoardScreen = new ScoreBoardScreen(this::ShowStartScreen);
+        } else {
+            scoreBoardScreen.refreshScores();
+        }
         scene.setOnKeyPressed(null);
         stage.setTitle("Top 10 Scores");
         scene.setRoot(scoreBoardScreen.showSB());

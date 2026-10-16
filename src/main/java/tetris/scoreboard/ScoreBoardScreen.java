@@ -11,6 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory; // 객체 속성을 표 �
 import javafx.scene.layout.BorderPane; // 전체 화면 배치
 import javafx.scene.layout.VBox; // 세로로 컴포넌트를 배치하는 레이아웃
 import java.util.List; // 리스트 자료형
+import tetris.settings.GameSettings;
 
 // 점수판 화면을 생성하고 표시하는 클래스
 public class ScoreBoardScreen {
@@ -57,7 +58,7 @@ public class ScoreBoardScreen {
 
         TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
         rankColumn.setCellValueFactory(cellData -> {
-            int index = top10.indexOf(cellData.getValue());
+            int index = scoreTable.getItems().indexOf(cellData.getValue());
             return new javafx.beans.property.SimpleIntegerProperty(index + 1).asObject();
         });
 
@@ -67,9 +68,18 @@ public class ScoreBoardScreen {
         TableColumn<ScoreRecord, Integer> scoreColumn = new TableColumn<>("점수");
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
 
-        scoreTable.getColumns().addAll(rankColumn, nameColumn, scoreColumn);
+        TableColumn<ScoreRecord, GameSettings.Difficulty> difficultyColumn =
+            new TableColumn<>("난이도");
+        difficultyColumn.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
+
+        scoreTable.getColumns().addAll(rankColumn, nameColumn, scoreColumn, difficultyColumn);
         scoreTable.setItems(FXCollections.observableArrayList(top10));
         return scoreTable;
+    }
+
+    public void refreshScores() {
+        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
+        table.setItems(FXCollections.observableArrayList(top10));
     }
 
     public BorderPane showSB() {

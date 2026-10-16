@@ -1,6 +1,7 @@
 package tetris.gameoverscene;
 
 import tetris.gamescene.GameResult;
+import tetris.settings.GameSettings;
 import tetris.scoreboard.*;
 
 
@@ -59,7 +60,7 @@ public class GameOverRoot extends StackPane {
         setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore);
+        bindEvents(finalScore, result.difficulty());
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
@@ -149,7 +150,7 @@ public class GameOverRoot extends StackPane {
         scoreBoard.getChildren().addAll(oldScore, newScore, backButton);
     }
 
-    private void bindEvents(int finalScore) {
+    private void bindEvents(int finalScore, GameSettings.Difficulty difficulty) {
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -179,7 +180,7 @@ public class GameOverRoot extends StackPane {
             else playerName = nameField.getText();
 
             ScoreStorage scoreStorage = new ScoreStorage();
-            scoreStorage.saveScore(playerName, finalScore);
+            scoreStorage.saveScore(playerName, finalScore, difficulty);
             System.out.println("플레이어: " + playerName + " / 획득 점수: " + finalScore + " 저장 완료");
 
 
