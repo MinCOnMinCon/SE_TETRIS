@@ -44,8 +44,10 @@ public class BlockMove {
                     MoveFix(currentBlock, board);
                     itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetCurrentBlock().GetItemPos()[1];
                     BlockDelete.DeleteHLine(board, itemY);
+                    int deletedRow[] = {-1};
+                    deletedRow[0] = itemY;
                     gameScore.AddLineClearScore(1);
-                    System.arraycopy(itemY, 0, clearedRows, 0, 1); // 삭제되는 행 번호 gameboard에 넘기기
+                    System.arraycopy(deletedRow, 0, clearedRows, 0, deletedRow.length); // 삭제되는 행 번호 gameboard에 넘기기
                     break;
                 case DEL_4VLINE: // 무게추 세로 4줄 삭제
                     if (currentBlock.GetCanMoveH()) {
