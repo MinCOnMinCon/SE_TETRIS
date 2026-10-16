@@ -87,4 +87,10 @@ public final class KeyBindingSettings {
             bindings.put(actionType, List.copyOf(keyCodes));
         }
     }
+
+    public void resetToDefaults() {
+        KeyBindingSettings defaults = new KeyBindingSettings();
+        bindings.clear();
+        bindings.putAll(defaults.bindings);
+    }
 }

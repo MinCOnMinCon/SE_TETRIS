@@ -1,5 +1,7 @@
 package tetris.scoreboard;
 
+import tetris.settings.GameSettings.Difficulty;
+
 // 점수 한 건을 표현하는 데이터 클래스
 public class ScoreRecord {
     // 플레이어 이름
@@ -8,13 +10,15 @@ public class ScoreRecord {
     // 점수
     private final int score;
 
+    private final Difficulty difficulty;
+
     //하이라이트 여부
     private boolean highlight;
 
-    // 생성자: 이름과 점수 초기화
-    public ScoreRecord(String name, int score) {
+    public ScoreRecord(String name, int score, Difficulty difficulty) {
         this.name = name;
         this.score = score;
+        this.difficulty = difficulty;
         this.highlight = true;
     }
 
@@ -26,6 +30,10 @@ public class ScoreRecord {
     // 점수 getter
     public int getScore() {
         return score;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
     }
 
     public boolean isHighlight() {

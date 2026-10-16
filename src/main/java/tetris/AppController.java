@@ -21,30 +21,21 @@ import tetris.settings.SettingsScreen;
 public class AppController {
     private final Stage stage;
     private final Scene scene;
-    private final StartScreen startScreen;
-    private final ScoreBoardScreen scoreBoardScreen;
-    private final SettingsScreen settingsScreen;
+    private ScoreBoardScreen scoreBoardScreen;
     private GameController gameController;
     private PauseScene pauseScene;
     private GameOverRoot gameOverRoot;
 
-    public AppController(StartScreen startScreen) {
-        this.startScreen = Objects.requireNonNull(startScreen, "startScreen cannot be null");//생성자에 전달된 startScreen이 null인지 확인후 저장
-        this.stage = Objects.requireNonNull(startScreen.getStage());//StartScreen의 stage를 Appcontroller의 stage에 저장
-        this.scene = Objects.requireNonNull(startScreen.getScene());//StartScreen의 scene을 Appcontroller의 scene에 저장
-        this.startScreen.makeStartScreen(this::ShowGame, this::ShowScoreBoard, this::ShowSettings);//StartScreen의 makeStartScreen에 콜백함수 전달, 버튼 클릭시 화면 전환
-
-        //ScoreBoardScreen과 SettingsScreen도 StartScreen과 동일하게 생성하고 콜백함수 전달
-        this.scoreBoardScreen = new ScoreBoardScreen(this::ShowStartScreen);
-
-        this.settingsScreen = new SettingsScreen();
-        this.settingsScreen.makeSS(stage, scene, this::ShowStartScreen);
+    public AppController(Stage stage, Scene scene) {
+        this.stage = Objects.requireNonNull(stage, "stage cannot be null");
+        this.scene = Objects.requireNonNull(scene, "scene cannot be null");
     }
 
     public void ShowStartScreen() {
+        StartScreen startScreen = new StartScreen(stage, scene);
+        startScreen.makeStartScreen(this::ShowGame, this::ShowScoreBoard, this::ShowSettings);
         scene.setOnKeyPressed(null);
         stage.setTitle("Tetris");
-        startScreen.resetSelection();
         scene.setRoot(startScreen.showStartScreen());
         scene.getRoot().requestFocus();
     }
@@ -60,16 +51,24 @@ public class AppController {
     }
 
     public void ShowSettings() {
+        SettingsScreen settingsScreen = new SettingsScreen();
+        settingsScreen.makeSS(stage, scene, this::ShowStartScreen);
         scene.setOnKeyPressed(null);
-        settingsScreen.activate();
         stage.setTitle("Tetris - 설정");
         scene.setRoot(settingsScreen.showSS());
+        settingsScreen.activate();
     }
 
     public void ShowScoreBoard() {
+        if (scoreBoardScreen == null) {
+            scoreBoardScreen = new ScoreBoardScreen(this::ShowStartScreen);
+        } else {
+            scoreBoardScreen.refreshScores();
+        }
         scene.setOnKeyPressed(null);
         stage.setTitle("Top 10 Scores");
         scene.setRoot(scoreBoardScreen.showSB());
+        scoreBoardScreen.focusBackButton();
     }
 
     public void ShowPauseScreen() {

@@ -6,6 +6,7 @@ import java.nio.file.Path; // 파일 경로 표현
 import java.nio.charset.StandardCharsets; // UTF-8 점수 파일 읽기
 import java.util.ArrayList; // 동적 배열
 import java.util.List; // 리스트 인터페이스
+import tetris.settings.GameSettings.Difficulty;
 
 // 점수 파일을 읽는 클래스
 public class ScoreLoader {
@@ -33,14 +34,18 @@ public class ScoreLoader {
                 }
 
                 String[] parts = line.split(","); // 이름과 점수를 쉼표로 분리
-                if (parts.length >= 2) {
-                    String name = parts[0].trim(); // 이름 추출
-                    try {
-                        int score = Integer.parseInt(parts[1].trim()); // 점수 추출
-                        scores.add(new ScoreRecord(name, score)); // 닉네임과 점수를 객체로 저장
-                    } catch (NumberFormatException e) {
-                        System.err.println("잘못된 점수 항목을 건너뜁니다: " + line); // 손상된 줄은 무시
-                    }
+                if (parts.length != 3) {
+                    System.err.println("난이도 정보가 없는 점수 항목을 건너뜁니다: " + line);
+                    continue;
+                }
+
+                String name = parts[0].trim(); // 이름 추출
+                try {
+                    int score = Integer.parseInt(parts[1].trim()); // 점수 추출
+                    Difficulty difficulty = Difficulty.valueOf(parts[2].trim());
+                    scores.add(new ScoreRecord(name, score, difficulty));
+                } catch (IllegalArgumentException e) {
+                    System.err.println("잘못된 점수 항목을 건너뜁니다: " + line); // 손상된 줄은 무시
                 }
             }
         } catch (IOException e) {

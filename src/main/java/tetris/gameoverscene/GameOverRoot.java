@@ -1,6 +1,7 @@
 package tetris.gameoverscene;
 
 import tetris.gamescene.GameResult;
+import tetris.settings.GameSettings;
 import tetris.scoreboard.*;
 import tetris.settings.GameSettings;
 
@@ -54,7 +55,7 @@ public class GameOverRoot extends StackPane {
 
 
 
-    public GameOverRoot(GameResult result, ScoreBoardScreen oldScoreBoard) {
+    public GameOverRoot(GameResult result) {
         int finalScore =  result.score();
         GameSettings.Difficulty gameDifficulty = result.difficulty();
         
@@ -184,12 +185,14 @@ public class GameOverRoot extends StackPane {
             else playerName = nameField.getText();
 
             ScoreStorage scoreStorage = new ScoreStorage();
-            scoreStorage.saveScore(playerName, finalScore);
+            scoreStorage.saveScore(playerName, finalScore, difficulty);
             System.out.println("플레이어: " + playerName + " / 획득 점수: " + finalScore + " 저장 완료");
 
 
             // 1. 이전 스코어 보드 로드 (상위 n등)
-            oldScore = oldScoreBoard.makeSB();
+            int tableIndex = scoreBoard.getChildren().indexOf(oldScore);
+            oldScore = ScoreBoardScreen.createScoreTableView();
+            scoreBoard.getChildren().set(tableIndex, oldScore);
 
             // 스코어보드
             // 1. 전체 점수 리스트(scores)에서 내 순위 찾기

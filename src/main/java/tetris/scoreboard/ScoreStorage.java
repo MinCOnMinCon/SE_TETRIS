@@ -7,6 +7,7 @@ import java.nio.file.StandardOpenOption; // 파일 열기 옵션
 import java.util.List;
 import java.nio.charset.StandardCharsets; // 닉네임을 UTF-8로 저장
 import java.util.Comparator; // 점수 정렬을 위해 사용
+import tetris.settings.GameSettings;
 
 // 점수 파일을 저장하는 클래스
 public class ScoreStorage {
@@ -26,12 +27,16 @@ public class ScoreStorage {
 
     // 사용자 데이터 폴더의 scores.csv에 닉네임과 점수를 한 줄씩 저장
     public int saveScore(String name, int score) {
+        return saveScore(name, score, GameSettings.getDifficulty());
+    }
+
+    public int saveScore(String name, int score, GameSettings.Difficulty difficulty) {
         String safeName = name == null ? "익명" : name.replace(',', ' ').trim();
         if (safeName.isEmpty()) {
             safeName = "익명";
         }
 
-        ScoreRecord newRecord = new ScoreRecord(safeName, score);
+        ScoreRecord newRecord = new ScoreRecord(safeName, score, difficulty);
 
         try {
             List<ScoreRecord> scores = new ScoreLoader().loadScores();
@@ -44,7 +49,8 @@ public class ScoreStorage {
             Files.createDirectories(SCORE_FILE.getParent());
 
             List<String> lines = scores.stream()
-                .map(record -> record.getName() + "," + record.getScore())
+                .map(record -> record.getName() + "," + record.getScore()
+                        + "," + record.getDifficulty().name())
                 .toList();
 
             Files.write(
@@ -59,6 +65,18 @@ public class ScoreStorage {
         } catch (IOException e) {
             System.err.println("점수를 저장하지 못했습니다: " + e.getMessage());
             return -1;
+        }
+    }
+
+    public boolean clearScores() {
+        try {
+            Files.createDirectories(SCORE_FILE.getParent());
+            Files.writeString(SCORE_FILE, "", StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return true;
+        } catch (IOException e) {
+            System.err.println("점수 파일을 초기화하지 못했습니다: " + e.getMessage());
+            return false;
         }
     }
 }

@@ -1,6 +1,8 @@
 package tetris.settings;
 
 import javafx.event.EventHandler; // 키 입력 필터 해제에 같은 인스턴스를 쓰기 위함
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox; // 해상도와 색상 모드 선택 상자
 import javafx.scene.Scene; // 키 입력을 감지할 화면
 import javafx.scene.control.Button; // 역할별 키 버튼
@@ -10,6 +12,7 @@ import javafx.scene.input.KeyEvent; // 키보드 이벤트
 import javafx.scene.layout.HBox; // 역할 행
 import javafx.scene.layout.VBox; // 역할 행 목록
 import javafx.stage.Stage; // 창 크기 변경을 위해 필요
+import tetris.scoreboard.ScoreStorage;
 import tetris.settings.KeyBindingSettings.ActionType;
 
 import java.util.EnumMap;
@@ -28,6 +31,11 @@ public class SettingsController {
     private final VBox keyBindingRows; // 역할별 행 목록
     private final Label keySettingsStatus; // 키 변경 상태 표시
     private final Button saveSettingsButton; // 현재 설정을 저장하는 버튼
+    private final Button resetSettingsButton;
+    private final Button resetScoreButton;
+    private final Button backButton;
+    private final List<Button> navigationButtons;
+    private int selectedButtonIndex;
     private final Map<ActionType, Button> keyButtons = new EnumMap<>(ActionType.class); // 역할과 버튼 연결
     private ActionType actionWaitingForKey; // 새 키 입력을 기다리는 역할
     private final EventHandler<KeyEvent> keyCaptureHandler = this::captureKeyBinding;
@@ -42,7 +50,10 @@ public class SettingsController {
             KeyBindingSettings inputSettingData,
             VBox keyBindingRows,
             Label keySettingsStatus,
-            Button saveSettingsButton) {
+            Button saveSettingsButton,
+            Button resetSettingsButton,
+            Button resetScoreButton,
+            Button backButton) {
         this.stage = stage;
         this.scene = scene;
         this.resolutionComboBox = resolutionComboBox;
@@ -51,6 +62,11 @@ public class SettingsController {
         this.keyBindingRows = keyBindingRows;
         this.keySettingsStatus = keySettingsStatus;
         this.saveSettingsButton = saveSettingsButton;
+        this.resetSettingsButton = resetSettingsButton;
+        this.resetScoreButton = resetScoreButton;
+        this.backButton = backButton;
+        this.navigationButtons = List.of(
+            saveSettingsButton, resetSettingsButton, resetScoreButton, backButton);
     }
 
     // 화면이 열릴 때 기본값과 이벤트를 설정
@@ -85,6 +101,9 @@ public class SettingsController {
             keySettingsStatus.setText("설정이 저장되었습니다.");
         });
 
+        resetSettingsButton.setOnAction(e -> resetSettings());
+        resetScoreButton.setOnAction(e -> resetScoreBoard());
+
         // 역할별 키 버튼을 만들고 씬에서 다음 키 입력을 감지
         createKeyBindingRows();
     }
@@ -94,6 +113,8 @@ public class SettingsController {
             scene.addEventFilter(KeyEvent.KEY_PRESSED, keyCaptureHandler);
             keyCaptureActive = true;
         }
+        selectedButtonIndex = 0;
+        navigationButtons.get(selectedButtonIndex).requestFocus();
     }
 
     // 같은 Scene을 다른 화면과 공유하므로, 설정 화면을 떠날 때 키 필터를 제거한다.
@@ -142,10 +163,34 @@ public class SettingsController {
     }
 
     private void captureKeyBinding(KeyEvent event) { // 다음 키 입력을 새 배정값으로 처리
-        if (actionWaitingForKey == null) {
+        if (actionWaitingForKey != null) {
+            captureAssignedKey(event);
             return;
         }
 
+        if (scene.getFocusOwner() instanceof ComboBox<?>) {
+            return;
+        }
+
+        int focusedButtonIndex = navigationButtons.indexOf(scene.getFocusOwner());
+        if (focusedButtonIndex >= 0) {
+            selectedButtonIndex = focusedButtonIndex;
+        }
+
+        switch (event.getCode()) {
+            case UP -> moveButtonFocus(-1, event);
+            case DOWN -> moveButtonFocus(1, event);
+            case ENTER -> {
+                if (focusedButtonIndex >= 0) {
+                    navigationButtons.get(selectedButtonIndex).fire();
+                    event.consume();
+                }
+            }
+            default -> { }
+        }
+    }
+
+    private void captureAssignedKey(KeyEvent event) {
         KeyCode newKey = event.getCode();
         boolean alreadyUsed = inputSettingData.getAllBindings().entrySet().stream()
                 .anyMatch(binding -> binding.getKey() != actionWaitingForKey
@@ -164,12 +209,63 @@ public class SettingsController {
         event.consume();
     }
 
+    private void moveButtonFocus(int direction, KeyEvent event) {
+        int buttonCount = navigationButtons.size();
+        selectedButtonIndex = (selectedButtonIndex + direction + buttonCount) % buttonCount;
+        navigationButtons.get(selectedButtonIndex).requestFocus();
+        event.consume();
+    }
+
     private void updateKeyButton(ActionType actionType) { // 버튼에 현재 키 목록 표시
         List<KeyCode> keyCodes = inputSettingData.getKeyCodes(actionType);
         String displayedKeys = keyCodes.stream()
                 .map(KeyCode::getName)
                 .collect(Collectors.joining(" / "));
         keyButtons.get(actionType).setText(displayedKeys);
+    }
+
+    private void resetSettings() {
+        if (!confirm("설정 초기화", "모든 설정을 초기값으로 되돌릴까요?")) {
+            return;
+        }
+
+        GameSettings savedSettings = SettingsStore.resetToDefaults();
+        resolutionComboBox.setValue(GameSettings.getResolutionPreset());
+        colorBlindModeComboBox.setValue(GameSettings.getColorBlindMode());
+        for (ActionType actionType : ActionType.values()) {
+            updateKeyButton(actionType);
+        }
+        updateResolution();
+        showInformation(savedSettings == null
+                ? "기본값은 적용했지만 설정 파일 저장에 실패했습니다."
+                : "모든 설정을 초기값으로 되돌렸습니다.");
+    }
+
+    private void resetScoreBoard() {
+        if (!confirm("스코어보드 초기화", "저장된 점수를 모두 삭제할까요?")) {
+            return;
+        }
+
+        boolean cleared = new ScoreStorage().clearScores();
+        showInformation(cleared
+                ? "스코어보드를 초기화했습니다."
+                : "스코어보드 초기화에 실패했습니다.");
+    }
+
+    private boolean confirm(String title, String message) {
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION, message,
+                ButtonType.YES, ButtonType.NO);
+        confirmation.initOwner(stage);
+        confirmation.setTitle(title);
+        confirmation.setHeaderText(null);
+        return confirmation.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+    }
+
+    private void showInformation(String message) {
+        Alert information = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+        information.initOwner(stage);
+        information.setHeaderText(null);
+        information.showAndWait();
     }
 
 }
