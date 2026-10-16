@@ -43,6 +43,8 @@ public class BlockMove {
                     MoveFix(currentBlock, board);
                     itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetCurrentBlock().GetItemPos()[1];
                     BlockDelete.DeleteHLine(board, itemY);
+                    gameScore.AddLineClearScore(1);
+                    System.arraycopy(itemY, 0, clearedRows, 0, 1); // 삭제되는 행 번호 gameboard에 넘기기
                     break;
                 case DEL_4VLINE: // 무게추 세로 4줄 삭제
                     if (currentBlock.GetCanMoveH()) {
@@ -76,7 +78,8 @@ public class BlockMove {
 
             if(currentBlock.GetCanMoveH()) {
                 int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore);
-                System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);
+                if (deletedRows[0] != -1)
+                    System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);
                 currentBlock.MoveEnd(board);
             }
             
@@ -85,7 +88,8 @@ public class BlockMove {
             // 테트리스가 바닥에 닿았을 때 블럭 고정 및 새 블럭 생성 로직
             MoveFix(currentBlock, board);
             int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
-            System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
+            if (deletedRows[0] != -1)
+                System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
 
             currentBlock.MoveEnd(board);
         

@@ -21,3 +21,17 @@ javafx {
 application {
     mainClass = 'tetris.Main'
 }
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+
+    // JUnit 5 버전 충돌을 막기 위해 BOM(Bill of Materials) 적용
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // VS Code 실행기를 위해 필수
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'file.encoding', 'UTF-8'
+}

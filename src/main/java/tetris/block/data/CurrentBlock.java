@@ -39,8 +39,8 @@ public class CurrentBlock {
         this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
-        canMoveH = true;
-        isHolded = false;
+        this.canMoveH = true;
+        this.isHolded = false;
         this.onGameOver = Objects.requireNonNull(onGameOver);
     }
     public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, Runnable onGameOver) {
@@ -71,12 +71,12 @@ public class CurrentBlock {
     
 
     public void MoveEnd(BoardElement[][] board, BlockData blockData) {
-        SetCurrentBlock(blockData);
-        if(!CanMove.CanGetNextBlock(this.GetCurrentBlock(), board)){
+        if(!CanMove.CanGetNextBlock(blockData, board)){
             onGameOver.run();
             return;
         }
         this.canMoveH = true;
+        SetCurrentBlock(blockData);
     }
     public void MoveEnd(BoardElement[][] board) {
         MoveEnd(board, nextBlocks.GetNextBlock());
