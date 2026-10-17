@@ -12,12 +12,15 @@ class BlockGeneratorTest {
     @Test
     void seededGeneratorReturnsValidNonRepeatingConsecutiveBlocks() {
         BlockGenerator generator = new BlockGenerator(Difficulty.NORMAL, new Random(42), 0);
-        int previous = -1;
+        Class<? extends Block> previous = null;
 
         for (int i = 0; i < 100; i++) {
-            int generated = generator.GenerateBlockIndex();
-            assertTrue(generated >= 0 && generated < 7);
-            if (previous != -1) {
+            Block block = generator.GetBlock();
+            assertTrue(block instanceof BlockI || block instanceof BlockJ
+                    || block instanceof BlockL || block instanceof BlockO
+                    || block instanceof BlockS || block instanceof BlockT || block instanceof BlockZ);
+            Class<? extends Block> generated = block.getClass();
+            if (previous != null) {
                 assertNotEquals(previous, generated);
             }
             previous = generated;

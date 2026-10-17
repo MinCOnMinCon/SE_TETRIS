@@ -27,10 +27,11 @@ class BlockDeleteTest {
         for (BoardElement element : board[19]) {
             element.setBlock(true);
         }
-        GameScore score = new GameScore(new GameProgress());
+        GameProgress progress = new GameProgress();
+        GameScore score = new GameScore(progress);
 
         assertEquals(19, BlockDelete.FindDelLines(board)[0]);
-        BlockDelete.DelCompleteLines(board, score);
+        BlockDelete.DelCompleteLines(board, score, progress);
 
         assertEquals(100, score.GetGameScore());
         for (BoardElement element : board[0]) {
@@ -53,8 +54,9 @@ class BlockDeleteTest {
                 }
             }
 
-            GameScore score = new GameScore(new GameProgress());
-            int[] clearedRows = BlockDelete.DelCompleteLines(board, score);
+            GameProgress progress = new GameProgress();
+            GameScore score = new GameScore(progress);
+            int[] clearedRows = BlockDelete.DelCompleteLines(board, score, progress);
 
             for (int i = 0; i < linesToClear; i++) {
                 assertEquals(firstClearedRow + i, clearedRows[i]);
@@ -76,12 +78,14 @@ class BlockDeleteTest {
         BoardElement[][] board = gameBoard.GetBoard();
         board[9][0].setBlock(true);
         fillRow(board, 10);
-        GameScore score = new GameScore(new GameProgress());
+        GameProgress progress = new GameProgress();
+        GameScore score = new GameScore(progress);
         int[] clearedRows = gameBoard.GetClearedRows();
 
-        dropItem(board, ItemType.DEL_HLINE, 4, 10, score, clearedRows);
+        dropItem(board, ItemType.DEL_HLINE, 4, 10, score, clearedRows, progress);
 
         assertEquals(100, score.GetGameScore());
+        // 가로줄 아이템의 삭제 행 번호도 화면 효과에 전달되어야 한다.
         assertEquals(10, clearedRows[0]);
         assertEquals(-1, clearedRows[1]);
         assertTrue(board[10][0].isBlock());
@@ -99,7 +103,8 @@ class BlockDeleteTest {
         }
         board[10][3].setBlock(true);
 
-        dropItem(board, ItemType.DEL_VLINE, 4, 10, new GameScore(new GameProgress()), new int[4]);
+        GameProgress progress = new GameProgress();
+        dropItem(board, ItemType.DEL_VLINE, 4, 10, new GameScore(progress), new int[4], progress);
 
         for (BoardElement[] row : board) {
             assertFalse(row[4].isBlock());
@@ -113,7 +118,8 @@ class BlockDeleteTest {
         board[2][4].setBlock(true);
         board[5][4].setBlock(true);
 
-        dropItem(board, ItemType.DEL_VEMPTY, 4, 10, new GameScore(new GameProgress()), new int[4]);
+        GameProgress progress = new GameProgress();
+        dropItem(board, ItemType.DEL_VEMPTY, 4, 10, new GameScore(progress), new int[4], progress);
 
         for (int row = GameBoard.boardRow - 4; row < GameBoard.boardRow; row++) {
             assertTrue(board[row][4].isBlock());
@@ -128,10 +134,11 @@ class BlockDeleteTest {
             board[10][col].setBlock(true);
         }
         board[9][0].setBlock(true);
-        GameScore score = new GameScore(new GameProgress());
+        GameProgress progress = new GameProgress();
+        GameScore score = new GameScore(progress);
         int[] clearedRows = new int[GameBoard.maxClearedLines];
 
-        dropItem(board, ItemType.DEL_AEMPTY, 4, 10, score, clearedRows);
+        dropItem(board, ItemType.DEL_AEMPTY, 4, 10, score, clearedRows, progress);
 
         assertEquals(10, clearedRows[0]);
         assertEquals(-1, clearedRows[1]);
@@ -155,7 +162,7 @@ class BlockDeleteTest {
         }
         board[y + 1][x + 1].setBlock(true);
 
-        BlockData itemData = new Block_item4V(0).GetBlockData();
+        BlockData itemData = new Block4VLines(0).GetBlockData();
         itemData.SetItem(true);
         itemData.SetItemType(ItemType.DEL_4VLINE);
         itemData.SetItemPos(new int[] {0, 0});
@@ -173,7 +180,7 @@ class BlockDeleteTest {
         assertTrue(itemData.GetShape()[0][1]);
         assertTrue(itemData.GetShape()[1][0]);
 
-        BlockMove.MoveDown(currentBlock, board, score, clearedRows);
+        BlockMove.MoveDown(currentBlock, board, score, clearedRows, progress);
 
         assertFalse(currentBlock.GetCanMoveH());
         for (int col = x; col < x + 4; col++) {
@@ -186,12 +193,12 @@ class BlockDeleteTest {
         board[y + 1][x + 1].setBlock(false);
         int floorY = GameBoard.boardRow - itemData.GetShape().length;
         while (itemData.GetY() < floorY) {
-            BlockMove.MoveDown(currentBlock, board, score, clearedRows);
+            BlockMove.MoveDown(currentBlock, board, score, clearedRows, progress);
         }
         assertEquals(floorY, itemData.GetY());
         assertFalse(currentBlock.GetCanMoveH());
         assertFalse(CanMove.IsNoBlock(0, currentBlock, board));
-        BlockMove.MoveDown(currentBlock, board, score, clearedRows);
+        BlockMove.MoveDown(currentBlock, board, score, clearedRows, progress);
 
         assertTrue(currentBlock.GetCanMoveH());
         assertTrue(board[floorY][x + 1].isBlock());
@@ -210,7 +217,7 @@ class BlockDeleteTest {
     }
 
     private static void dropItem(BoardElement[][] board, ItemType type, int x, int y,
-            GameScore score, int[] clearedRows) {
+            GameScore score, int[] clearedRows, GameProgress progress) {
         BlockData itemData = new BlockData(
                 new boolean[][] {{true}},
                 new ColorPalette(Color.GRAY, Color.GRAY, Color.GRAY),
@@ -220,12 +227,11 @@ class BlockDeleteTest {
                 true,
                 type,
                 new int[] {0, 0});
-        GameProgress progress = new GameProgress();
         BlockQueue nextBlocks = new BlockQueue(0, progress, Difficulty.NORMAL);
         CurrentBlock currentBlock = new CurrentBlock(
                 itemData, nextBlocks, new BlockHolding(), () -> {});
 
         board[y + 1][x].setBlock(true);
-        BlockMove.MoveDown(currentBlock, board, score, clearedRows);
+        BlockMove.MoveDown(currentBlock, board, score, clearedRows, progress);
     }
 }

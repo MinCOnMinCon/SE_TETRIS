@@ -7,6 +7,6 @@ import org.junit.jupiter.api.Test;
 class GameOverRootTest {
     @Test
     void requiresGameResult() {
-        assertThrows(NullPointerException.class, () -> new GameOverRoot(null, null));
+        assertThrows(NullPointerException.class, () -> new GameOverRoot(null));
     }
 }
