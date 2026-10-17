@@ -1,7 +1,5 @@
 package tetris.gamescene;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -21,12 +19,13 @@ class PlayerInputTest {
         GameBoard board = new GameBoard();
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
         CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
-        GameScore score = new GameScore(new GameProgress());
+        GameProgress progress = new GameProgress();
+        GameScore score = new GameScore(progress);
         int[] pauseCalls = {0};
         PlayerInput input = new PlayerInput(Map.of(
                 ActionType.MOVE_LEFT, List.of(KeyCode.A),
                 ActionType.PAUSE, List.of(KeyCode.ESCAPE)),
-                current, board, score, () -> pauseCalls[0]++);
+                current, board, score, progress, () -> pauseCalls[0]++);
 
         input.HandleKeyCode(KeyCode.A);
         input.HandleKeyCode(KeyCode.ESCAPE);
@@ -41,9 +40,10 @@ class PlayerInputTest {
         GameBoard board = new GameBoard();
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
         CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
+        GameProgress progress = new GameProgress();
         PlayerInput input = new PlayerInput(
                 Map.of(ActionType.MOVE_LEFT, List.of(KeyCode.A)),
-                current, board, new GameScore(new GameProgress()), () -> {});
+                current, board, new GameScore(progress), progress, () -> {});
         input.SetInputEnabled(false);
 
         input.HandleKeyCode(KeyCode.A);

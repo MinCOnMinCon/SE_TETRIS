@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 class AppControllerTest {
     @Test
-    void requiresStartScreen() {
-        assertThrows(NullPointerException.class, () -> new AppController(null));
+    void requiresStage() {
+        assertThrows(NullPointerException.class, () -> new AppController(null, null));
     }
 }

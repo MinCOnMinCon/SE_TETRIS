@@ -15,10 +15,11 @@ class BlockMoveTest {
         var board = new GameBoard().GetBoard();
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
         CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
-        GameScore score = new GameScore(new GameProgress());
+        GameProgress progress = new GameProgress();
+        GameScore score = new GameScore(progress);
 
         BlockMove.MoveRight(current, board);
-        BlockMove.MoveDown(current, board, score, new int[4]);
+        BlockMove.MoveDown(current, board, score, new int[4], progress);
 
         assertEquals(5, data.GetX());
         assertEquals(5, data.GetY());

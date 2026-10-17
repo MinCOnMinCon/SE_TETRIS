@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'jacoco'
     id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
@@ -34,4 +35,9 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperty 'file.encoding', 'UTF-8'
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
 }
