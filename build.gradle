@@ -23,6 +23,12 @@ application {
     mainClass = 'tetris.Main'
 }
 
+tasks.register('prepareJavaFxRuntime', Sync) {
+    dependsOn classes
+    from configurations.runtimeClasspath
+    into layout.buildDirectory.dir('javafx')
+}
+
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 
