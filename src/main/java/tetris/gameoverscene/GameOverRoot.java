@@ -55,7 +55,7 @@ public class GameOverRoot extends StackPane {
 
 
 
-    public GameOverRoot(GameResult result) {
+    public GameOverRoot(GameResult result, Runnable onBack) {
         int finalScore =  result.score();
         GameSettings.Difficulty gameDifficulty = result.difficulty();
         GameSettings.GameMode gameMode = result.gameMode();
@@ -64,7 +64,7 @@ public class GameOverRoot extends StackPane {
         setNodes(finalScore);
 
         // 2. 이벤트(동작) 연결 (로직)
-        bindEvents(finalScore, gameDifficulty, gameMode);
+        bindEvents(finalScore, gameDifficulty, gameMode, onBack);
 
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene(finalScore);
@@ -158,7 +158,7 @@ public class GameOverRoot extends StackPane {
     }
 
         private void bindEvents(int finalScore, GameSettings.Difficulty difficulty,
-            GameSettings.GameMode gameMode) {
+            GameSettings.GameMode gameMode, Runnable onBack) {
         // 텍스트 입력받기 (TextField) 입력 수 제한
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue.length() > MAX_LENGTH) {
@@ -247,23 +247,7 @@ public class GameOverRoot extends StackPane {
         
         
         // 버튼 클릭 시 루트 시작화면으로 변경 이벤트
-        startMenuButton.setOnAction(e -> {
-            // 버튼 자신이 올라가 있는 현재 Scene을 알아냅니다.
-            Scene currentScene = startMenuButton.getScene();
-            
-
-
-
-
-            // TODO: 시작 화면 Root 불러오기
-            // currentScene.setRoot(new StartMenuRoot());
-            
-
-
-
-
-            System.out.println("시작 화면으로 돌아갑니다!");
-        });
+        startMenuButton.setOnAction(e -> onBack.run());
     }
 
     private void setScene(int finalScore) {
@@ -290,6 +274,10 @@ public class GameOverRoot extends StackPane {
 
         // 최종 조립: StackPane에 바탕화면과 팝업을 겹쳐서 올림
         this.getChildren().addAll(baseScreen, confirmPopup);
+    }
+
+    public void focusBackButton() {
+        startMenuButton.requestFocus();
     }
 
     
