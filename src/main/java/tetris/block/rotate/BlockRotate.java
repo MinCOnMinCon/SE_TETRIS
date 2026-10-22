@@ -1,6 +1,7 @@
 package tetris.block.rotate;
 
 import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock.ItemType;
 import tetris.gamescene.board.BoardElement;
 
 /*
@@ -12,6 +13,10 @@ import tetris.gamescene.board.BoardElement;
 
 public class BlockRotate {
     public static void Rotate(BlockData blockData, BoardElement[][] board, int direction) {
+        // 무게추 회전 고정
+        if (blockData.GetItemType()==ItemType.DEL_4VLINE)
+            return;
+        
         boolean[][] originalShape = blockData.GetShape();
         BlockData tmpBlockData = new BlockData(originalShape, blockData.GetX(), blockData.GetY());
         int rows = originalShape.length;       // 기존 배열의 세로 길이(y)
