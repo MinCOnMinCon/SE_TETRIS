@@ -7,7 +7,6 @@ import tetris.scoreboard.*;
 import java.util.List;
 
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -47,13 +46,6 @@ public class GameOverRoot extends StackPane {
     private Label myGameMode;
 
     // 1. 생성자: 외부에서 넘겨준 데이터를 받아서 화면을 세팅함
-
-
-
-    // ****TODO: 스코어보드 table 받아서 현재 (이름, 점수) 추가 후 표시 구현****
-    // 스코어보드 팝업 추가 (뒤로가기 버튼도)
-
-
 
     public GameOverRoot(GameResult result, Runnable onBack) {
         int finalScore =  result.score();
