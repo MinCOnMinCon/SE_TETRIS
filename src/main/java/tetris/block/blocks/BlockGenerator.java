@@ -161,7 +161,6 @@ public class BlockGenerator {
         switch (itemType) {
             case DEL_HLINE:
             case DEL_VLINE:
-            case DEL_VEMPTY:
                 BlockData blockData = GetBlock().GetBlockData();
                 int[][] positions = CurrentShape.currentShapeIndex(blockData.GetShape());
                 int[] position = positions[random.nextInt(positions.length)]; // 테트로미노 중, 블럭이 존재하는 위치 중 동일 가중치로 아이템이 있을 위치 하나를 정함.
@@ -176,12 +175,13 @@ public class BlockGenerator {
                 weightBlock.SetItem(true);
                 weightBlock.SetItemType(itemType);
                 return weightBlock;
+            case DEL_VEMPTY:
             case DEL_AEMPTY:
-                BlockData bombBlock = new Block_dot(colorMode).GetBlockData();
-                bombBlock.SetItem(true);
-                bombBlock.SetItemType(itemType);
-                bombBlock.SetItemPos(new int[]{0, 0});
-                return bombBlock;
+                BlockData dotBlockData = new Block_dot(colorMode).GetBlockData();
+                dotBlockData.SetItem(true);
+                dotBlockData.SetItemType(itemType);
+                dotBlockData.SetItemPos(new int[]{0, 0});
+                return dotBlockData;
             default:
                 throw new IllegalArgumentException("Invalid item type: " + itemType);
         }
