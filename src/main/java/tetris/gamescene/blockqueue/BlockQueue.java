@@ -8,6 +8,7 @@ import tetris.gamescene.GameProgress;
 import tetris.block.blocks.BlockGenerator;
 
 import tetris.settings.GameSettings.Difficulty;
+import tetris.settings.GameSettings.GameMode;
 
 /*
     **큐는 원형 큐로 구현되어 있으며, front, rear, size를 관리하여 블럭을 추가하고 제거**
@@ -29,12 +30,14 @@ public class BlockQueue {
     private final GameProgress progress;
     private int[] queueFRS = new int[3]; // [0]: front, [1]: rear, [2]: size
     private int colorMode = 0; // 0: 일반, 1: 적록, 2: 청황
+    private GameMode gameMode;
 
-    public BlockQueue(int colorMode, GameProgress progress, Difficulty difficulty) {
+    public BlockQueue(int colorMode, GameProgress progress, Difficulty difficulty, GameMode gameMode ) {
         this.progress = Objects.requireNonNull(progress);
         this.blockGenerator = new BlockGenerator(difficulty, colorMode);
         this.maxQueueSize = 3;
         this.colorMode = colorMode;
+        this.gameMode = gameMode;
         this.queueFRS[0] = 0; // front
         this.queueFRS[1] = 0; // rear
         this.queueFRS[2] = 0; // size
@@ -49,7 +52,7 @@ public class BlockQueue {
     public BlockData GetNextBlock() {
         BlockData nextBlock = DeQ();
         BlockData blockData;
-        if (progress.GetClearedLineCount() / 10 > progress.GetMadeItemCount()  ) { // TODO: 아이템 모드일 때만 되도록
+        if (progress.GetClearedLineCount() / 10 > progress.GetMadeItemCount() && gameMode == GameMode.ITEM) { // TODO: 아이템 모드일 때만 되도록
             
             blockData = blockGenerator.GetItemBlock();
             progress.AddMadeItemCount(1);
