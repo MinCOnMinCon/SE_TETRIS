@@ -109,7 +109,7 @@ public class AppController {
 
     public void ShowEndGame(GameResult result) {
         scene.setOnKeyPressed(null);
-        gameOverRoot = new GameOverRoot(result);
+        gameOverRoot = new GameOverRoot(result, this::ShowStartScreen);
         scene.setRoot(gameOverRoot);
         gameOverRoot.requestFocus();
         gameController = null;
