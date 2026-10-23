@@ -6,12 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import tetris.gamescene.GameProgress;
 import tetris.settings.GameSettings.Difficulty;
+import tetris.settings.GameSettings.GameMode;
 
 class BlockQueueTest {
     @Test
     void startsFullAndReturnsBlocksInQueueOrder() {
         GameProgress progress = new GameProgress();
-        BlockQueue queue = new BlockQueue(1, progress, Difficulty.NORMAL);
+        BlockQueue queue = new BlockQueue(1, progress, Difficulty.NORMAL, GameMode.NORMAL);
 
         assertEquals(queue.GetMaxQueueSize(), queue.GetQueueFRS()[2]);
         assertEquals(queue.GetMaxQueueSize(), queue.GetBlocksInQueueOrder().length);

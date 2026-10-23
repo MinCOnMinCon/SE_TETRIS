@@ -1,4 +1,4 @@
-package tetris.gamescene.SceneRender;
+package tetris.gamescene.scenerender;
 import javafx.scene.paint.Color;
 import tetris.settings.GameSettings; // 저장된 게임 해상도와 색상 모드
 public class RenderConfig{
@@ -13,14 +13,14 @@ public class RenderConfig{
     public double canvasVGap = 16; // 각 VBox 안에 배치된 캔버스 사이의 세로 간격(px)
 
     public double panelTitleHPadding = 12; // 패널 제목의 좌우 여백(px)
-    public double blockPreviewPadding = 12; // 블럭 미리보기 영역 내부의 상하좌우 여백(px)
+    public double blockPreviewPadding = 12; // 블럭 큐의 미리보기 블럭 슬롯 내부의 상하좌우 여백(px)
     public double panelBottomPadding = 12; // 큐·홀딩·점수판 내용 영역의 하단 여백(px)
     public double scoreHPadding = 12; // 점수 숫자의 좌우 여백(px)
     public double panelTitleHeight = 40; // NEXT·HOLD·SCORE 제목에 할당하는 상단 영역의 높이(px)
 
-    public double previewBlockSide = 24; // 큐·홀딩 미리보기 한 칸의 기본 크기(px), 공간이 부족하면 축소
-    public double previewSlotHeight = 112; // 다음 블럭 하나를 표시하는 슬롯의 높이 및 홀딩 기본 영역 높이(px)
-    public double previewSlotGap = 16; // 큐 캔버스 안에서 블럭 미리보기 슬롯 사이의 세로 간격(px)
+    public double previewBlockSide = 24; // 큐·홀딩 미리보기 블럭 한 칸의 기본 크기(px), 공간이 부족하면 축소
+    public double previewSlotHeight = 112; // 미리보기 블록 슬롯의 높이 및 홀딩 기본 영역 높이(px)
+    public double previewSlotGap = 16; // 큐 캔버스 안에서 블럭 미리보기 블럭 슬롯 사이의 세로 간격(px)
     
 
     public int blockQueueDisplayCount;
@@ -47,17 +47,42 @@ public class RenderConfig{
     
    
 
-    // 저장된 사용자 설정을 렌더링 설정에 반영
+    // 선언된 크기는 1280×720 기준이며, 생성 시 설정 해상도에 한 번만 맞춘다.
     public RenderConfig(GameSettings settings, int queueDisplayCount) {
-        
-
-        blockQueueDisplayCount = queueDisplayCount;
-        blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
-                + blockQueueDisplayCount * previewSlotHeight
-                + Math.max(0, blockQueueDisplayCount - 1) * previewSlotGap;
         gameSceneWidth = settings.screenWidth();
         gameSceneHeight = settings.screenHeight();
         colorMode = settings.colorMode(); // 블록 미리보기에 사용할 색상 모드 적용
+        blockQueueDisplayCount = queueDisplayCount;
+
+        double scale = Math.min(gameSceneWidth / 1280.0, gameSceneHeight / 720.0);
+
+        blockSide *= scale;
+        scenePadding *= scale;
+        sidePanelGap *= scale;
+        canvasVGap *= scale;
+
+        panelTitleHPadding *= scale;
+        blockPreviewPadding *= scale;
+        panelBottomPadding *= scale;
+        scoreHPadding *= scale;
+        panelTitleHeight *= scale;
+
+        previewBlockSide *= scale;
+        previewSlotHeight *= scale;
+        previewSlotGap *= scale;
+
+        blockQueueCanvasWidth *= scale;
+        blockHoldingCanvasWidth *= scale;
+        scoreCanvasWidth *= scale;
+        scoreCanvasHeight *= scale;
+        scoreFontSize *= scale;
+        titleFontSize *= scale;
+
+        // 조정된 크기로 계산하여 배율이 중복 적용되지 않도록 한다.
+        blockHoldingCanvasHeight = panelTitleHeight + previewSlotHeight + panelBottomPadding;
+        blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
+                + blockQueueDisplayCount * previewSlotHeight
+                + Math.max(0, blockQueueDisplayCount - 1) * previewSlotGap;
     }
 }
 

@@ -1,4 +1,4 @@
-package tetris.gamescene.SceneRender;
+package tetris.gamescene.scenerender;
 
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
@@ -15,7 +15,7 @@ public class ItemRenderer {
     // 블록 내부 좌표 [col, row]가 아이템 기호를 그리는 칸인지 확인한다.
     public boolean IsItemCell(BlockData block, int col, int row) {
         int[] itemPos = block.GetItemPos();
-        return block.GetItemType() != ItemType.NORMAL
+        return block.IsItem()
                 && itemPos != null && itemPos[0] == col && itemPos[1] == row;
     }
 

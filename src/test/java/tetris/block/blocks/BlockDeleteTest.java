@@ -19,6 +19,7 @@ import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import tetris.settings.GameSettings.Difficulty;
+import tetris.settings.GameSettings.GameMode;
 
 class BlockDeleteTest {
     @Test
@@ -169,7 +170,7 @@ class BlockDeleteTest {
         itemData.SetX(x);
         itemData.SetY(y);
         GameProgress progress = new GameProgress();
-        BlockQueue nextBlocks = new BlockQueue(0, progress, Difficulty.NORMAL);
+        BlockQueue nextBlocks = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
         CurrentBlock currentBlock = new CurrentBlock(
                 itemData, nextBlocks, new BlockHolding(), () -> {});
         GameScore score = new GameScore(progress);
@@ -227,7 +228,7 @@ class BlockDeleteTest {
                 true,
                 type,
                 new int[] {0, 0});
-        BlockQueue nextBlocks = new BlockQueue(0, progress, Difficulty.NORMAL);
+        BlockQueue nextBlocks = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
         CurrentBlock currentBlock = new CurrentBlock(
                 itemData, nextBlocks, new BlockHolding(), () -> {});
 

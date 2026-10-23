@@ -3,7 +3,6 @@ package tetris.settings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Map;
 import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.Test;
 

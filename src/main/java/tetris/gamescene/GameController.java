@@ -7,10 +7,10 @@ import java.util.function.Consumer;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Parent;
 import tetris.gamescene.board.GameBoard;
+import tetris.gamescene.scenerender.RenderConfig;
+import tetris.gamescene.scenerender.SceneRenderState;
+import tetris.gamescene.scenerender.SceneRenderer;
 import tetris.gamescene.score.GameScore;
-import tetris.gamescene.SceneRender.RenderConfig;
-import tetris.gamescene.SceneRender.SceneRenderState;
-import tetris.gamescene.SceneRender.SceneRenderer;
 import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
@@ -72,7 +72,7 @@ public class GameController {
         progress.OnLinesCleared(initialClearedLineCount);
 		score = new GameScore(progress);
 		
-		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty());
+		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty(), settings.gameMode());
 		BlockHolding blockHolding = new BlockHolding();
 		
 		currentBlock = new CurrentBlock(blockQueue, blockHolding, this::StopGame);

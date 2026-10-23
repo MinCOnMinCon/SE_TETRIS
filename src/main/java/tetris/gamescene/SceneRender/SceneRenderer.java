@@ -1,4 +1,4 @@
-package tetris.gamescene.SceneRender;
+package tetris.gamescene.scenerender;
 
 
 import javafx.scene.Parent;
@@ -38,17 +38,17 @@ public class SceneRenderer  {
     }
 
     // 설정 교체만 한다. 기존 화면의 크기와 배치를 다시 적용하는 처리는 추후 구현한다. 일시정지 메뉴에서 설정 교체가 일어났을 때 필요할 수 있다.
-    public void SetRenderConfig(RenderConfig config) {
+    private void SetRenderConfig(RenderConfig config) {
         sceneRenderData = Objects.requireNonNull(config);
     }
 
-    public void CreateBoardCanvas(BoardElement[][] board){ // 보드 캔버스를 처음 생성하고 그린다.
+    private void CreateBoardCanvas(BoardElement[][] board){ // 보드 캔버스를 처음 생성하고 그린다.
         double blockSide = sceneRenderData.blockSide;
         boardCanvas = new Canvas(board[0].length * blockSide, board.length * blockSide);
 
     }
 
-    public void UpdateBoardCanvas(BoardElement[][] board, BlockData currentBlock){ // 기존 보드 캔버스를 업데이트한다.
+    private void UpdateBoardCanvas(BoardElement[][] board, BlockData currentBlock){ // 기존 보드 캔버스를 업데이트한다.
         BoardElement[][] renderBoard = MergeBoardAndCurrentBlock(board, currentBlock);
         // 절대 renderboard의 boardElement에 직접 접근하여 수정하지 말 것. 그렇게 하면 원본 보드에 영향이 가, 임시 보드를 만든 이유가 없다
         double blockSide = sceneRenderData.blockSide;
@@ -119,12 +119,12 @@ public class SceneRenderer  {
         return renderBoard;
     }
 
-    public void CreateBlockQueueCanvas() {
+    private void CreateBlockQueueCanvas() {
         blockQueueCanvas = new Canvas(sceneRenderData.blockQueueCanvasWidth,
                 sceneRenderData.blockQueueCanvasHeight);
     }
 
-    public void UpdateBlockQueueCanvas(BlockData[] blockQueue) {
+    private void UpdateBlockQueueCanvas(BlockData[] blockQueue) {
         DrawPanel(blockQueueCanvas, "NEXT");
         if (blockQueue == null) return;
         int count = Math.min(sceneRenderData.blockQueueDisplayCount, blockQueue.length); // 화면에 보일 블럭 개수 설정 - 만약 수가 고정되면 없어도 됨
@@ -135,22 +135,22 @@ public class SceneRenderer  {
         }
     }
 
-    public void CreateBlockHoldingCanvas() {
+    private void CreateBlockHoldingCanvas() {
         blockHoldingCanvas = new Canvas(sceneRenderData.blockHoldingCanvasWidth,
                 sceneRenderData.blockHoldingCanvasHeight);
     }
 
-    public void UpdateBlockHoldingCanvas(BlockData blockHolding) {
+    private void UpdateBlockHoldingCanvas(BlockData blockHolding) {
         DrawPanel(blockHoldingCanvas, "HOLD");
         DrawBlockPreview(blockHoldingCanvas, blockHolding, sceneRenderData.panelTitleHeight,
                 blockHoldingCanvas.getHeight() - sceneRenderData.panelTitleHeight - sceneRenderData.panelBottomPadding);
     }
 
-    public void CreateScoreCanvas() {
+    private void CreateScoreCanvas() {
         scoreCanvas = new Canvas(sceneRenderData.scoreCanvasWidth, sceneRenderData.scoreCanvasHeight);
     }
 
-    public void UpdateScoreCanvas(long score) {
+    private void UpdateScoreCanvas(long score) {
         DrawPanel(scoreCanvas, "SCORE");
         GraphicsContext graphicsContext = scoreCanvas.getGraphicsContext2D();
         graphicsContext.setFont(Font.font(sceneRenderData.scoreFontSize));
@@ -183,6 +183,7 @@ public class SceneRenderer  {
     }
 
     public Parent CreateRoot(SceneRenderState state){ // 게임 화면의 루트를 생성하고 초기 상태를 그린다.
+        Objects.requireNonNull(state, "state must not be null");
 
         CreateBoardCanvas(state.board());
         CreateBlockQueueCanvas();
@@ -193,7 +194,7 @@ public class SceneRenderer  {
         return sceneLayout;
     }
     public void UpdateRoot(SceneRenderState state){ // 게임 씬 업데이트
-        
+        Objects.requireNonNull(state, "state must not be null");
         UpdateBoardCanvas(state.board(), state.currentBlock());
         UpdateBlockQueueCanvas(state.blockQueue());
         UpdateBlockHoldingCanvas(state.blockHolding());

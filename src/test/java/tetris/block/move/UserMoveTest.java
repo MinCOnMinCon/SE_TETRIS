@@ -13,6 +13,7 @@ import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import org.junit.jupiter.api.Test;
 import tetris.settings.GameSettings.Difficulty;
+import tetris.settings.GameSettings.GameMode;
 
 class UserMoveTest {
     @Test
@@ -32,7 +33,7 @@ class UserMoveTest {
     void hardDropLocksBlockAndAwardsDropAndHardDropScores() {
         GameProgress progress = new GameProgress();
         GameBoard gameBoard = new GameBoard();
-        BlockQueue queue = new BlockQueue(0, progress, Difficulty.NORMAL);
+        BlockQueue queue = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
         BlockData data = new BlockData(
                 new boolean[][] {{true}},
                 new ColorPalette(Color.WHITE, Color.WHITE, Color.WHITE), 0, 4, 0);
