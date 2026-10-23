@@ -1,4 +1,4 @@
-package tetris.gamescene.SceneRender;
+package tetris.gamescene.scenerender;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;

@@ -1,4 +1,4 @@
-package tetris.gamescene.SceneRender;
+package tetris.gamescene.scenerender;
 
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.BoardElement;

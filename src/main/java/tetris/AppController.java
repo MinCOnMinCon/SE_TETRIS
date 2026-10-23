@@ -86,7 +86,7 @@ public class AppController {
     public void ShowPauseScreen() {
         
         if (pauseScene == null) {
-            pauseScene = new PauseScene(this::ResumeGame, Platform::exit);
+            pauseScene = new PauseScene(this::ResumeGame, Platform::exit); // 일시정지 화면에서 종료시 바로 종료해버림
         }
 
         scene.setOnKeyPressed(null);

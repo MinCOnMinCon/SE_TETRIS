@@ -1,11 +1,12 @@
-package tetris.gamescene;
+package tetris.gamescene.scenerender;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import tetris.block.data.BlockData;
-import tetris.gamescene.SceneRender.SceneRenderState;
 import tetris.gamescene.board.BoardElement;
+
+
 import org.junit.jupiter.api.Test;
 
 class SceneRenderStateTest {
