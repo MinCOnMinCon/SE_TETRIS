@@ -39,7 +39,7 @@ class UserMoveTest {
         CurrentBlock current = new CurrentBlock(data, queue, null, () -> {});
         GameScore score = new GameScore(progress);
 
-        UserMove.MoveDownMax(current, gameBoard.GetBoard(), score, gameBoard.GetClearedRows());
+        UserMove.MoveDownMax(current, gameBoard.GetBoard(), score, gameBoard.GetClearedRows(), progress);
 
         assertEquals(19, data.GetY());
         assertTrue(gameBoard.GetBoard()[19][4].isBlock());

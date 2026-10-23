@@ -12,6 +12,6 @@ class GameControllerTest {
                 () -> new GameController(null, new GameSettings(
                         "1280x720", 1280, 720, 0,
                         GameSettings.getInputSettingData().getAllBindings(),
-                        GameSettings.Difficulty.NORMAL)));
+                        GameSettings.Difficulty.NORMAL), 0));
     }
 }
