@@ -8,7 +8,6 @@ import javafx.stage.Stage;
 import tetris.gamescene.GameController;
 import tetris.pausescene.PauseScene;
 import tetris.settings.GameSettings;
-import tetris.settings.GameSettings.ColorBlindMode;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.SettingsStore;
 
@@ -18,8 +17,6 @@ public class GameSceneTest {
     private static final int INITIAL_CLEARED_LINE_COUNT = 9;
     // EASY, NORMAL, HARD 중 테스트할 난이도를 지정한다.
     private static final Difficulty TEST_DIFFICULTY = Difficulty.HARD;
-    // NORMAL, RED_GREEN, BLUE_YELLOW 중 테스트할 색상 모드를 지정한다.
-    private static final ColorBlindMode TEST_COLOR_MODE = ColorBlindMode.RED_GREEN;
 
     public static void main(String[] args) {
         Run(args);
@@ -36,10 +33,7 @@ public class GameSceneTest {
 
         @Override
         public void start(Stage stage) {
-            GameSettings savedSettings = SettingsStore.getGameSettings();
-            GameSettings testSettings = new GameSettings(
-                    savedSettings.resolutionPreset(), savedSettings.screenWidth(), savedSettings.screenHeight(),
-                    TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY);
+            GameSettings testSettings = SettingsStore.getGameSettings().withDifficulty(TEST_DIFFICULTY);
             Scene scene = new Scene(new BorderPane(),
                     GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
             PauseScene pauseScene = new PauseScene(() -> {
