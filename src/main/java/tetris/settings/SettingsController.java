@@ -27,6 +27,7 @@ public class SettingsController {
     private final Scene scene; // 현재 설정 화면
     private final ComboBox<String> resolutionComboBox; // 해상도 선택 상자
     private final ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox; // 색상 모드 선택 상자
+    private final ComboBox<GameSettings.Difficulty> difficultyComboBox; // 난이도 선택 상자
     private final KeyBindingSettings inputSettingData; // 키 배정 데이터
     private final VBox keyBindingRows; // 역할별 행 목록
     private final Label keySettingsStatus; // 키 변경 상태 표시
@@ -47,6 +48,7 @@ public class SettingsController {
             Scene scene,
             ComboBox<String> resolutionComboBox,
             ComboBox<GameSettings.ColorBlindMode> colorBlindModeComboBox,
+            ComboBox<GameSettings.Difficulty> difficultyComboBox,
             KeyBindingSettings inputSettingData,
             VBox keyBindingRows,
             Label keySettingsStatus,
@@ -58,6 +60,7 @@ public class SettingsController {
         this.scene = scene;
         this.resolutionComboBox = resolutionComboBox;
         this.colorBlindModeComboBox = colorBlindModeComboBox;
+        this.difficultyComboBox = difficultyComboBox;
         this.inputSettingData = inputSettingData;
         this.keyBindingRows = keyBindingRows;
         this.keySettingsStatus = keySettingsStatus;
@@ -80,6 +83,8 @@ public class SettingsController {
         resolutionComboBox.setValue(GameSettings.getResolutionPreset());
         colorBlindModeComboBox.getItems().setAll(GameSettings.ColorBlindMode.values());
         colorBlindModeComboBox.setValue(GameSettings.getColorBlindMode());
+        difficultyComboBox.getItems().setAll(GameSettings.Difficulty.values());
+        difficultyComboBox.setValue(GameSettings.getDifficulty());
         updateResolution();
 
         // 해상도 선택 시 이벤트 연결
@@ -90,6 +95,10 @@ public class SettingsController {
 
         colorBlindModeComboBox.setOnAction(e -> {
             GameSettings.setColorBlindMode(colorBlindModeComboBox.getValue());
+        });
+
+        difficultyComboBox.setOnAction(e -> {
+            GameSettings.setDifficulty(difficultyComboBox.getValue());
         });
 
         saveSettingsButton.setOnAction(e -> { // 버튼을 눌렀을 때만 파일 저장과 객체 생성을 수행
@@ -232,6 +241,7 @@ public class SettingsController {
         GameSettings savedSettings = SettingsStore.resetToDefaults();
         resolutionComboBox.setValue(GameSettings.getResolutionPreset());
         colorBlindModeComboBox.setValue(GameSettings.getColorBlindMode());
+        difficultyComboBox.setValue(GameSettings.getDifficulty());
         for (ActionType actionType : ActionType.values()) {
             updateKeyButton(actionType);
         }
