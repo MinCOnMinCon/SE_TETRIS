@@ -15,7 +15,7 @@ public final class FrameProfiler {
     private final Path reportPath;
     private boolean active, hasPrevious, hasOrigin, savePending;
     private long start, previousStart, origin, previousExecution;
-    private long count, withinBudget, over50ms, maxInterval, maxExecution, maxAt;
+    private long count, withinBudget, over100ms, maxInterval, maxExecution, maxAt;
     /*
      * 변수 설명 (시간 값의 단위는 나노초)
      * clock: 현재 시각을 제공하는 함수. 실제 실행은 System.nanoTime, 테스트는 가짜 시계 사용.
@@ -30,7 +30,7 @@ public final class FrameProfiler {
      * previousExecution: 직전 프레임의 실행 시간. 다음 호출 간격과 연결해 사용.
      * count: 집계한 호출 간격 수. 첫 호출과 재개 후 첫 호출은 제외.
      * withinBudget: 호출 간격이 16.7ms 이하인 횟수. 초과 횟수는 count - withinBudget.
-     * over50ms: 호출 간격이 50ms를 초과한 횟수.
+     * over100ms: 호출 간격이 100ms를 초과한 횟수.
      * maxInterval: 지금까지 측정한 가장 긴 호출 간격.
      * maxExecution: 최대 호출 간격 직전 프레임의 실행 시간.
      * maxAt: 최대 간격을 확인한 시점에서 origin을 뺀 경과 시간. 일시정지 시간도 포함.
@@ -66,7 +66,7 @@ public final class FrameProfiler {
             long interval = start - previousStart;
             count++;
             if (interval <= 16_700_000L) withinBudget++;
-            if (interval > 50_000_000L) over50ms++;
+            if (interval > 100_000_000L) over100ms++;
             if (interval > maxInterval) {
                 maxInterval = interval;
                 maxExecution = previousExecution;
@@ -107,7 +107,7 @@ public final class FrameProfiler {
     String summary() {
         String header = String.format(Locale.ROOT,
                 "측정 호출 간격 수: %d%n<= 16.7ms: %.3f%%%n> 16.7ms: %.3f%%%n> 50ms: %.3f%% (전체 기준)%n",
-                count, percent(withinBudget), percent(count - withinBudget), percent(over50ms));
+                count, percent(withinBudget), percent(count - withinBudget), percent(over100ms));
         if (count == 0) return header + "최대 간격: 측정 자료 없음\n";
         return header + String.format(Locale.ROOT,
                 "최대 호출 간격: %.3fms%n발생 시점: 첫 측정 시작 후 %.3f초 (일시정지 포함)%n"
