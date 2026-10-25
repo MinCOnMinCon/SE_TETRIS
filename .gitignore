@@ -25,6 +25,7 @@ replay_pid*
 # Gradle
 .gradle/
 build/
+performance-reports/
 
 # Gradle Wrapper는 저장소에 포함
 !gradle/wrapper/gradle-wrapper.jar

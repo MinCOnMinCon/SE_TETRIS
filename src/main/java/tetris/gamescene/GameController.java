@@ -38,6 +38,8 @@ public class GameController {
 	
 	
     private long previousFrameTime;
+    private final FrameProfiler profiler = Boolean.getBoolean("tetris.profile") // .\gradlew.bat run -PframeProfile=true 프로파일러 실행을 위해 터미널에 이 명령어를 칠 것.
+            ? new FrameProfiler() : null;
     private boolean paused;
     private boolean stopped;
     private final int lineClearEffectDuration = 1000; // 밀리초
@@ -97,42 +99,50 @@ public class GameController {
             if (stopped || paused) {
                 return;
             }
-            if (previousFrameTime == 0) { // 첫 프레임에는 업데이트 동작을 하지 않고 이전 프레임 타임만 업데이트 함. 그 다음부터 이전 프레임 타임을 사용해 델타 타임을 계산해 사용
-                previousFrameTime = now;
+            if (profiler == null) {
+                updateFrame(now);
+            } else {
+                profiler.measure(() -> updateFrame(now));
+            }
+        }
+    };
+
+    private void updateFrame(long now) {
+        if (previousFrameTime == 0) { // 첫 프레임에는 업데이트 동작을 하지 않고 이전 프레임 타임만 업데이트 함. 그 다음부터 이전 프레임 타임을 사용해 델타 타임을 계산해 사용
+            previousFrameTime = now;
+            return;
+        }
+
+        int deltaTime = (int) ((now - previousFrameTime) / 1_000_000);
+        previousFrameTime = now;
+        int[] clearedRows = board.GetClearedRows();
+
+        if (clearedRows[0] != -1 || lineClearEffectRunning) {
+            if (!lineClearEffectRunning) {
+                lineClearEffectRunning = true;
+                lineClearEffectTime = 0;
+                playerInput.SetInputEnabled(false);
+            }
+
+            renderer.DrawLineClearEffect(clearedRows, lineClearEffectTime);
+            lineClearEffectTime += deltaTime;
+
+            if (lineClearEffectTime >= lineClearEffectDuration) {
+                Arrays.fill(clearedRows, -1);
+                lineClearEffectRunning = false;
+                playerInput.SetInputEnabled(true);
+            }
+        } else {
+            autoMove.TimeUpdate(deltaTime, score);
+            if (stopped) { //autoMove로 게임이 종료될 수 있으므로 검증
                 return;
             }
 
-            int deltaTime = (int) ((now - previousFrameTime) / 1_000_000);
-            previousFrameTime = now;
-            int[] clearedRows = board.GetClearedRows();
-
-            if (clearedRows[0] != -1 || lineClearEffectRunning) {
-                if (!lineClearEffectRunning) {
-                    lineClearEffectRunning = true;
-                    lineClearEffectTime = 0;
-                    playerInput.SetInputEnabled(false);
-                }
-
-                renderer.DrawLineClearEffect(clearedRows, lineClearEffectTime);
-                lineClearEffectTime += deltaTime;
-
-                if (lineClearEffectTime >= lineClearEffectDuration) {
-                    Arrays.fill(clearedRows, -1);
-                    lineClearEffectRunning = false;
-                    playerInput.SetInputEnabled(true);
-                }
-            } else {
-                autoMove.TimeUpdate(deltaTime, score);
-                if (stopped) { //autoMove로 게임이 종료될 수 있으므로 검증
-                    return;
-                }
-
-                SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
-                    currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding().GetBlockHolding());
-                renderer.UpdateRoot(state);
-            }
-		}
-	};
+            SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding().GetBlockHolding());
+            renderer.UpdateRoot(state);
+        }
+    }
 
     // 종료 결과를 확보하고 게임을 정지한 뒤 화면 전환을 요청한다.
     public void StopGame() {
@@ -146,7 +156,11 @@ public class GameController {
         gameLoop.stop();
         playerInput.SetInputEnabled(false);
         gameRoot.setOnKeyPressed(null);
-        onGameEnded.accept(result);
+        try {
+            onGameEnded.accept(result);
+        } finally {
+            if (profiler != null) profiler.saveReport();
+        }
     }
 
 	public void PauseGame() {
@@ -157,6 +171,11 @@ public class GameController {
 		paused = true;
 		playerInput.SetInputEnabled(false);
 		gameLoop.stop();
+		if (profiler != null) {
+            profiler.resetContinuity();
+            profiler.saveReport();
+        }
+
 		onPauseRequested.run();
 	}
 
@@ -166,6 +185,7 @@ public class GameController {
 		}
 
 		previousFrameTime = 0;
+		if (profiler != null) profiler.resetContinuity();
 		paused = false;
 		playerInput.SetInputEnabled(!lineClearEffectRunning);
 		gameLoop.start();
@@ -176,6 +196,7 @@ public class GameController {
             return;
         }
 		previousFrameTime = 0;
+		if (profiler != null) profiler.resetContinuity();
 		paused = false;
 		playerInput.SetInputEnabled(!lineClearEffectRunning);
 		gameLoop.start();

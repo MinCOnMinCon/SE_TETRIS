@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GameSceneTest",
+            "request": "launch",
+            "mainClass": "tetris.test.GameSceneTest",
+            "projectName": "SE_TETRIS"
+        },
+        {
+            "type": "java",
             "name": "Run Tetris",
             "request": "launch",
             "mainClass": "tetris.Main",

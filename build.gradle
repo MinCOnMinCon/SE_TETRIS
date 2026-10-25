@@ -23,6 +23,10 @@ application {
     mainClass = 'tetris.Main'
 }
 
+tasks.named('run', JavaExec) {
+    systemProperty 'tetris.profile', providers.gradleProperty('frameProfile').getOrElse('false')
+}
+
 tasks.register('prepareJavaFxRuntime', Sync) {
     dependsOn classes
     from configurations.runtimeClasspath
