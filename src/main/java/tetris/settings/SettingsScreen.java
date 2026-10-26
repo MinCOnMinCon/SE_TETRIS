@@ -39,6 +39,10 @@ public class SettingsScreen {
         colorBlindModeComboBox.setPromptText("색상 모드 선택");
         colorBlindModeComboBox.setPrefWidth(220);
 
+        ComboBox<GameSettings.Difficulty> difficultyComboBox = new ComboBox<>();
+        difficultyComboBox.setPromptText("난이도 선택");
+        difficultyComboBox.setPrefWidth(220);
+
         Label keySettingsTitle = new Label("키 설정");
         keySettingsTitle.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
         Label keySettingsStatus = new Label("역할 버튼을 누른 뒤 새 키를 입력하세요.");
@@ -76,7 +80,7 @@ public class SettingsScreen {
         resetScoreButton.setPrefSize(180, 50);
         resetScoreButton.setStyle("-fx-font-size: 16px;");
 
-        VBox content = new VBox(14, resolutionComboBox, colorBlindModeComboBox,
+        VBox content = new VBox(14, resolutionComboBox, colorBlindModeComboBox, difficultyComboBox,
                 keySettingsTitle, keySettingsStatus, keyBindingRows,
                 saveSettingsButton, resetSettingsButton);
         content.setAlignment(Pos.CENTER);
@@ -100,7 +104,7 @@ public class SettingsScreen {
         BorderPane.setMargin(bottomButtons, new Insets(12));
 
         controller = new SettingsController(stage, scene, resolutionComboBox,
-                colorBlindModeComboBox, GameSettings.getInputSettingData(), keyBindingRows,
+                colorBlindModeComboBox, difficultyComboBox, GameSettings.getInputSettingData(), keyBindingRows,
             keySettingsStatus, saveSettingsButton, resetSettingsButton, resetScoreButton,
             backButton);
         backButton.setOnAction(e -> {

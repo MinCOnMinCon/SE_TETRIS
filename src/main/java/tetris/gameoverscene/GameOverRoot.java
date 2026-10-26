@@ -165,7 +165,6 @@ public class GameOverRoot extends StackPane {
             String playerName = nameField.getText().trim();
             if (playerName.isEmpty())
                 playerName = "익명";
-            else playerName = nameField.getText();
 
             confirmMessage.setText("[" + playerName + "] 님으로 등록하시겠습니까?");
             confirmPopup.setVisible(true);
@@ -177,7 +176,6 @@ public class GameOverRoot extends StackPane {
             String playerName = nameField.getText().trim();
             if (playerName.isEmpty())
                 playerName = "익명";
-            else playerName = nameField.getText();
 
             ScoreStorage scoreStorage = new ScoreStorage();
             scoreStorage.saveScore(playerName, finalScore, difficulty, gameMode);
@@ -192,7 +190,7 @@ public class GameOverRoot extends StackPane {
             int myRankCount = 1;
             List<ScoreRecord> scores = new ScoreLoader().loadScores();
             for (ScoreRecord tmp : scores) {
-                if (tmp.getName().equals(nameField.getText()) && tmp.getScore() == finalScore) {
+                if (tmp.getName().equals(playerName) && tmp.getScore() == finalScore) {
                     break; // 내 기록을 찾으면 카운트 멈춤
                 }
                 myRankCount++;
