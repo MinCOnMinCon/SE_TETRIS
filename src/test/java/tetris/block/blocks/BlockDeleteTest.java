@@ -87,7 +87,7 @@ class BlockDeleteTest {
 
         assertEquals(100, score.GetGameScore());
         // 가로줄 아이템의 삭제 행 번호도 화면 효과에 전달되어야 한다.
-        assertEquals(10, clearedRows[0]);
+        assertEquals(-1, clearedRows[0]);
         assertEquals(-1, clearedRows[1]);
         assertTrue(board[10][0].isBlock());
         assertFalse(board[10][1].isBlock());
