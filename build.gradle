@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'jacoco'
     id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'edu.sc.seis.launch4j' version '4.0.0'
 }
 
 repositories {
@@ -21,6 +22,23 @@ javafx {
 
 application {
     mainClass = 'tetris.Main'
+}
+
+// Windows 실행기. Java 21 이상은 실행 PC에 설치되어 있다고 가정한다.
+launch4j { // .\gradlew.bat createExe : 실행파일 실행 명령어. 터미널에 넣어서 실행
+    mainClassName = 'tetris.Main'
+    outfile = 'Tetris.exe'
+    headerType = 'gui'
+    jreMinVersion = '21'
+    requires64Bit = true
+    bundledJrePath = '%JAVA_HOME%;%PATH%'
+    chdir = '.'
+    jvmOptions = ['--module-path=lib', '--add-modules=javafx.controls,javafx.fxml']
+    icon = "${projectDir}/packaging/tetris.ico"
+}
+
+tasks.named('run', JavaExec) {
+    systemProperty 'tetris.profile', providers.gradleProperty('frameProfile').getOrElse('false')
 }
 
 tasks.register('prepareJavaFxRuntime', Sync) {

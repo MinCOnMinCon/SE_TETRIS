@@ -38,7 +38,11 @@ public class GameSceneTest {
 
         @Override
         public void start(Stage stage) {
-            GameSettings testSettings = SettingsStore.getGameSettings().withDifficulty(TEST_DIFFICULTY);
+            GameSettings savedSettings = SettingsStore.getGameSettings();
+            GameSettings testSettings = new GameSettings(
+                    savedSettings.resolutionPreset(), savedSettings.screenWidth(), savedSettings.screenHeight(),
+                    TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY, TEST_GAME_MODE);
+
             Scene scene = new Scene(new BorderPane(),
                     GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
             PauseScene pauseScene = new PauseScene(() -> {
