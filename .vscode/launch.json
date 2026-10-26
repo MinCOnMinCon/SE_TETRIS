@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "BlockGenerationTest",
+            "request": "launch",
+            "mainClass": "tetris.test.BlockGenerationTest",
+            "projectName": "SE_TETRIS"
+        },
+        {
+            "type": "java",
             "name": "GameSceneTest",
             "request": "launch",
             "mainClass": "tetris.test.GameSceneTest",

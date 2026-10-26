@@ -17,13 +17,15 @@ class FrameProfilerTest {
         FrameProfiler profiler = new FrameProfiler(time::get, directory.resolve("report.txt"));
         frame(profiler, time, 0, 1_000_000);
         frame(profiler, time, 16_700_000, 2_000_000);
-        frame(profiler, time, 66_700_000, 3_000_000);
-        frame(profiler, time, 166_700_000, 9_000_000);
+        frame(profiler, time, 116_700_000, 3_000_000);
+        // Exactly 100ms is excluded; 100ms plus 1ns is counted.
+        assertTrue(profiler.summary().contains("> 100ms: 0.000%"));
+        frame(profiler, time, 216_700_001, 9_000_000);
         String report = profiler.summary();
         assertTrue(report.contains("측정 호출 간격 수: 3"));
         assertTrue(report.contains("<= 16.7ms: 33.333%"));
         assertTrue(report.contains("> 16.7ms: 66.667%"));
-        assertTrue(report.contains("> 50ms: 33.333%"));
+        assertTrue(report.contains("> 100ms: 33.333%"));
         assertTrue(report.contains("최대 호출 간격: 100.000ms"));
         assertTrue(report.contains("직전 핸들러 실행 시간: 3.000ms"));
         assertFalse(report.contains("주요 호출"));

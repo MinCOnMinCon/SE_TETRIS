@@ -18,7 +18,7 @@ import tetris.settings.GameSettings.Difficulty;
 public class BlockGenerationTest {
     // Java 실행 진입점은 규칙에 따라 소문자 main을 사용한다.
     public static void main(String[] args) {
-        Test(10050, Difficulty.HARD, 251L);
+        Test(10050, Difficulty.NORMAL, 251L);
     }
 
     public static void Test(int trials, Difficulty difficulty, long seed) {

@@ -35,7 +35,7 @@ public class GameScore{
     }
 
     public void AddGameScore(int score){
-        if(Long.MAX_VALUE - score < gameScore){
+        if(Integer.MAX_VALUE - score < gameScore){
             gameScore = Integer.MAX_VALUE;
         }
         else{

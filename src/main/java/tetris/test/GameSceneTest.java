@@ -12,6 +12,7 @@ import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 import tetris.settings.SettingsStore;
+import tetris.settings.GameSettings.ColorBlindMode;
 
 // GameController를 직접 생성해 아이템 블록을 확인한다.
 public class GameSceneTest {
@@ -41,7 +42,7 @@ public class GameSceneTest {
             GameSettings savedSettings = SettingsStore.getGameSettings();
             GameSettings testSettings = new GameSettings(
                     savedSettings.resolutionPreset(), savedSettings.screenWidth(), savedSettings.screenHeight(),
-                    TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY, TEST_GAME_MODE);
+                    TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY, TEST_GAMEMODE);
 
             Scene scene = new Scene(new BorderPane(),
                     GameSettings.getScreenWidth(), GameSettings.getScreenHeight());

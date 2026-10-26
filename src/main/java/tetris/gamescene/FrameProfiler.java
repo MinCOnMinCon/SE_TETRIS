@@ -106,7 +106,7 @@ public final class FrameProfiler {
 
     String summary() {
         String header = String.format(Locale.ROOT,
-                "측정 호출 간격 수: %d%n<= 16.7ms: %.3f%%%n> 16.7ms: %.3f%%%n> 50ms: %.3f%% (전체 기준)%n",
+                "측정 호출 간격 수: %d%n<= 16.7ms: %.3f%%%n> 16.7ms: %.3f%%%n> 100ms: %.3f%% (전체 기준)%n",
                 count, percent(withinBudget), percent(count - withinBudget), percent(over100ms));
         if (count == 0) return header + "최대 간격: 측정 자료 없음\n";
         return header + String.format(Locale.ROOT,
