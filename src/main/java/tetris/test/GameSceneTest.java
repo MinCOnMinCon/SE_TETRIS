@@ -9,7 +9,6 @@ import tetris.gameoverscene.GameOverRoot;
 import tetris.gamescene.GameController;
 import tetris.pausescene.PauseScene;
 import tetris.settings.GameSettings;
-import tetris.settings.GameSettings.ColorBlindMode;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 import tetris.settings.SettingsStore;
@@ -39,10 +38,7 @@ public class GameSceneTest {
 
         @Override
         public void start(Stage stage) {
-            GameSettings savedSettings = SettingsStore.getGameSettings();
-            GameSettings testSettings = new GameSettings(
-                    savedSettings.resolutionPreset(), savedSettings.screenWidth(), savedSettings.screenHeight(),
-                    TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY, TEST_GAMEMODE);
+            GameSettings testSettings = SettingsStore.getGameSettings().withDifficulty(TEST_DIFFICULTY);
             Scene scene = new Scene(new BorderPane(),
                     GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
             PauseScene pauseScene = new PauseScene(() -> {

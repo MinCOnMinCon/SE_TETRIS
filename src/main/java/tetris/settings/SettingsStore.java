@@ -12,6 +12,7 @@ import java.util.stream.Collectors; // 키 목록을 문자열로 변환
 
 import javafx.scene.input.KeyCode; // 키 이름 변환
 import tetris.settings.KeyBindingSettings.ActionType; // 역할 목록
+import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 
 // 사용자 설정을 홈 디렉터리의 properties 파일에 저장하고 불러오는 클래스
@@ -55,6 +56,15 @@ public final class SettingsStore {
             }
         }
 
+        String difficulty = properties.getProperty("difficulty");
+        if (difficulty != null) {
+            try {
+                GameSettings.setDifficulty(Difficulty.valueOf(difficulty));
+            } catch (IllegalArgumentException e) {
+                System.err.println("저장된 난이도를 읽을 수 없습니다: " + difficulty);
+            }
+        }
+
         String gameMode = properties.getProperty("gameMode", GameMode.NORMAL.name());
         try {
             GameSettings.setGameMode(GameMode.valueOf(gameMode));
@@ -86,6 +96,7 @@ public final class SettingsStore {
         Properties properties = new Properties(); // 저장할 key=value 모음
         properties.setProperty("resolution", GameSettings.getResolutionPreset());
         properties.setProperty("colorBlindMode", GameSettings.getColorBlindMode().name());
+        properties.setProperty("difficulty", GameSettings.getDifficulty().name());
         properties.setProperty("gameMode", GameSettings.getGameMode().name());
 
         GameSettings.getInputSettingData().getAllBindings().forEach((actionType, keyCodes) -> {
@@ -118,6 +129,7 @@ public final class SettingsStore {
     public static GameSettings resetToDefaults() {
         GameSettings.setResolutionPreset(GameSettings.RESOLUTION_PRESETS[0]);
         GameSettings.setColorBlindMode(GameSettings.ColorBlindMode.NORMAL);
+        GameSettings.setDifficulty(Difficulty.NORMAL);
         GameSettings.setGameMode(GameMode.NORMAL);
         GameSettings.getInputSettingData().resetToDefaults();
         return save();

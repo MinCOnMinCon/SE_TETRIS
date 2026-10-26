@@ -25,4 +25,20 @@ class GameSettingsTest {
         assertThrows(UnsupportedOperationException.class,
                 () -> settings.keyBindings().put(KeyBindingSettings.ActionType.PAUSE, java.util.List.of(KeyCode.P)));
     }
+
+    @Test
+    void withDifficultyKeepsTheOtherSavedSettings() {
+        GameSettings settings = new GameSettings(
+                "960x540", 960, 540, 1, new KeyBindingSettings().getAllBindings(),
+                GameSettings.Difficulty.NORMAL, GameSettings.GameMode.ITEM);
+
+        GameSettings changed = settings.withDifficulty(GameSettings.Difficulty.HARD);
+
+        assertEquals(GameSettings.Difficulty.HARD, changed.difficulty());
+        assertEquals("960x540", changed.resolutionPreset());
+        assertEquals(960, changed.screenWidth());
+        assertEquals(540, changed.screenHeight());
+        assertEquals(1, changed.colorMode());
+        assertEquals(GameSettings.GameMode.ITEM, changed.gameMode());
+    }
 }

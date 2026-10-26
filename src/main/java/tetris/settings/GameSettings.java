@@ -58,18 +58,18 @@ public final class GameSettings {
         }
     }
 
-    // 화면 크기 선택 옵션을 문자열 형태로 정의
+    // 이 PC의 논리 화면 1536x864(작업 영역 1536x816) 안에 들어가는 16:9 크기
     public static final String[] RESOLUTION_PRESETS = {
-        "1280x720",
-        "1920x1080",
-        "2560x1440"
+        "960x540",
+        "1120x630",
+        "1200x675"
     };
 
     // 각 해상도 문자열에 대응되는 실제 픽셀 값
     public static final int[][] RESOLUTION_VALUES = {
-        {1280, 720},
-        {1920, 1080},
-        {2560, 1440}
+        {960, 540},
+        {1120, 630},
+        {1200, 675}
     };
 
     private static String resolutionPreset = RESOLUTION_PRESETS[0];
@@ -145,10 +145,21 @@ public final class GameSettings {
         this.keyBindings = Collections.unmodifiableMap(copiedBindings);
         
     }
-    public enum Difficulty{
-        EASY,
-        NORMAL,
-        HARD
+    public enum Difficulty {
+        EASY("쉬움"),
+        NORMAL("보통"),
+        HARD("어려움");
+
+        private final String displayName;
+
+        Difficulty(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
     }
     public enum GameMode {
         NORMAL("일반 모드"),
@@ -190,6 +201,18 @@ public final class GameSettings {
 
     public Difficulty difficulty() {
         return savedDifficulty;
+    }
+
+    // 저장된 설정은 유지하고 난이도만 바꾼 스냅샷을 만든다.
+    public GameSettings withDifficulty(Difficulty difficulty) {
+        return new GameSettings(
+                savedResolutionPreset,
+                screenWidth,
+                screenHeight,
+                colorMode,
+                keyBindings,
+                difficulty == null ? savedDifficulty : difficulty,
+                savedGameMode);
     }
 
     public GameMode gameMode() {
