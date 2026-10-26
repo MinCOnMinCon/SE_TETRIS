@@ -1,5 +1,6 @@
 package tetris;
 
+import javafx.geometry.Insets; // 안내 문구 여백
 import javafx.geometry.Pos; // 화면 요소의 정렬 위치
 import javafx.scene.Parent; // 시작 메뉴 루트
 import javafx.scene.Scene; // 화면에 표시할 장면
@@ -105,6 +106,12 @@ public class StartScreen {
         root.setTop(title);//타이틀 상단 배치
         BorderPane.setAlignment(title, Pos.CENTER);//타이틀 중앙 정렬
         root.setCenter(buttonBox);//버튼 중앙 배치
+
+        Label keyHint = new Label("↑↓ 이동   Enter 선택");
+        keyHint.setStyle("-fx-font-size: 12px; -fx-text-fill: #aaaaaa;");
+        root.setBottom(keyHint);
+        BorderPane.setAlignment(keyHint, Pos.BOTTOM_RIGHT);
+        BorderPane.setMargin(keyHint, new Insets(0, 16, 12, 0));
 
         root.addEventFilter(KeyEvent.KEY_PRESSED, e -> { // 시작 화면에서 키보드 입력을 감지
             if (e.getCode() == KeyCode.DOWN) {//아래 방향키 입력 시
