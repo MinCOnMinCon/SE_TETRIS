@@ -48,7 +48,7 @@ class SceneRendererTest {
         runOnFxThread(() -> {
             GameSettings settings = new GameSettings(
                     width + "x" + height, width, height, 0,
-                    java.util.Map.of(), GameSettings.Difficulty.NORMAL);
+                    java.util.Map.of(), GameSettings.Difficulty.NORMAL, GameSettings.GameMode.NORMAL);
             RenderConfig config = new RenderConfig(settings, 3);
             GameBoard board = new GameBoard();
             BlockData[] queue = {
@@ -87,7 +87,8 @@ class SceneRendererTest {
     void createRootRejectsNullState() throws Exception {
         runOnFxThread(() -> {
             GameSettings settings = new GameSettings(
-                    "1280x720", 1280, 720, 0, java.util.Map.of(), GameSettings.Difficulty.NORMAL);
+                    "1280x720", 1280, 720, 0, java.util.Map.of(), GameSettings.Difficulty.NORMAL,
+                    GameSettings.GameMode.NORMAL);
             SceneRenderer renderer = new SceneRenderer(new RenderConfig(settings, 3));
 
             NullPointerException exception = assertThrows(
@@ -111,7 +112,8 @@ class SceneRendererTest {
     @Test
     void acceptsRenderConfigAndRejectsNullConfig() {
         GameSettings settings = new GameSettings(
-                "1280x720", 1280, 720, 0, java.util.Map.of(), GameSettings.Difficulty.NORMAL);
+                "1280x720", 1280, 720, 0, java.util.Map.of(), GameSettings.Difficulty.NORMAL,
+                GameSettings.GameMode.NORMAL);
         assertDoesNotThrow(() -> new SceneRenderer(new RenderConfig(settings, 2)));
         assertThrows(NullPointerException.class, () -> new SceneRenderer(null));
     }
