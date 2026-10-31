@@ -29,7 +29,6 @@ public class GameSceneTest {
     }
 
     public static void Run(String... args) {
-        SettingsStore.load();
         Application.launch(TestApplication.class, args);
     }
 
@@ -39,13 +38,15 @@ public class GameSceneTest {
 
         @Override
         public void start(Stage stage) {
-            GameSettings savedSettings = SettingsStore.getGameSettings();
+            SettingsStore settingsStore = new SettingsStore();
+            settingsStore.load();
+            GameSettings savedSettings = settingsStore.getGameSettings();
             GameSettings testSettings = new GameSettings(
                     savedSettings.resolutionPreset(), savedSettings.screenWidth(), savedSettings.screenHeight(),
                     TEST_COLOR_MODE.getColorMode(), savedSettings.keyBindings(), TEST_DIFFICULTY, TEST_GAMEMODE);
 
             Scene scene = new Scene(new BorderPane(),
-                    GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
+                    savedSettings.screenWidth(), savedSettings.screenHeight());
             PauseScene pauseScene = new PauseScene(() -> {
                 scene.setRoot(gameController.GetRoot());
                 gameController.GetRoot().requestFocus();

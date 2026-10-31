@@ -35,6 +35,7 @@ public class SettingsController {
     private final Button resetSettingsButton;
     private final Button resetScoreButton;
     private final Button backButton;
+    private final SettingsStore settingsStore;
     private final List<Button> navigationButtons;
     private int selectedButtonIndex;
     private final Map<ActionType, Button> keyButtons = new EnumMap<>(ActionType.class); // 역할과 버튼 연결
@@ -55,7 +56,8 @@ public class SettingsController {
             Button saveSettingsButton,
             Button resetSettingsButton,
             Button resetScoreButton,
-            Button backButton) {
+            Button backButton,
+            SettingsStore settingsStore) {
         this.stage = stage;
         this.scene = scene;
         this.resolutionComboBox = resolutionComboBox;
@@ -68,53 +70,56 @@ public class SettingsController {
         this.resetSettingsButton = resetSettingsButton;
         this.resetScoreButton = resetScoreButton;
         this.backButton = backButton;
+        this.settingsStore = settingsStore;
         this.navigationButtons = List.of(
             saveSettingsButton, resetSettingsButton, resetScoreButton, backButton);
     }
 
-    // 화면이 열릴 때 기본값과 이벤트를 설정
-    public void initialize() { // 설정 화면의 기본값과 이벤트 초기화
-        SettingsStore.load(); // 저장된 설정을 먼저 복원
+    // 화면이 열릴 때 저장값을 표시하고 버튼 동작을 연결한다.
+    public void initialize() {
+        settingsStore.load();
+        showSavedSettings();
+        bindSettingChanges();
+        bindSettingButtons();
+        createKeyBindingRows();
+    }
 
-        // 해상도 옵션을 드롭다운에 추가
-        resolutionComboBox.getItems().addAll(GameSettings.RESOLUTION_PRESETS);
-
-        // 저장된 해상도와 색상 모드를 선택 상태로 표시
-        resolutionComboBox.setValue(GameSettings.getResolutionPreset());
+    private void showSavedSettings() {
+        resolutionComboBox.getItems().addAll(settingsStore.resolutionPresets);
+        resolutionComboBox.setValue(settingsStore.getResolutionPreset());
         colorBlindModeComboBox.getItems().setAll(GameSettings.ColorBlindMode.values());
-        colorBlindModeComboBox.setValue(GameSettings.getColorBlindMode());
+        colorBlindModeComboBox.setValue(settingsStore.getColorBlindMode());
         difficultyComboBox.getItems().setAll(GameSettings.Difficulty.values());
-        difficultyComboBox.setValue(GameSettings.getDifficulty());
+        difficultyComboBox.setValue(settingsStore.getDifficulty());
         updateResolution();
+    }
 
-        // 해상도 선택 시 이벤트 연결
+    private void bindSettingChanges() {
         resolutionComboBox.setOnAction(e -> {
-            GameSettings.setResolutionPreset(resolutionComboBox.getValue());
+            settingsStore.setResolutionPreset(resolutionComboBox.getValue());
             updateResolution();
         });
-
         colorBlindModeComboBox.setOnAction(e -> {
-            GameSettings.setColorBlindMode(colorBlindModeComboBox.getValue());
+            settingsStore.setColorBlindMode(colorBlindModeComboBox.getValue());
         });
-
         difficultyComboBox.setOnAction(e -> {
-            GameSettings.setDifficulty(difficultyComboBox.getValue());
+            settingsStore.setDifficulty(difficultyComboBox.getValue());
         });
+    }
 
-        saveSettingsButton.setOnAction(e -> { // 버튼을 눌렀을 때만 파일 저장과 객체 생성을 수행
-            GameSettings savedSettings = SettingsStore.save();
-            if (savedSettings == null) {
-                keySettingsStatus.setText("설정을 저장하지 못했습니다.");
-                return;
-            }
-            keySettingsStatus.setText("설정이 저장되었습니다.");
-        });
-
+    private void bindSettingButtons() {
+        saveSettingsButton.setOnAction(e -> saveSettings());
         resetSettingsButton.setOnAction(e -> resetSettings());
         resetScoreButton.setOnAction(e -> resetScoreBoard());
+    }
 
-        // 역할별 키 버튼을 만들고 씬에서 다음 키 입력을 감지
-        createKeyBindingRows();
+    private void saveSettings() {
+        GameSettings savedSettings = settingsStore.save();
+        if (savedSettings == null) {
+            keySettingsStatus.setText("설정을 저장하지 못했습니다.");
+            return;
+        }
+        keySettingsStatus.setText("설정이 저장되었습니다.");
     }
 
     public void activate() {
@@ -141,8 +146,8 @@ public class SettingsController {
         int index = -1;
 
         // 선택 값이 어떤 해상도인지 찾기
-        for (int i = 0; i < GameSettings.RESOLUTION_PRESETS.length; i++) {
-            if (GameSettings.RESOLUTION_PRESETS[i].equals(selected)) {
+        for (int i = 0; i < settingsStore.resolutionPresets.length; i++) {
+            if (settingsStore.resolutionPresets[i].equals(selected)) {
                 index = i;
                 break;
             }
@@ -150,8 +155,8 @@ public class SettingsController {
 
         // 유효한 해상도면 창 크기 조절
         if (index >= 0) {
-            int width = GameSettings.RESOLUTION_VALUES[index][0];
-            int height = GameSettings.RESOLUTION_VALUES[index][1];
+            int width = settingsStore.resolutionValues[index][0];
+            int height = settingsStore.resolutionValues[index][1];
             stage.setWidth(width);
             stage.setHeight(height);
         }
@@ -201,21 +206,30 @@ public class SettingsController {
 
     private void captureAssignedKey(KeyEvent event) {
         KeyCode newKey = event.getCode();
-        boolean alreadyUsed = inputSettingData.getAllBindings().entrySet().stream()
+        if (isKeyUsedByAnotherAction(newKey)) {
+            showKeyAlreadyUsed(newKey);
+        } else {
+            assignWaitingKey(newKey);
+        }
+        event.consume();
+    }
+
+    private boolean isKeyUsedByAnotherAction(KeyCode newKey) {
+        return inputSettingData.getAllBindings().entrySet().stream()
                 .anyMatch(binding -> binding.getKey() != actionWaitingForKey
                         && binding.getValue().contains(newKey));
+    }
 
-        if (alreadyUsed) {
-            keySettingsStatus.setText(newKey.getName() + " 키는 다른 역할에 이미 배정되어 있습니다.");
-        } else {
-            ActionType updatedAction = actionWaitingForKey;
-            inputSettingData.setKeyCode(updatedAction, newKey);
-            updateKeyButton(updatedAction);
-            keySettingsStatus.setText(updatedAction.getDisplayName() + " 키를 " + newKey.getName() + "(으)로 변경했습니다.");
-            actionWaitingForKey = null;
-        }
+    private void showKeyAlreadyUsed(KeyCode newKey) {
+        keySettingsStatus.setText(newKey.getName() + " 키는 다른 역할에 이미 배정되어 있습니다.");
+    }
 
-        event.consume();
+    private void assignWaitingKey(KeyCode newKey) {
+        ActionType updatedAction = actionWaitingForKey;
+        inputSettingData.setKeyCode(updatedAction, newKey);
+        updateKeyButton(updatedAction);
+        keySettingsStatus.setText(updatedAction.getDisplayName() + " 키를 " + newKey.getName() + "(으)로 변경했습니다.");
+        actionWaitingForKey = null;
     }
 
     private void moveButtonFocus(int direction, KeyEvent event) {
@@ -238,10 +252,10 @@ public class SettingsController {
             return;
         }
 
-        GameSettings savedSettings = SettingsStore.resetToDefaults();
-        resolutionComboBox.setValue(GameSettings.getResolutionPreset());
-        colorBlindModeComboBox.setValue(GameSettings.getColorBlindMode());
-        difficultyComboBox.setValue(GameSettings.getDifficulty());
+        GameSettings savedSettings = settingsStore.resetToDefaults();
+        resolutionComboBox.setValue(settingsStore.getResolutionPreset());
+        colorBlindModeComboBox.setValue(settingsStore.getColorBlindMode());
+        difficultyComboBox.setValue(settingsStore.getDifficulty());
         for (ActionType actionType : ActionType.values()) {
             updateKeyButton(actionType);
         }
