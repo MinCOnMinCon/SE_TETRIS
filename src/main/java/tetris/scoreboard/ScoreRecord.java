@@ -14,11 +14,19 @@ public class ScoreRecord {
     private final Difficulty difficulty;
     private final GameMode gameMode;
 
+    //하이라이트 여부
+    private boolean highlight;
+
+    public ScoreRecord(String name, int score, Difficulty difficulty) {
+        this(name, score, difficulty, GameMode.NORMAL);
+    }
+
     public ScoreRecord(String name, int score, Difficulty difficulty, GameMode gameMode) {
         this.name = name;
         this.score = score;
         this.difficulty = difficulty;
         this.gameMode = gameMode == null ? GameMode.NORMAL : gameMode;
+        this.highlight = true;
     }
 
     // 이름 getter
@@ -37,5 +45,14 @@ public class ScoreRecord {
 
     public GameMode getGameMode() {
         return gameMode;
+    }
+
+    public boolean isHighlight() {
+        return highlight;
+    }
+
+    //저장된 후 하이라이트 취소
+    public void setFalseHighlight() {
+        this.highlight = false;
     }
 }

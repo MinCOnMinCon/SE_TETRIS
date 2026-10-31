@@ -8,8 +8,14 @@ import java.util.Map; // 동작별 키 설정 표현
 import javafx.scene.input.KeyCode; // 저장된 키 입력 종류 표현
 import tetris.settings.KeyBindingSettings.ActionType; // 키 설정 동작 종류
 
-// 저장 시점에 게임으로 넘기는 설정 스냅샷
+// 설정 화면이 수정하는 현재 값과, 저장 시점에 게임으로 넘기는 스냅샷을 한 클래스가 가진다.
 public final class GameSettings {
+    private static final KeyBindingSettings INPUT_SETTING_DATA = new KeyBindingSettings();
+    private static GameMode currentGameMode = GameMode.NORMAL;
+
+    public static KeyBindingSettings getInputSettingData() { // 현재 키 설정 객체 반환
+        return INPUT_SETTING_DATA; // 설정 화면과 저장소가 같은 객체를 사용
+    }
 
     // 색상 모드를 블록 색상 모드 번호와 연결
     public enum ColorBlindMode {
@@ -25,49 +31,78 @@ public final class GameSettings {
             this.displayName = displayName; // 화면 표시명 저장
         }
 
-        // 어느 색맹 모드인지를 구분해주는 int값 도출
+        //어느 색맹 모드인지를 구분해주는 int값 도출
         public int getColorMode() {
             return colorMode;
         }
 
-        // 재정의를 통해 읽기 힘든 주소값을 실제 저장된 값을 호출
+        //재정의를 통해 읽기 힘든 주소값을 실제 저장된 값을 호출
         @Override
         public String toString() {
             return displayName;
         }
     }
 
-    public enum Difficulty {
-        EASY("쉬움"),
-        NORMAL("보통"),
-        HARD("어려움");
+    // 현재 선택된 색상 모드
+    private static ColorBlindMode colorBlindMode = ColorBlindMode.NORMAL; // 현재 색상 모드
 
-        private final String displayName;
+    //캡슐화를 통해 수정은 불가하되 읽기만 가능
+    public static ColorBlindMode getColorBlindMode() {
+        return colorBlindMode;
+    }
 
-        Difficulty(String displayName) {
-            this.displayName = displayName;
-        }
-
-        @Override
-        public String toString() {
-            return displayName;
+    //혹시라도 잘못된 값이 들어오면 기존의 설정을 유지
+    public static void setColorBlindMode(ColorBlindMode mode) {
+        if (mode != null) {
+            colorBlindMode = mode;
         }
     }
 
-    public enum GameMode {
-        NORMAL("일반 모드"),
-        ITEM("아이템 모드");
+    // 이 PC의 논리 화면 1536x864(작업 영역 1536x816) 안에 들어가는 16:9 크기
+    public static final String[] RESOLUTION_PRESETS = {
+        "960x540",
+        "1120x630",
+        "1200x675"
+    };
 
-        private final String displayName;
+    // 각 해상도 문자열에 대응되는 실제 픽셀 값
+    public static final int[][] RESOLUTION_VALUES = {
+        {960, 540},
+        {1120, 630},
+        {1200, 675}
+    };
 
-        GameMode(String displayName) {
-            this.displayName = displayName;
+    private static String resolutionPreset = RESOLUTION_PRESETS[0];
+
+    public static String getResolutionPreset() { // 현재 해상도 이름 반환
+        return resolutionPreset;
+    }
+
+    public static void setResolutionPreset(String preset) { // 지원되는 해상도만 저장
+        for (String supportedPreset : RESOLUTION_PRESETS) {
+            if (supportedPreset.equals(preset)) {
+                resolutionPreset = preset;
+                return;
+            }
         }
+    }
 
-        @Override
-        public String toString() {
-            return displayName;
+    public static int getScreenWidth() { // 현재 화면의 가로 크기 반환
+        return getResolutionValues()[0];
+    }
+
+    public static int getScreenHeight() { // 현재 화면의 세로 크기 반환
+        return getResolutionValues()[1];
+    }
+  
+
+    private static int[] getResolutionValues() {
+        for (int index = 0; index < RESOLUTION_PRESETS.length; index++) {
+            if (RESOLUTION_PRESETS[index].equals(resolutionPreset)) {
+                return RESOLUTION_VALUES[index];
+            }
         }
+        return RESOLUTION_VALUES[0];
     }
 
     private final String savedResolutionPreset;
@@ -77,8 +112,20 @@ public final class GameSettings {
     private final Map<ActionType, List<KeyCode>> keyBindings;
     private final Difficulty savedDifficulty;
     private final GameMode savedGameMode;
+    
 
     // 저장 버튼을 누른 시점의 설정을 게임 로직에 전달하는 불변 스냅샷
+    public GameSettings(
+            String resolutionPreset,
+            int screenWidth,
+            int screenHeight,
+            int colorMode,
+            Map<ActionType, List<KeyCode>> keyBindings,
+            Difficulty savedDifficulty) {
+        this(resolutionPreset, screenWidth, screenHeight, colorMode, keyBindings,
+                savedDifficulty, GameMode.NORMAL);
+    }
+
     public GameSettings(
             String resolutionPreset,
             int screenWidth,
@@ -96,6 +143,60 @@ public final class GameSettings {
         EnumMap<ActionType, List<KeyCode>> copiedBindings = new EnumMap<>(ActionType.class);
         keyBindings.forEach((action, keys) -> copiedBindings.put(action, List.copyOf(keys)));
         this.keyBindings = Collections.unmodifiableMap(copiedBindings);
+        
+    }
+    public enum Difficulty {
+        EASY("쉬움"),
+        NORMAL("보통"),
+        HARD("어려움");
+
+        private final String displayName;
+
+        Difficulty(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+    public enum GameMode {
+        NORMAL("일반 모드"),
+        ITEM("아이템 모드");
+
+        private final String displayName;
+
+        GameMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
+    public static Difficulty currentDifficulty = Difficulty.NORMAL;
+
+    public static Difficulty getDifficulty() {
+        return currentDifficulty;
+    }
+
+    public static void setDifficulty(Difficulty value) {
+        if (value != null) {
+            currentDifficulty = value;
+        }
+    }
+
+    public static GameMode getGameMode() {
+        return currentGameMode;
+    }
+
+    public static void setGameMode(GameMode value) {
+        if (value != null) {
+            currentGameMode = value;
+        }
     }
 
     public Difficulty difficulty() {
@@ -122,6 +223,8 @@ public final class GameSettings {
         return savedResolutionPreset;
     }
 
+    
+
     public int screenWidth() {
         return screenWidth;
     }
@@ -137,4 +240,5 @@ public final class GameSettings {
     public Map<ActionType, List<KeyCode>> keyBindings() {
         return keyBindings;
     }
+    
 }

@@ -29,14 +29,4 @@ class KeyBindingSettingsTest {
                 bindings.getKeyCodes(KeyBindingSettings.ActionType.HOLD));
         assertThrows(IllegalArgumentException.class, () -> new KeyBindingSettings(new KeyCode[0]));
     }
-
-    @Test
-    void resetToDefaultsRestoresChangedKeys() {
-        KeyBindingSettings bindings = new KeyBindingSettings();
-        bindings.setKeyCode(KeyBindingSettings.ActionType.MOVE_LEFT, KeyCode.A);
-
-        bindings.resetToDefaults();
-
-        assertEquals(KeyCode.LEFT, bindings.getKeyCode(KeyBindingSettings.ActionType.MOVE_LEFT));
-    }
 }

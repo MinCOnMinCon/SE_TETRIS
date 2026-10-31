@@ -7,293 +7,156 @@ import java.nio.file.Files; // 파일 생성과 읽기/쓰기
 import java.nio.file.Path; // 설정 파일 경로
 import java.util.Arrays; // 저장된 키 문자열 분리
 import java.util.List; // 키 목록
-import java.util.Objects;
 import java.util.Properties; // key=value 형식 저장소
 import java.util.stream.Collectors; // 키 목록을 문자열로 변환
 
 import javafx.scene.input.KeyCode; // 키 이름 변환
 import tetris.settings.KeyBindingSettings.ActionType; // 역할 목록
-import tetris.settings.GameSettings.ColorBlindMode;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 
 // 사용자 설정을 홈 디렉터리의 properties 파일에 저장하고 불러오는 클래스
 public final class SettingsStore {
-    // 이 PC의 논리 화면 1536x864(작업 영역 1536x816) 안에 들어가는 16:9 크기
-    public final String[] resolutionPresets = {
-        "960x540",
-        "1120x630",
-        "1200x675"
-    };
+    private static final Path SETTINGS_FILE = Path.of( // 사용자 설정 저장 위치
+            System.getProperty("user.home"), ".se_tetris", "settings.properties");
+    private static GameSettings gameSettings; // 마지막으로 저장되거나 불러온 게임 설정 스냅샷
 
-    // 각 해상도 문자열에 대응되는 실제 픽셀 값
-    public final int[][] resolutionValues = {
-        {960, 540},
-        {1120, 630},
-        {1200, 675}
-    };
-
-    private final Path settingsFile;
-    private final KeyBindingSettings inputSettingData = new KeyBindingSettings();
-    private ColorBlindMode colorBlindMode = ColorBlindMode.NORMAL;
-    private String resolutionPreset = resolutionPresets[0];
-    private Difficulty currentDifficulty = Difficulty.NORMAL;
-    private GameMode currentGameMode = GameMode.NORMAL;
-    private GameSettings gameSettings; // 마지막으로 저장되거나 불러온 게임 설정 스냅샷
-
-    public SettingsStore() {
-        this(Path.of(System.getProperty("user.home"), ".se_tetris", "settings.properties"));
+    private SettingsStore() { // 인스턴스 생성 방지
     }
 
-    // 테스트가 사용자 설정 파일 대신 임시 파일을 쓰도록 경로를 받는다.
-    public SettingsStore(Path settingsFile) {
-        this.settingsFile = Objects.requireNonNull(settingsFile);
-    }
-
-    // 현재 키 설정 객체 반환. 설정 화면과 저장소가 같은 객체를 사용한다.
-    public KeyBindingSettings getInputSettingData() {
-        return inputSettingData;
-    }
-
-    // 캡슐화를 통해 수정은 불가하되 읽기만 가능
-    public ColorBlindMode getColorBlindMode() {
-        return colorBlindMode;
-    }
-
-    // 혹시라도 잘못된 값이 들어오면 기존의 설정을 유지
-    public void setColorBlindMode(ColorBlindMode mode) {
-        if (mode != null) {
-            colorBlindMode = mode;
-        }
-    }
-
-    // 현재 해상도 이름 반환
-    public String getResolutionPreset() {
-        return resolutionPreset;
-    }
-
-    // 지원되는 해상도만 저장
-    public void setResolutionPreset(String preset) {
-        for (String supportedPreset : resolutionPresets) {
-            if (supportedPreset.equals(preset)) {
-                resolutionPreset = preset;
-                return;
-            }
-        }
-    }
-
-    // 현재 화면의 가로 크기 반환
-    public int getScreenWidth() {
-        return getResolutionValues()[0];
-    }
-
-    // 현재 화면의 세로 크기 반환
-    public int getScreenHeight() {
-        return getResolutionValues()[1];
-    }
-
-    private int[] getResolutionValues() {
-        for (int index = 0; index < resolutionPresets.length; index++) {
-            if (resolutionPresets[index].equals(resolutionPreset)) {
-                return resolutionValues[index];
-            }
-        }
-        return resolutionValues[0];
-    }
-
-    public Difficulty getDifficulty() {
-        return currentDifficulty;
-    }
-
-    public void setDifficulty(Difficulty value) {
-        if (value != null) {
-            currentDifficulty = value;
-        }
-    }
-
-    public GameMode getGameMode() {
-        return currentGameMode;
-    }
-
-    public void setGameMode(GameMode value) {
-        if (value != null) {
-            currentGameMode = value;
-        }
-    }
-
-    // 저장된 설정을 읽어 현재 설정에 적용한다.
-    public void load() {
-        setGameMode(GameMode.NORMAL);
-        Properties properties = readSettingsFile();
-        if (properties == null) {
-            gameSettings = createGameSettings();
+    // 저장된 설정을 현재 공유 설정 객체에 적용
+    public static void load() { // 파일의 설정을 메모리로 불러옴
+        GameSettings.setGameMode(GameMode.NORMAL);
+        if (!Files.exists(SETTINGS_FILE)) {
+            gameSettings = createGameSettings(); // 설정 파일이 없으면 기본값 스냅샷을 생성
             return;
         }
-        applySavedSettings(properties);
-        gameSettings = createGameSettings();
-    }
 
-    private Properties readSettingsFile() {
-        if (!Files.exists(settingsFile)) {
-            return null;
-        }
-        Properties properties = new Properties();
-        try (InputStream input = Files.newInputStream(settingsFile)) {
+        Properties properties = new Properties(); // 저장된 key=value 모음
+        try (InputStream input = Files.newInputStream(SETTINGS_FILE)) {
             properties.load(input);
-            return properties;
         } catch (IOException e) {
             System.err.println("설정 파일을 읽지 못했습니다: " + e.getMessage());
-            return null;
+            gameSettings = createGameSettings(); // 읽기 실패 시 현재 기본값으로 게임 설정 생성
+            return;
         }
-    }
 
-    private void applySavedSettings(Properties properties) {
-        applyResolution(properties);
-        applyColorMode(properties);
-        applyDifficulty(properties);
-        applyGameMode(properties);
-        applyKeyBindings(properties);
-    }
+        GameSettings.setResolutionPreset(properties.getProperty(
+                "resolution", GameSettings.getResolutionPreset()));
 
-    private void applyResolution(Properties properties) {
-        setResolutionPreset(properties.getProperty("resolution", getResolutionPreset()));
-    }
+        
 
-    private void applyColorMode(Properties properties) {
         String colorMode = properties.getProperty("colorBlindMode");
-        if (colorMode == null) {
-            return;
+        if (colorMode != null) {
+            try {
+                GameSettings.setColorBlindMode(
+                        GameSettings.ColorBlindMode.valueOf(colorMode));
+            } catch (IllegalArgumentException e) {
+                System.err.println("저장된 색상 모드를 읽을 수 없습니다: " + colorMode);
+            }
         }
-        try {
-            setColorBlindMode(ColorBlindMode.valueOf(colorMode));
-        } catch (IllegalArgumentException e) {
-            System.err.println("저장된 색상 모드를 읽을 수 없습니다: " + colorMode);
-        }
-    }
 
-    private void applyDifficulty(Properties properties) {
         String difficulty = properties.getProperty("difficulty");
-        if (difficulty == null) {
-            return;
+        if (difficulty != null) {
+            try {
+                GameSettings.setDifficulty(Difficulty.valueOf(difficulty));
+            } catch (IllegalArgumentException e) {
+                System.err.println("저장된 난이도를 읽을 수 없습니다: " + difficulty);
+            }
         }
-        try {
-            setDifficulty(Difficulty.valueOf(difficulty));
-        } catch (IllegalArgumentException e) {
-            System.err.println("저장된 난이도를 읽을 수 없습니다: " + difficulty);
-        }
-    }
 
-    private void applyGameMode(Properties properties) {
         String gameMode = properties.getProperty("gameMode", GameMode.NORMAL.name());
         try {
-            setGameMode(GameMode.valueOf(gameMode));
+            GameSettings.setGameMode(GameMode.valueOf(gameMode));
         } catch (IllegalArgumentException e) {
             System.err.println("저장된 게임 모드를 읽을 수 없습니다: " + gameMode);
         }
-    }
 
-    private void applyKeyBindings(Properties properties) {
+        KeyBindingSettings inputSettings = GameSettings.getInputSettingData();
         for (ActionType actionType : ActionType.values()) {
-            applyKeyBinding(actionType, properties.getProperty("key." + actionType.name()));
+            String savedKeys = properties.getProperty("key." + actionType.name());
+            if (savedKeys == null || savedKeys.isBlank()) {
+                continue;
+            }
+
+            List<KeyCode> keyCodes = Arrays.stream(savedKeys.split(","))
+                    .map(String::trim)
+                    .filter(value -> !value.isEmpty())
+                    .map(SettingsStore::parseKeyCode)
+                    .filter(keyCode -> keyCode != null)
+                    .collect(Collectors.toList());
+            inputSettings.setKeyCodes(actionType, keyCodes);
         }
+
+        gameSettings = createGameSettings(); // 파일에서 읽은 값을 게임용 객체로 확정
     }
 
-    private void applyKeyBinding(ActionType actionType, String savedKeys) {
-        if (savedKeys == null || savedKeys.isBlank()) {
-            return;
-        }
-        inputSettingData.setKeyCodes(actionType, parseSavedKeys(savedKeys));
-    }
+    // 현재 해상도, 색상 모드, 모든 역할의 키 배정을 저장하고 게임 설정 객체 반환
+    public static GameSettings save() { // 저장 버튼에서 호출해 파일과 실행용 설정을 함께 갱신
+        Properties properties = new Properties(); // 저장할 key=value 모음
+        properties.setProperty("resolution", GameSettings.getResolutionPreset());
+        properties.setProperty("colorBlindMode", GameSettings.getColorBlindMode().name());
+        properties.setProperty("difficulty", GameSettings.getDifficulty().name());
+        properties.setProperty("gameMode", GameSettings.getGameMode().name());
 
-    private List<KeyCode> parseSavedKeys(String savedKeys) {
-        return Arrays.stream(savedKeys.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .map(this::parseKeyCode)
-                .filter(keyCode -> keyCode != null)
-                .collect(Collectors.toList());
-    }
-
-    // 현재 설정을 파일에 저장하고 게임 설정 객체를 반환한다.
-    public GameSettings save() {
-        if (!writeSettingsFile(collectCurrentSettings())) {
-            return null;
-        }
-        gameSettings = createGameSettings();
-        return gameSettings;
-    }
-
-    private Properties collectCurrentSettings() {
-        Properties properties = new Properties();
-        properties.setProperty("resolution", getResolutionPreset());
-        properties.setProperty("colorBlindMode", getColorBlindMode().name());
-        properties.setProperty("difficulty", getDifficulty().name());
-        properties.setProperty("gameMode", getGameMode().name());
-        addKeyBindings(properties);
-        return properties;
-    }
-
-    private void addKeyBindings(Properties properties) {
-        inputSettingData.getAllBindings().forEach((actionType, keyCodes) -> {
-            properties.setProperty("key." + actionType.name(), formatKeyCodes(keyCodes));
+        GameSettings.getInputSettingData().getAllBindings().forEach((actionType, keyCodes) -> {
+            String values = keyCodes.stream()
+                    .map(KeyCode::name)
+                    .collect(Collectors.joining(","));
+            properties.setProperty("key." + actionType.name(), values);
         });
-    }
 
-    private String formatKeyCodes(List<KeyCode> keyCodes) {
-        return keyCodes.stream()
-                .map(KeyCode::name)
-                .collect(Collectors.joining(","));
-    }
-
-    private boolean writeSettingsFile(Properties properties) {
         try {
-            Files.createDirectories(settingsFile.getParent());
-            try (OutputStream output = Files.newOutputStream(settingsFile)) {
+            Files.createDirectories(SETTINGS_FILE.getParent());
+            try (OutputStream output = Files.newOutputStream(SETTINGS_FILE)) {
                 properties.store(output, "Tetris user settings");
             }
-            return true;
         } catch (IOException e) {
             System.err.println("설정을 저장하지 못했습니다: " + e.getMessage());
-            return false;
+            return null; // 저장에 실패하면 게임에 저장되지 않은 설정을 전달하지 않음
         }
+
+        gameSettings = createGameSettings(); // 저장된 현재값으로 불변 객체 생성
+        return gameSettings; // 생성한 객체를 게임 시작 흐름에서 사용
     }
 
-    public GameSettings saveGameMode(GameMode gameMode) {
-        setGameMode(gameMode);
+    public static GameSettings setGameMode(GameMode gameMode) {
+        GameSettings.setGameMode(gameMode);
         GameSettings savedSettings = save();
         return savedSettings == null ? createGameSettings() : savedSettings;
     }
 
-    public GameSettings resetToDefaults() {
-        setResolutionPreset(resolutionPresets[0]);
-        setColorBlindMode(ColorBlindMode.NORMAL);
-        setDifficulty(Difficulty.NORMAL);
-        setGameMode(GameMode.NORMAL);
-        inputSettingData.resetToDefaults();
+    public static GameSettings resetToDefaults() {
+        GameSettings.setResolutionPreset(GameSettings.RESOLUTION_PRESETS[0]);
+        GameSettings.setColorBlindMode(GameSettings.ColorBlindMode.NORMAL);
+        GameSettings.setDifficulty(Difficulty.NORMAL);
+        GameSettings.setGameMode(GameMode.NORMAL);
+        GameSettings.getInputSettingData().resetToDefaults();
         return save();
     }
 
     // 게임 시작 화면에서 마지막 저장 설정 객체를 조회
-    public GameSettings getGameSettings() {
+    public static GameSettings getGameSettings() {
         if (gameSettings == null) {
             gameSettings = createGameSettings(); // 아직 로드되지 않은 경우 기본값으로 초기화
         }
         return gameSettings;
     }
 
-    // 현재 설정값을 해상도, 색상 모드, 키 배정이 포함된 객체로 복사
-    private GameSettings createGameSettings() {
+    // 공유 설정값을 해상도, 색상 모드, 키 배정이 포함된 객체로 복사
+    private static GameSettings createGameSettings() {
         return new GameSettings(
-                getResolutionPreset(),
-                getScreenWidth(),
-                getScreenHeight(),
-                getColorBlindMode().getColorMode(),
-                inputSettingData.getAllBindings(),
-                getDifficulty(),
-                getGameMode());
+                GameSettings.getResolutionPreset(),
+                GameSettings.getScreenWidth(),
+                GameSettings.getScreenHeight(),
+                GameSettings.getColorBlindMode().getColorMode(),
+                GameSettings.getInputSettingData().getAllBindings(),
+                GameSettings.getDifficulty(),
+                GameSettings.getGameMode()
+                );
     }
 
-    private KeyCode parseKeyCode(String value) { // 문자열을 JavaFX 키 코드로 변환
+    private static KeyCode parseKeyCode(String value) { // 문자열을 JavaFX 키 코드로 변환
         try {
             return KeyCode.valueOf(value);
         } catch (IllegalArgumentException e) {

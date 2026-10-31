@@ -183,7 +183,7 @@ public class GameOverRoot extends StackPane {
 
 
             // 점수 저장 후 최신 기록으로 표를 만든다.
-            oldScore = new ScoreBoardScreen(() -> { }).createScoreTableView();
+            oldScore = ScoreBoardScreen.createScoreTableView();
 
             // 스코어보드
             // 1. 전체 점수 리스트(scores)에서 내 순위 찾기

@@ -43,108 +43,94 @@ public class StartScreen {
         }
     }
 
-    public void makeStartScreen(
+        public void makeStartScreen(
             Runnable onGame,
             Runnable onItemGame,
             Runnable onScoreBoard,
-            Runnable onSettings) {
+            Runnable onSettings) {// 메뉴 루트를 만들고 화면 전환은 콜백에 맡긴다
         selectedIndex = 0;
-        Label title = createTitleLabel();
-        buttons = createMenuButtons();
-        bindMenuActions(onGame, onItemGame, onScoreBoard, onSettings);
-        bindMouseSelection();
-        root = createStartRoot(title, createButtonBox(), createKeyHint());
-        bindKeySelection();
-        updateSelection();
-        stage.setTitle("Tetris");
-    }
-
-    private Label createTitleLabel() {
-        Label title = new Label("TETRIS");
+        Label title = new Label("TETRIS");//타이틀 생성
+        //타이틀 스타일 설정(폰트, 굵기, 색상)
         title.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;");
-        return title;
-    }
+        //버튼 생성
+        Button normalModeStartButton = new Button("일반모드 시작");
+        Button itemModeStartButton = new Button("아이템 모드 시작");
+        Button rankingButton = new Button("스코어 보드");
+        Button settingButton = new Button("설정");
+        Button exitButton = new Button("게임 종료");
 
-    private Button[] createMenuButtons() {
-        Button[] menuButtons = {
-            new Button("일반모드 시작"),
-            new Button("아이템 모드 시작"),
-            new Button("스코어 보드"),
-            new Button("설정"),
-            new Button("게임 종료")
+        //버튼 배열 초기화
+        buttons = new Button[] {
+            normalModeStartButton, itemModeStartButton, rankingButton, settingButton, exitButton
         };
-        for (Button button : menuButtons) {
+
+        //버튼 크기 설정
+        for (Button button : buttons) {
             button.setPrefSize(180, 50);
         }
-        return menuButtons;
-    }
 
-    private void bindMenuActions(
-            Runnable onGame,
-            Runnable onItemGame,
-            Runnable onScoreBoard,
-            Runnable onSettings) {
-        buttons[0].setOnAction(e -> onGame.run());
-        buttons[1].setOnAction(e -> onItemGame.run());
-        buttons[2].setOnAction(e -> onScoreBoard.run());
-        buttons[3].setOnAction(e -> onSettings.run());
-        buttons[4].setOnAction(e -> System.exit(0));
-    }
+        //게임 시작 버튼 클릭 시 동작
+        normalModeStartButton.setOnAction(e -> onGame.run());
 
-    private void bindMouseSelection() {
-        for (int i = 0; i < buttons.length; i++) {
-            final int index = i;
+        itemModeStartButton.setOnAction(e -> onItemGame.run());
+
+        //스코어 보드 버튼 클릭 시 동작
+        rankingButton.setOnAction(e -> onScoreBoard.run());
+
+        //설정 버튼 클릭 시 동작
+        settingButton.setOnAction(e -> onSettings.run());
+
+        //게임 종료 버튼 클릭 시 동작
+        exitButton.setOnAction(e -> {
+            System.exit(0);
+        });
+
+        //버튼에 마우스 오버 이벤트 설정
+        for (int i = 0; i < buttons.length; i++) {//모든 버튼의 배열 회전
+            final int index = i;//마우스 오버 이벤트 설정을 위한 인덱스 변수 설정
             buttons[i].setOnMouseEntered(e -> {
-                selectedIndex = index;
-                updateSelection();
+                selectedIndex = index;//선택된 버튼이면
+                updateSelection();//선택된 버튼으로 설정
             });
+
             buttons[i].setFocusTraversable(false);
         }
-    }
 
-    private VBox createButtonBox() {
+        //버튼을 수직 배치, 버튼 간격을 20으로 설정 및 중앙 정렬
         VBox buttonBox = new VBox(20);
-        buttonBox.getChildren().addAll(buttons);
+        buttonBox.getChildren().addAll(normalModeStartButton, itemModeStartButton, rankingButton, settingButton, exitButton);
         buttonBox.setAlignment(Pos.CENTER);
-        return buttonBox;
-    }
 
-    private Label createKeyHint() {
+        root = new BorderPane();//전체 화면 구성
+        root.setStyle("-fx-background-color: black;");//배경 검은색 설정
+        root.setTop(title);//타이틀 상단 배치
+        BorderPane.setAlignment(title, Pos.CENTER);//타이틀 중앙 정렬
+        root.setCenter(buttonBox);//버튼 중앙 배치
+
         Label keyHint = new Label("↑↓ 이동   Enter 선택");
         keyHint.setStyle("-fx-font-size: 12px; -fx-text-fill: #aaaaaa;");
-        return keyHint;
-    }
-
-    private BorderPane createStartRoot(Label title, VBox buttonBox, Label keyHint) {
-        BorderPane screen = new BorderPane();
-        screen.setStyle("-fx-background-color: black;");
-        screen.setTop(title);
-        BorderPane.setAlignment(title, Pos.CENTER);
-        screen.setCenter(buttonBox);
-        screen.setBottom(keyHint);
+        root.setBottom(keyHint);
         BorderPane.setAlignment(keyHint, Pos.BOTTOM_RIGHT);
         BorderPane.setMargin(keyHint, new Insets(0, 16, 12, 0));
-        return screen;
-    }
 
-    private void bindKeySelection() {
-        root.addEventFilter(KeyEvent.KEY_PRESSED, this::handleMenuKey);
-    }
+        root.addEventFilter(KeyEvent.KEY_PRESSED, e -> { // 시작 화면에서 키보드 입력을 감지
+            if (e.getCode() == KeyCode.DOWN) {//아래 방향키 입력 시
+                if (selectedIndex < buttons.length - 1) {//선택된 버튼이 마지막 버튼이 아니면
+                    selectedIndex++;//선택된 버튼 인덱스 증가
+                    updateSelection();
+                }
+            } else if (e.getCode() == KeyCode.UP) {//위 방향키 입력 시
+                if (selectedIndex > 0) {//선택된 버튼이 첫 번째 버튼이 아니면
+                    selectedIndex--;//선택된 버튼 인덱스 감소
+                    updateSelection();
+                }
+            } else if (e.getCode() == KeyCode.ENTER) { //엔터키 입력 시
+                buttons[selectedIndex].fire();//선택된 버튼 클릭 이벤트 발생
+            }
+        });
 
-    private void handleMenuKey(KeyEvent event) {
-        if (event.getCode() == KeyCode.DOWN) {
-            if (selectedIndex < buttons.length - 1) {
-                selectedIndex++;
-                updateSelection();
-            }
-        } else if (event.getCode() == KeyCode.UP) {
-            if (selectedIndex > 0) {
-                selectedIndex--;
-                updateSelection();
-            }
-        } else if (event.getCode() == KeyCode.ENTER) {
-            buttons[selectedIndex].fire();
-        }
+        updateSelection();//초기 선택된 버튼 업데이트
+        stage.setTitle("Tetris");//창 이름 설정
     }
 
     public Parent showStartScreen() {

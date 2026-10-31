@@ -10,7 +10,6 @@ import javafx.scene.input.KeyCode; // JavaFX 키 코드
 
 // 설정 화면에서 키 역할과 배정된 기본/보조 키를 관리
 public final class KeyBindingSettings {
-
     // 게임에서 수행할 수 있는 동작 목록
     public enum ActionType {
         MOVE_LEFT("왼쪽 이동"),
@@ -24,8 +23,7 @@ public final class KeyBindingSettings {
 
         private final String displayName; // 설정 화면에 표시할 역할 이름
 
-        // 역할 이름을 저장
-        ActionType(String displayName) {
+        ActionType(String displayName) { // 역할 이름을 저장
             this.displayName = displayName;
         }
 
@@ -34,11 +32,9 @@ public final class KeyBindingSettings {
         }
     }
 
-    // 역할별 키 저장
-    private final Map<ActionType, List<KeyCode>> bindings = new EnumMap<>(ActionType.class);
+    private final Map<ActionType, List<KeyCode>> bindings = new EnumMap<>(ActionType.class); // 역할별 키 저장
 
-    // 기본 키 배정을 생성
-    public KeyBindingSettings() {
+    public KeyBindingSettings() { // 기본 키 배정을 생성
         bindings.put(ActionType.MOVE_LEFT, List.of(KeyCode.LEFT));
         bindings.put(ActionType.MOVE_RIGHT, List.of(KeyCode.RIGHT));
         bindings.put(ActionType.SOFT_DROP, List.of(KeyCode.DOWN));
@@ -61,8 +57,7 @@ public final class KeyBindingSettings {
         }
     }
 
-    // 역할에 배정된 첫 키 반환
-    public KeyCode getKeyCode(ActionType actionType) {
+    public KeyCode getKeyCode(ActionType actionType) { // 역할에 배정된 첫 키 반환
         List<KeyCode> keyCodes = getKeyCodes(actionType);
         if (keyCodes.isEmpty()) {
             return null;
@@ -70,27 +65,23 @@ public final class KeyBindingSettings {
         return keyCodes.get(0);
     }
 
-    // 특정 역할의 키 목록 반환. 없으면 빈 목록을 반환한다.
-    public List<KeyCode> getKeyCodes(ActionType actionType) {
-        return bindings.getOrDefault(actionType, List.of());
+    public List<KeyCode> getKeyCodes(ActionType actionType) { // 특정 역할의 키 목록 반환
+        return bindings.getOrDefault(actionType, List.of()); // 없으면 빈 목록 반환
     }
 
-    // 전체 키 배정의 읽기 전용 복사본 반환
-    public Map<ActionType, List<KeyCode>> getAllBindings() {
+    public Map<ActionType, List<KeyCode>> getAllBindings() { // 전체 키 배정의 읽기 전용 복사본 반환
         Map<ActionType, List<KeyCode>> copy = new LinkedHashMap<>();
         bindings.forEach((actionType, keyCodes) -> copy.put(actionType, List.copyOf(keyCodes)));
         return Collections.unmodifiableMap(copy);
     }
 
-    // 특정 역할의 키를 하나로 변경
-    public void setKeyCode(ActionType actionType, KeyCode keyCode) {
+    public void setKeyCode(ActionType actionType, KeyCode keyCode) { // 특정 역할의 키를 하나로 변경
         if (actionType != null && keyCode != null && bindings.containsKey(actionType)) {
             bindings.put(actionType, List.of(keyCode));
         }
     }
 
-    // 특정 역할의 키 목록을 변경
-    public void setKeyCodes(ActionType actionType, List<KeyCode> keyCodes) {
+    public void setKeyCodes(ActionType actionType, List<KeyCode> keyCodes) { // 특정 역할의 키 목록을 변경
         if (actionType != null && keyCodes != null && !keyCodes.isEmpty()
                 && keyCodes.stream().noneMatch(keyCode -> keyCode == null)) {
             bindings.put(actionType, List.copyOf(keyCodes));

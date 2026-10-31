@@ -27,7 +27,7 @@ class RenderConfigTest {
             double scoreFontSize, double titleFontSize) {
         GameSettings settings = new GameSettings(
                 width + "x" + height, width, height, 2,
-                java.util.Map.of(), GameSettings.Difficulty.NORMAL, GameSettings.GameMode.NORMAL);
+                java.util.Map.of(), GameSettings.Difficulty.NORMAL);
         RenderConfig config = new RenderConfig(settings, 3);
 
         assertAll("화면과 설정",
@@ -70,8 +70,7 @@ class RenderConfigTest {
     @Test
     void calculatesQueueCanvasHeightFromSlotCount() {
         GameSettings settings = new GameSettings(
-                "1280x720", 1280, 720, 0, java.util.Map.of(), GameSettings.Difficulty.NORMAL,
-                GameSettings.GameMode.NORMAL);
+                "1280x720", 1280, 720, 0, java.util.Map.of(), GameSettings.Difficulty.NORMAL);
         RenderConfig config1 = new RenderConfig(settings, 2);
         
 
