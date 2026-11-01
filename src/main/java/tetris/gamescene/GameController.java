@@ -38,8 +38,7 @@ public class GameController {
 	
 	
     private long previousFrameTime;
-    private final FrameProfiler profiler = Boolean.getBoolean("tetris.profile") // .\gradlew.bat run -PframeProfile=true 프로파일러 실행을 위해 터미널에 이 명령어를 칠 것.
-            ? new FrameProfiler() : null;
+    private final FrameProfiler profiler;
     private boolean paused;
     private boolean stopped;
     private final int lineClearEffectDuration = 1000; // 밀리초
@@ -64,6 +63,14 @@ public class GameController {
 
     public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings, int initialClearedLineCount){
+        this(onPauseRequested, onGameEnded, settings, initialClearedLineCount,
+                Boolean.getBoolean("tetris.profile") ? new FrameProfiler() : null);
+    }
+
+    // FramePerformanceTest 전용: 테스트가 측정기를 주입한다. 일반 생성자의 프로파일링 설정은 유지한다.
+    GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
+            GameSettings settings, int initialClearedLineCount, FrameProfiler profiler){
+        this.profiler = profiler;
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onGameEnded = Objects.requireNonNull(onGameEnded);
 
@@ -205,6 +212,16 @@ public class GameController {
 	public Parent GetRoot() {
 		return gameRoot;
 	}
+
+    // FramePerformanceTest 전용: FX 스레드에서만 시나리오 준비·입력에 사용하며 리플렉션을 피한다.
+    FramePerformanceTestAccess accessForFramePerformanceTest() {
+        return new FramePerformanceTestAccess(board, currentBlock, playerInput,
+                !stopped && !paused && !lineClearEffectRunning && board.GetClearedRows()[0] == -1);
+    }
+
+    // FramePerformanceTest 전용 접근 묶음. 게임 코드의 일반 상태 조회 API로 사용하지 않는다.
+    record FramePerformanceTestAccess(GameBoard board, CurrentBlock currentBlock,
+            PlayerInput input, boolean ready) {}
 
 	
 }
