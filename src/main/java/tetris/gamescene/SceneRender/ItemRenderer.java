@@ -8,7 +8,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import tetris.block.data.BlockData;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 
 // 블록의 아이템 정보를 해석하고, 해당 칸 위에 기호를 그린다.
 public class ItemRenderer {

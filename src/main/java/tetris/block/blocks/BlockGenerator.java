@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import tetris.block.data.BlockData;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 import tetris.block.data.CurrentShape;
 import tetris.settings.GameSettings.Difficulty;
 

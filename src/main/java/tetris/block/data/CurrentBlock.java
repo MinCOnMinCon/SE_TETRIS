@@ -18,14 +18,6 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class CurrentBlock {
-    public enum ItemType {
-        NORMAL,
-        DEL_HLINE,
-        DEL_VLINE,
-        DEL_4VLINE,
-        DEL_VEMPTY,
-        DEL_AEMPTY
-    }
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockHolding blockHolding;

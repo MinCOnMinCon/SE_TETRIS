@@ -1,7 +1,7 @@
 package tetris.block.data;
 
 import javafx.scene.paint.Color;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 
 /*
     BlockData 클래스는 테트리스 블럭의 모양과 색상 정보, 위치를 저장
@@ -20,7 +20,7 @@ public class BlockData {
     private int x;
     private int y;
     private boolean item;
-    private ItemType itemType;
+    private ItemType itemType = ItemType.NORMAL;
     private int[] itemPos; //x, y
     private PatternType patternType = PatternType.NONE;
 

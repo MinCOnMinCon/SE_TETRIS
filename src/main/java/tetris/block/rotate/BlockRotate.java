@@ -1,7 +1,7 @@
 package tetris.block.rotate;
 
 import tetris.block.data.BlockData;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 import tetris.gamescene.board.BoardElement;
 
 /*
