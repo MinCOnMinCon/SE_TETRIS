@@ -9,8 +9,11 @@ import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.Test;
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
+import tetris.block.move.AutoMove;
+import tetris.block.move.BlockController;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
+import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.KeyBindingSettings.ActionType;
 
 class PlayerInputTest {
@@ -18,14 +21,17 @@ class PlayerInputTest {
     void dispatchesConfiguredMovementAndPauseKeys() {
         GameBoard board = new GameBoard();
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
-        CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, board, () -> {});
         GameProgress progress = new GameProgress();
         GameScore score = new GameScore(progress);
+        BlockController controller = new BlockController(
+                current, new AutoMove(current, Difficulty.NORMAL), score, progress);
         int[] pauseCalls = {0};
         PlayerInput input = new PlayerInput(Map.of(
                 ActionType.MOVE_LEFT, List.of(KeyCode.A),
                 ActionType.PAUSE, List.of(KeyCode.ESCAPE)),
-                current, board, score, progress, () -> pauseCalls[0]++);
+                controller, () -> pauseCalls[0]++);
 
         input.HandleKeyCode(KeyCode.A);
         input.HandleKeyCode(KeyCode.ESCAPE);
@@ -39,11 +45,15 @@ class PlayerInputTest {
     void ignoresConfiguredKeysWhenInputIsDisabled() {
         GameBoard board = new GameBoard();
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
-        CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, board, () -> {});
         GameProgress progress = new GameProgress();
+        GameScore score = new GameScore(progress);
+        BlockController controller = new BlockController(
+                current, new AutoMove(current, Difficulty.NORMAL), score, progress);
         PlayerInput input = new PlayerInput(
                 Map.of(ActionType.MOVE_LEFT, List.of(KeyCode.A)),
-                current, board, new GameScore(progress), progress, () -> {});
+                controller, () -> {});
         input.SetInputEnabled(false);
 
         input.HandleKeyCode(KeyCode.A);

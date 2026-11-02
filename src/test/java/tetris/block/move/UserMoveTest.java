@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorPalette;
 import tetris.block.data.CurrentBlock;
+import tetris.block.move.BlockController;
 import tetris.gamescene.GameProgress;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.board.GameBoard;
@@ -19,13 +20,18 @@ class UserMoveTest {
     @Test
     void delegatesHorizontalMovementToBlockMovement() {
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
-        CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
-        var board = new GameBoard().GetBoard();
+        GameProgress progress = new GameProgress();
+        GameBoard board = new GameBoard();
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, board, () -> {});
+        BlockController controller = new BlockController(
+                current, new AutoMove(current, Difficulty.NORMAL),
+                new GameScore(progress), progress);
 
-        UserMove.MoveRight(current, board);
+        controller.MoveRight();
         assertEquals(5, data.GetX());
 
-        UserMove.MoveLeft(current, board);
+        controller.MoveLeft();
         assertEquals(4, data.GetX());
     }
 
@@ -37,10 +43,13 @@ class UserMoveTest {
         BlockData data = new BlockData(
                 new boolean[][] {{true}},
                 new ColorPalette(Color.WHITE, Color.WHITE, Color.WHITE), 0, 4, 0);
-        CurrentBlock current = new CurrentBlock(data, queue, null, () -> {});
+        CurrentBlock current = new CurrentBlock(
+                data, queue, null, true, false, gameBoard, () -> {});
         GameScore score = new GameScore(progress);
+        BlockController controller = new BlockController(
+                current, new AutoMove(current, Difficulty.NORMAL), score, progress);
 
-        UserMove.MoveDownMax(current, gameBoard.GetBoard(), score, gameBoard.GetClearedRows(), progress);
+        controller.MoveDownMax();
 
         assertEquals(19, data.GetY());
         assertTrue(gameBoard.GetBoard()[19][4].isBlock());

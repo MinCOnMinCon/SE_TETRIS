@@ -131,7 +131,7 @@ public class BlockMove {
         }
         currentBlock.SetFalseIsHolded();
     }
-    private static boolean IsNoBlock(int direction, CurrentBlock currentBlock) {
+    public static boolean IsNoBlock(int direction, CurrentBlock currentBlock) {
         BlockData blockData = currentBlock.GetCurrentBlock();
         int x = blockData.GetX();
         int y = blockData.GetY();

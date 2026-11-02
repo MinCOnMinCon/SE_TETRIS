@@ -3,6 +3,7 @@ package tetris.block.rotate;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.GameBoard;
 import org.junit.jupiter.api.Test;
 
@@ -14,12 +15,14 @@ class BlockRotateTest {
             {true, true, true}
         };
         BlockData data = new BlockData(original, 3, 2);
-        var board = new GameBoard().GetBoard();
+        GameBoard gameBoard = new GameBoard();
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, gameBoard, () -> {});
 
-        BlockRotate.Rotate(data, board, 0);
+        BlockRotate.Rotate(current, true);
         assertArrayEquals(new boolean[][] {{true, true}, {true, false}, {true, false}},
                 data.GetShape());
-        BlockRotate.Rotate(data, board, 1);
+        BlockRotate.Rotate(current, false);
         assertArrayEquals(original, data.GetShape());
     }
 
@@ -30,10 +33,12 @@ class BlockRotateTest {
             {true, true, true}
         };
         BlockData data = new BlockData(original, 3, 2);
-        var board = new GameBoard().GetBoard();
-        board[4][3].setBlock(true);
+        GameBoard gameBoard = new GameBoard();
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, gameBoard, () -> {});
+        gameBoard.GetBoard()[4][3].setBlock(true);
 
-        BlockRotate.Rotate(data, board, 0);
+        BlockRotate.Rotate(current, true);
 
         assertArrayEquals(original, data.GetShape());
     }
@@ -45,9 +50,11 @@ class BlockRotateTest {
             {true, true, true}
         };
         BlockData data = new BlockData(original, 3, 18);
-        var board = new GameBoard().GetBoard();
+        GameBoard gameBoard = new GameBoard();
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, gameBoard, () -> {});
 
-        BlockRotate.Rotate(data, board, 0);
+        BlockRotate.Rotate(current, true);
 
         assertArrayEquals(original, data.GetShape());
     }
