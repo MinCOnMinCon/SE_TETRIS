@@ -1,6 +1,7 @@
 package tetris.block.rotate;
 
 import tetris.block.data.BlockData;
+import tetris.block.data.CurrentBlock;
 import tetris.block.data.ItemType;
 import tetris.gamescene.board.BoardElement;
 
@@ -12,7 +13,9 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class BlockRotate {
-    public static void Rotate(BlockData blockData, BoardElement[][] board, int direction) {
+    public static void Rotate(CurrentBlock currentBlock, boolean isRotateRight) {
+        BlockData blockData = currentBlock.GetCurrentBlock();
+        BoardElement[][] board = currentBlock.GetBoard();
         // 무게추 회전 고정
         if (blockData.GetItemType()==ItemType.DEL_4VLINE)
             return;
@@ -24,23 +27,23 @@ public class BlockRotate {
         // 가로 세로 길이가 반전된 새로운 배열 생성
         boolean[][] rotatedShape = new boolean[cols][rows];
 
-        if (direction == 0) {
+        if (isRotateRight) { // 시계방향 회전
             rotatedShape = RotateRight(originalShape);
-        } else if (direction == 1) {
+        } else { // 반시계방향 회전
             rotatedShape = RotateLeft(originalShape);
         }
         tmpBlockData.SetShape(rotatedShape);
         
-        if (CanRotate.IsNoBlock(tmpBlockData, board)) {
+        if (IsNoBlock(tmpBlockData, board)) {
             blockData.SetShape(rotatedShape);
             int[] itemPos = blockData.GetItemPos();
             if (blockData.IsItem() && itemPos != null) {//만약 아이템이 있을 경우 아이템 좌표도 같이 회전
                 
                 int x = itemPos[0];
                 int y = itemPos[1];
-                if (direction == 0) {
+                if (isRotateRight) {
                     blockData.SetItemPos(new int[]{rows - 1 - y, x});
-                } else if (direction == 1) {
+                } else {
                     blockData.SetItemPos(new int[]{y, cols - 1 - x});
                 }
             }
@@ -73,5 +76,32 @@ public class BlockRotate {
             }
         }
         return rotatedShape;
+    }
+
+    private static boolean IsNoBlock(BlockData blockData, BoardElement[][] board) {
+        int x = blockData.GetX();
+        int y = blockData.GetY();
+
+        int[][] currentShape = blockData.GetCurrentShapeIndex(); // 블럭의 현재 모양에서 1인 좌표만 추출
+
+        for (int[] coord : currentShape) {
+            int i = coord[0];
+            int j = coord[1];
+
+            int newX = x + j; // 좌(-1), 우(1), 아래(0)
+            int newY = y + i;
+
+            // 1. 보드 경계선(벽, 바닥) 충돌 체크
+            if (newX < 0 || newX >= 10 || newY < 0 || newY >= 20) {
+                return false; // Out of bounds
+            }
+
+            // 2. 다른 블럭과의 충돌 체크
+            if (board[newY][newX].isBlock()) {
+                return false; // 이미 다른 블럭이 존재하므로 이동 불가
+            }
+        }
+
+        return true; // 아무 충돌이 없으므로 이동 가능
     }
 }
