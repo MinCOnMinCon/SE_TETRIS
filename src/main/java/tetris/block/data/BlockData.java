@@ -1,5 +1,7 @@
 package tetris.block.data;
 
+import java.util.ArrayList;
+
 import javafx.scene.paint.Color;
 import tetris.block.data.ItemType;
 
@@ -23,6 +25,7 @@ public class BlockData {
     private ItemType itemType = ItemType.NORMAL;
     private int[] itemPos; //x, y
     private PatternType patternType = PatternType.NONE;
+    private int[][] currentShapeIndex;
 
     public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos) {
         this.shape = shape;
@@ -33,6 +36,7 @@ public class BlockData {
         this.item = item;
         this.itemType = itemType;
         this.itemPos = itemPos;
+        this.currentShapeIndex = currentShapeIndex(shape);
     }
     public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode) {
         this(shape, colorPalette, colorMode, 3, 0, false, ItemType.NORMAL, null); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
@@ -44,6 +48,34 @@ public class BlockData {
         this(shape, null, 0, x, y, false, ItemType.NORMAL, null);
     }
 
+
+    private int[][] currentShapeIndex(boolean[][] shape) {
+        ArrayList<int[]> resultList = new ArrayList<>();
+        for (int i = 0; i < shape.length; i++) {
+            for (int j = 0; j < shape[i].length; j++) {
+                if (shape[i][j]) {
+                    resultList.add(new int[]{i, j});
+                }
+            }
+        }
+        return resultList.toArray(new int[0][2]);
+    }
+
+
+    public boolean[][] GetShape() {
+        return this.shape;
+    }
+    public void SetShape(boolean[][] shape) {
+        this.shape = shape;
+        this.currentShapeIndex = currentShapeIndex(shape);
+    }
+    public Color GetCurrentColor() {
+        return this.colorPalette.GetColor(colorMode);
+    }
+    public int GetX() { return this.x; }
+    public void SetX(int x) { this.x = x; }
+    public int GetY() { return this.y; }
+    public void SetY(int y) { this.y = y; }
     public boolean IsItem() {
         return this.item;
     }
@@ -62,30 +94,13 @@ public class BlockData {
     public void SetItemPos(int[] itemPos) {
         this.itemPos = itemPos;
     }
-
-    public boolean[][] GetShape() {
-        return this.shape;
-    }
-
     public PatternType GetPatternType() {
         return this.patternType;
     }
-
     public void SetPatternType(PatternType patternType) {
         this.patternType = patternType;
     }
-
-    public void SetShape(boolean[][] shape) {
-        this.shape = shape;
+    public int[][] GetCurrentShapeIndex() {
+        return this.currentShapeIndex;
     }
-
-    public Color GetCurrentColor() {
-        return this.colorPalette.GetColor(colorMode);
-    }
-
-    public int GetX() { return this.x; }
-    public void SetX(int x) { this.x = x; }
-    
-    public int GetY() { return this.y; }
-    public void SetY(int y) { this.y = y; }
 }
