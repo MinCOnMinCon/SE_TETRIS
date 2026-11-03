@@ -12,7 +12,7 @@ import tetris.block.blocks.Block4VLines;
 import tetris.block.blocks.BlockO;
 import tetris.block.blocks.Block_dot;
 import tetris.block.data.BlockData;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 
 class ItemRendererTest {
     private final ItemRenderer renderer = new ItemRenderer();

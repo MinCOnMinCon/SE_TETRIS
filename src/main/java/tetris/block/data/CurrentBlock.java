@@ -2,10 +2,9 @@ package tetris.block.data;
 
 import java.util.Objects;
 
-import tetris.block.move.CanMove;
 import tetris.gamescene.blockqueue.BlockQueue;
-import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.board.GameBoard;
 
 
 /*
@@ -18,45 +17,39 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class CurrentBlock {
-    public enum ItemType {
-        NORMAL,
-        DEL_HLINE,
-        DEL_VLINE,
-        DEL_4VLINE,
-        DEL_VEMPTY,
-        DEL_AEMPTY
-    }
     private BlockData blockData;
     private BlockQueue nextBlocks;
-    private BlockHolding blockHolding;
+    private BlockData blockHolding;
     private boolean canMoveH;
     private boolean isHolded;
+    private GameBoard board;
     private final Runnable onGameOver;
 
-    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockHolding blockHolding,
-            Runnable onGameOver) {
+    public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockData blockHolding, 
+        boolean canMoveH, boolean isHolded, GameBoard board, Runnable onGameOver) {
         this.blockData = blockData;
         this.nextBlocks = nextBlocks;
         this.blockHolding = blockHolding;
-        this.canMoveH = true;
-        this.isHolded = false;
+        this.canMoveH = canMoveH;
+        this.isHolded = isHolded;
+        this.board = board;
         this.onGameOver = Objects.requireNonNull(onGameOver);
     }
-    public CurrentBlock(BlockQueue nextBlocks, BlockHolding blockHolding, Runnable onGameOver) {
-        this(nextBlocks.GetNextBlock(), nextBlocks, blockHolding, onGameOver);
+    public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
     }
 
     public BlockData GetCurrentBlock() {
         return this.blockData;
     }
-    public BlockHolding GetBlockHolding(){
-        return blockHolding;
-    }
-    public BlockQueue GetBlockQueue(){
-        return nextBlocks;
-    }
     public void SetCurrentBlock(BlockData blockData) {
         this.blockData = blockData;
+    }
+    public BlockQueue GetBlockQueue(){
+        return this.nextBlocks;
+    }
+    public BlockData GetBlockHolding(){
+        return this.blockHolding;
     }
     public boolean GetCanMoveH() {
         return this.canMoveH;
@@ -67,30 +60,40 @@ public class CurrentBlock {
     public void SetFalseIsHolded() {
         this.isHolded = false;
     }
+    public BoardElement[][] GetBoard() {
+        return this.board.GetBoard();
+    }
+    public void SetBoard(BoardElement[][] board) {
+        System.arraycopy(board, 0, this.board.GetBoard(), 0, board.length);
+    }
+    public GameBoard GetGameBoard() {
+        return this.board;
+    }
+    
     
 
-    public void MoveEnd(BoardElement[][] board, BlockData blockData) {
-        if(!CanMove.CanGetNextBlock(blockData, board)){
+    public void MoveEnd(BlockData blockData) {
+        if(!CanGetNextBlock(blockData)){
             onGameOver.run();
             return;
         }
         this.canMoveH = true;
         SetCurrentBlock(blockData);
     }
-    public void MoveEnd(BoardElement[][] board) {
-        MoveEnd(board, nextBlocks.GetNextBlock());
+    public void MoveEnd() {
+        MoveEnd(nextBlocks.GetNextBlock());
     }
 
-    public void BlockHold(BoardElement[][] board) {
+    public void BlockHold() {
         if(!isHolded) {
             isHolded = true;
-            if (blockHolding.GetBlockHolding() == null) {
+            if (this.blockHolding == null) {
                 SaveHold();
-                MoveEnd(board);
+                MoveEnd();
             } else {
-                BlockData temp = blockHolding.GetBlockHolding();
+                BlockData temp = this.blockHolding;
                 SaveHold();
-                MoveEnd(board, temp);
+                MoveEnd(temp);
             }
         }
     }
@@ -99,6 +102,28 @@ public class CurrentBlock {
         this.blockData.SetY(0);
         if (blockData.GetShape() == new ShapePalette().GetShape_dot())
             this.blockData.SetX(4);
-        blockHolding.SetBlockHolding(this.blockData);
+        this.blockHolding = this.blockData;
+    }
+
+    private boolean CanGetNextBlock(BlockData BlockData) {
+        int x = BlockData.GetX();
+        int y = BlockData.GetY();
+
+        int[][] currentShapeIndex = BlockData.GetCurrentShapeIndex(); // 블럭의 현재 모양에서 1인 좌표만 추출
+
+        for (int[] coord : currentShapeIndex) {
+            int i = coord[0];
+            int j = coord[1];
+
+            int newX = x + j;
+            int newY = y + i;
+
+            // 다른 블럭과의 충돌 체크
+            if (board.GetBoard()[newY][newX].isBlock()) {
+                return false; // 이미 다른 블럭이 존재하므로 이동 불가
+            }
+        }
+        
+        return true; // 아무 충돌이 없으므로 이동 가능
     }
 }

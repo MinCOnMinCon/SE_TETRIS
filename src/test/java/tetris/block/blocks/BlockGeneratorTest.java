@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import tetris.block.data.BlockData;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 import tetris.settings.GameSettings.Difficulty;
 
 class BlockGeneratorTest {

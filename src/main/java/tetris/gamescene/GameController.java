@@ -11,10 +11,10 @@ import tetris.gamescene.scenerender.RenderConfig;
 import tetris.gamescene.scenerender.SceneRenderState;
 import tetris.gamescene.scenerender.SceneRenderer;
 import tetris.gamescene.score.GameScore;
-import tetris.gamescene.blockholding.BlockHolding;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
 import tetris.block.move.AutoMove;
+import tetris.block.move.BlockController;
 
 import tetris.settings.GameSettings;
 
@@ -28,6 +28,8 @@ public class GameController {
 	private final CurrentBlock currentBlock;
 
 	private final AutoMove autoMove;
+
+    private final BlockController blockController;
 	private final PlayerInput playerInput;
 
 	private final SceneRenderer renderer;
@@ -75,19 +77,20 @@ public class GameController {
 		score = new GameScore(progress);
 		
 		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty(), settings.gameMode());
-		BlockHolding blockHolding = new BlockHolding();
 		
-		currentBlock = new CurrentBlock(blockQueue, blockHolding, this::StopGame);
+		currentBlock = new CurrentBlock(blockQueue, board, this::StopGame);
+ 
+		autoMove = new AutoMove(currentBlock, gameSettings.difficulty()); 
 
-		autoMove = new AutoMove(currentBlock, board.GetBoard(), gameSettings.difficulty(), progress, board.GetClearedRows()); 
+        blockController = new BlockController(currentBlock, autoMove, score, progress);
 
 
 		
 		RenderConfig renderConfig = new RenderConfig(gameSettings, blockQueue.GetMaxQueueSize());
 		renderer = new SceneRenderer(renderConfig);
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
-		playerInput = new PlayerInput(gameSettings.keyBindings(), currentBlock, board, score, progress, this::PauseGame);
-        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), blockHolding.GetBlockHolding());
+		playerInput = new PlayerInput(gameSettings.keyBindings(), blockController, this::PauseGame);
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), currentBlock.GetBlockHolding());
         gameRoot = renderer.CreateRoot(state);
         gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
         playerInput.SetInputEnabled(false);
@@ -133,13 +136,13 @@ public class GameController {
                 playerInput.SetInputEnabled(true);
             }
         } else {
-            autoMove.TimeUpdate(deltaTime, score);
+            blockController.TimeUpdate(deltaTime);
             if (stopped) { //autoMove로 게임이 종료될 수 있으므로 검증
                 return;
             }
 
             SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
-                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding().GetBlockHolding());
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding());
             renderer.UpdateRoot(state);
         }
     }

@@ -18,9 +18,6 @@ import tetris.settings.GameSettings.Difficulty;
 
 public class AutoMove {
     private CurrentBlock currentBlock;
-    private BoardElement[][] currentBoard;
-    private final int[] clearedRows;
-    private final GameProgress progress;
     private final int minFallInterval = 100;
     private int basicFallInterval = 1000;// 자동으로 떨어지는 기본 간격
     private int fallIntervalDecrese = 50; // 레벨당 줄어드는 낙하 간격
@@ -31,21 +28,18 @@ public class AutoMove {
     private int currentTimeMillis = 0;
     private BlockData prevBlockData; // 이전 블럭 데이터 저장
 
-    public AutoMove(CurrentBlock currentBlock, BoardElement[][] board, Difficulty difficulty, GameProgress progress, int[] clearedRows) {
-        this.clearedRows = clearedRows;
-        this.progress = Objects.requireNonNull(progress);
+    public AutoMove(CurrentBlock currentBlock, Difficulty difficulty) {
         this.currentBlock = currentBlock;
         this.prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 초기화
-        this.currentBoard = board;
         this.difficulty = difficulty;
-        SetFallInterval();
+        SetFallInterval(0);
         
         this.currentTimeMillis = 0; // 초기화
     }
     
 
-    public void TimeUpdate(int msTime, GameScore gameScore) {
-        SetFallInterval();
+    public void TimeUpdate(int msTime, GameScore gameScore, GameProgress progress) {
+        SetFallInterval(progress.GetLevel());
         currentTimeMillis += msTime;
         if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
             prevBlockData = currentBlock.GetCurrentBlock(); // 이전 블럭 데이터 업데이트
@@ -54,15 +48,14 @@ public class AutoMove {
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
-                BlockMove.MoveDown(currentBlock, currentBoard, gameScore, clearedRows, progress);
+                BlockMove.MoveDown(currentBlock, gameScore, progress);
             }
         } 
     }
 
 
     
-    public void SetFallInterval() {
-        int level = progress.GetLevel();
+    public void SetFallInterval(int level) {
         if(difficulty == Difficulty.EASY){
             intervalMillis = basicFallInterval - (int)(level* (fallIntervalDecrese * (1-easyBonusRatio))); 
         }
@@ -74,10 +67,10 @@ public class AutoMove {
         }
         intervalMillis = Math.max(minFallInterval, intervalMillis); // 최소값보다 더 떨어지지는 않는다.
     }
-    public int GetIntervalMillis() {
-        SetFallInterval();
-        return this.intervalMillis;
-    }
+    // public int GetIntervalMillis() {
+    //     SetFallInterval(progress.GetLevel());
+    //     return this.intervalMillis;
+    // }
     public void SetCurrentBlock(CurrentBlock blockData) {
         this.currentBlock = blockData;
     }
@@ -85,7 +78,7 @@ public class AutoMove {
         return this.currentBlock;
     }
     public void SetCurrentBoard(BoardElement[][] board) {
-        this.currentBoard = board;
+        this.currentBlock.SetBoard(board);
         this.prevBlockData = currentBlock.GetCurrentBlock();
         this.currentTimeMillis = 0;
     }

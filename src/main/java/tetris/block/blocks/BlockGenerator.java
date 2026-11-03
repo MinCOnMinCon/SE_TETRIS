@@ -4,8 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import tetris.block.data.BlockData;
-import tetris.block.data.CurrentBlock.ItemType;
-import tetris.block.data.CurrentShape;
+import tetris.block.data.ItemType;
 import tetris.settings.GameSettings.Difficulty;
 
 /*
@@ -162,7 +161,7 @@ public class BlockGenerator {
             case DEL_HLINE:
             case DEL_VLINE:
                 BlockData blockData = GetBlock().GetBlockData();
-                int[][] positions = CurrentShape.currentShapeIndex(blockData.GetShape());
+                int[][] positions = blockData.GetCurrentShapeIndex();
                 int[] position = positions[random.nextInt(positions.length)]; // 테트로미노 중, 블럭이 존재하는 위치 중 동일 가중치로 아이템이 있을 위치 하나를 정함.
 
                 blockData.SetItem(true);

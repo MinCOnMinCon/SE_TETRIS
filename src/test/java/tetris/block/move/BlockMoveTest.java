@@ -12,14 +12,15 @@ import org.junit.jupiter.api.Test;
 class BlockMoveTest {
     @Test
     void movesCurrentBlockAndAwardsSoftDropScore() {
-        var board = new GameBoard().GetBoard();
+        GameBoard board = new GameBoard();
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
-        CurrentBlock current = new CurrentBlock(data, null, null, () -> {});
+        CurrentBlock current = new CurrentBlock(
+                data, null, null, true, false, board, () -> {});
         GameProgress progress = new GameProgress();
         GameScore score = new GameScore(progress);
 
-        BlockMove.MoveRight(current, board);
-        BlockMove.MoveDown(current, board, score, new int[4], progress);
+        BlockMove.MoveRight(current);
+        BlockMove.MoveDown(current, score, progress);
 
         assertEquals(5, data.GetX());
         assertEquals(5, data.GetY());

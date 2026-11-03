@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javafx.scene.paint.Color;
-import tetris.block.data.CurrentBlock.ItemType;
+import tetris.block.data.ItemType;
 import org.junit.jupiter.api.Test;
 
 class BlockDataTest {
