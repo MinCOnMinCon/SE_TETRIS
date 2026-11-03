@@ -20,6 +20,7 @@ import javafx.application.Platform;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import tetris.settings.GameSettings;
+import tetris.settings.KeyBindingSettings;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 import tetris.settings.KeyBindingSettings.ActionType;
@@ -185,7 +186,7 @@ class GameControllerTest {
         assertThrows(NullPointerException.class,
                 () -> new GameController(null, new GameSettings(
                         "1280x720", 1280, 720, 0,
-                        GameSettings.getInputSettingData().getAllBindings(),
-                        GameSettings.Difficulty.NORMAL), 0));
+                        new KeyBindingSettings().getAllBindings(),
+                        GameSettings.Difficulty.NORMAL, GameMode.NORMAL), 0));
     }
 }

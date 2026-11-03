@@ -12,7 +12,7 @@ class GameSettingsTest {
         KeyBindingSettings bindings = new KeyBindingSettings();
         GameSettings settings = new GameSettings(
                 "1280x720", 1280, 720, 2, bindings.getAllBindings(),
-                GameSettings.Difficulty.EASY);
+                GameSettings.Difficulty.EASY, GameSettings.GameMode.NORMAL);
         bindings.setKeyCode(KeyBindingSettings.ActionType.MOVE_LEFT, KeyCode.A);
 
         assertEquals("1280x720", settings.resolutionPreset());
@@ -40,5 +40,14 @@ class GameSettingsTest {
         assertEquals(540, changed.screenHeight());
         assertEquals(1, changed.colorMode());
         assertEquals(GameSettings.GameMode.ITEM, changed.gameMode());
+    }
+
+    @Test
+    void nullGameModeBecomesNormal() {
+        GameSettings settings = new GameSettings(
+                "960x540", 960, 540, 0, new KeyBindingSettings().getAllBindings(),
+                GameSettings.Difficulty.NORMAL, null);
+
+        assertEquals(GameSettings.GameMode.NORMAL, settings.gameMode());
     }
 }

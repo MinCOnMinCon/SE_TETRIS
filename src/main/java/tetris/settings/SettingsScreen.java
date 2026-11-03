@@ -27,7 +27,7 @@ public class SettingsScreen {
         controller.activate();
     }
 
-    public void makeSS(Stage stage, Scene scene, Runnable onBack) {
+    public void makeSS(Stage stage, Scene scene, Runnable onBack, SettingsStore settingsStore) {
         Label title = new Label("설정");
         title.setStyle("-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: white;");
 
@@ -104,9 +104,9 @@ public class SettingsScreen {
         BorderPane.setMargin(bottomButtons, new Insets(12));
 
         controller = new SettingsController(stage, scene, resolutionComboBox,
-                colorBlindModeComboBox, difficultyComboBox, GameSettings.getInputSettingData(), keyBindingRows,
+                colorBlindModeComboBox, difficultyComboBox, settingsStore.getInputSettingData(), keyBindingRows,
             keySettingsStatus, saveSettingsButton, resetSettingsButton, resetScoreButton,
-            backButton);
+            backButton, settingsStore);
         backButton.setOnAction(e -> {
             controller.dispose();
             onBack.run();

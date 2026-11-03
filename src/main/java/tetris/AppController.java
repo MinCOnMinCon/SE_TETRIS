@@ -23,14 +23,16 @@ import tetris.settings.SettingsScreen;
 public class AppController {
     private final Stage stage;
     private final Scene scene;
+    private final SettingsStore settingsStore;
     private ScoreBoardScreen scoreBoardScreen;
     private GameController gameController;
     private PauseScene pauseScene;
     private GameOverRoot gameOverRoot;
 
-    public AppController(Stage stage, Scene scene) {
+    public AppController(Stage stage, Scene scene, SettingsStore settingsStore) {
         this.stage = Objects.requireNonNull(stage, "stage cannot be null");
         this.scene = Objects.requireNonNull(scene, "scene cannot be null");
+        this.settingsStore = Objects.requireNonNull(settingsStore, "settingsStore cannot be null");
     }
 
     public void ShowStartScreen() {
@@ -52,7 +54,7 @@ public class AppController {
     }
 
     private void startGame(GameMode gameMode) {
-        GameSettings settings = SettingsStore.setGameMode(gameMode);
+        GameSettings settings = settingsStore.saveGameMode(gameMode);
         gameController = new GameController(
                 this::ShowPauseScreen, this::ShowEndGame, settings);
         // 기존 시작 화면이 Scene에 등록한 메뉴 키 입력을 제거한다.
@@ -64,7 +66,7 @@ public class AppController {
 
     public void ShowSettings() {
         SettingsScreen settingsScreen = new SettingsScreen();
-        settingsScreen.makeSS(stage, scene, this::ShowStartScreen);
+        settingsScreen.makeSS(stage, scene, this::ShowStartScreen, settingsStore);
         scene.setOnKeyPressed(null);
         stage.setTitle("Tetris - 설정");
         scene.setRoot(settingsScreen.showSS());
