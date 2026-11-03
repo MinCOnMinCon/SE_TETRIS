@@ -88,6 +88,26 @@ public final class FrameProfiler {
         hasPrevious = false;
     }
 
+    // FramePerformanceTest 전용: 준비 구간의 측정값을 버리고 실제 성능 측정을 시작한다.
+    void resetForFramePerformanceTest() {
+        if (active) throw new IllegalStateException("Cannot reset during a measured frame");
+        hasPrevious = hasOrigin = savePending = false;
+        start = previousStart = origin = previousExecution = 0;
+        count = withinBudget = over100ms = maxInterval = maxExecution = maxAt = 0;
+    }
+
+    // FramePerformanceTest 전용: 보고서 문자열을 파싱하지 않고 수치로 합격 여부를 판정한다.
+    PerformanceTestResult resultForFramePerformanceTest() {
+        return new PerformanceTestResult(count, over100ms, maxInterval / 1e6);
+    }
+
+    // FramePerformanceTest 전용 결과이며 실제 화면 표시 FPS가 아닌 업데이트 호출 간격이다.
+    record PerformanceTestResult(long intervalCount, long over100msCount, double maxIntervalMillis) {
+        double over100msPercent() {
+            return intervalCount == 0 ? 0 : over100msCount * 100.0 / intervalCount;
+        }
+    }
+
     /** 핸들러 안의 저장 요청은 endFrame 이후 처리해 파일 I/O를 측정에서 제외한다. */
     public void saveReport() {
         if (active) {
