@@ -54,15 +54,6 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // VS Code 실행기를 위해 필수
-    plugins {
-        id 'application'
-        id 'org.openjfx.javafxplugin' version '0.1.0'
-    }
-
-    javafx {
-        version = '17'
-        modules = ['javafx.controls', 'javafx.fxml']
-    }
 }
 
 test {

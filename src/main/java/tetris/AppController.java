@@ -6,6 +6,9 @@ import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.layout.VBox;
@@ -51,17 +54,14 @@ public class AppController {
 
     public void ShowSoloGame() {
         gameModeSelectScreen(PlayMode.SOLO);
-        startGame(PlayMode.SOLO, settingsStore.loadGameSettings());
     }
 
     public void ShowLocalMultiGame() {
         gameModeSelectScreen(PlayMode.LOCAL);
-        startGame(PlayMode.LOCAL, settingsStore.loadGameSettings());
     }
 
     public void ShowOnlineMultiGame() {
         gameModeSelectScreen(PlayMode.ONLINE);
-        startGame(PlayMode.ONLINE, settingsStore.loadGameSettings());
     }
 
     private void startGame(PlayMode playMode, GameSettings gameSettings) {
@@ -158,24 +158,76 @@ public class AppController {
 
     // 게임 모드 선택 화면을 생성
     private void makeModeSelectionScreen(Button[] modebuttons) {
-        VBox modeSelectionRoot = new VBox(20);//VBox 객체 생성
-        modeSelectionRoot.setAlignment(Pos.CENTER);//VBox 중앙 정렬
-        modeSelectionRoot.setStyle("-fx-background-color: black;");//배경 검은색
+        Label title = new Label("모드 선택");
+        title.setStyle("-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        VBox modeSelectionRoot = new VBox(20);
+        modeSelectionRoot.setAlignment(Pos.CENTER);
+        modeSelectionRoot.setStyle("-fx-background-color: black;");
 
         for (Button button : modebuttons) {
             button.setPrefSize(180, 50);
-            button.setStyle(
-                    "-fx-background-color: #dcdcdc; -fx-text-fill: black; -fx-font-size: 16px;");
         }
-        modeSelectionRoot.getChildren().addAll(modebuttons);
+        Button startMenuButton = new Button("시작화면");
+        startMenuButton.setPrefSize(180, 50);
+        startMenuButton.setOnAction(event -> ShowStartScreen());
+
+        Button[] selectableButtons = new Button[modebuttons.length + 1];
+        System.arraycopy(modebuttons, 0, selectableButtons, 0, modebuttons.length);
+        selectableButtons[modebuttons.length] = startMenuButton;
+        modeSelectionRoot.getChildren().add(title);
+        modeSelectionRoot.getChildren().addAll(selectableButtons);
+        bindModeSelection(modeSelectionRoot, selectableButtons);
 
         scene.setOnKeyPressed(null);
         stage.setTitle("Tetris - 모드 선택");
         scene.setRoot(modeSelectionRoot);
-        modebuttons[0].requestFocus();
+        modeSelectionRoot.requestFocus();
     }
 
-    //버튼 선택 시 선택한 모드에 따라 게임 설정을 저장
+    // 시작 화면과 같이 마우스, 위·아래 방향키, Enter로 버튼을 선택하고 실행한다.
+    private void bindModeSelection(Parent root, Button[] buttons) {
+        int[] selectedIndex = {0};
+        updateModeSelection(buttons, selectedIndex[0]);
+        for (int i = 0; i < buttons.length; i++) {
+            final int index = i;
+            buttons[i].setOnMouseEntered(event -> {
+                selectedIndex[0] = index;
+                updateModeSelection(buttons, selectedIndex[0]);
+            });
+            buttons[i].setFocusTraversable(false);
+        }
+        root.addEventFilter(KeyEvent.KEY_PRESSED,
+                event -> handleModeKey(event, buttons, selectedIndex));
+    }
+
+    private void handleModeKey(KeyEvent event, Button[] buttons, int[] selectedIndex) {
+        if (event.getCode() == KeyCode.DOWN) {
+            if (selectedIndex[0] < buttons.length - 1) {
+                selectedIndex[0]++;
+                updateModeSelection(buttons, selectedIndex[0]);
+            }
+        } else if (event.getCode() == KeyCode.UP) {
+            if (selectedIndex[0] > 0) {
+                selectedIndex[0]--;
+                updateModeSelection(buttons, selectedIndex[0]);
+            }
+        } else if (event.getCode() == KeyCode.ENTER) {
+            buttons[selectedIndex[0]].fire();
+        }
+    }
+
+    private void updateModeSelection(Button[] buttons, int selectedIndex) {
+        for (int i = 0; i < buttons.length; i++) {
+            if (i == selectedIndex) {
+                buttons[i].setStyle("-fx-background-color: #4da3ff; -fx-text-fill: white;");
+            } else {
+                buttons[i].setStyle("-fx-background-color: #dcdcdc; -fx-text-fill: black;");
+            }
+        }
+    }
+
+    // 버튼 선택 시 모드를 저장하고 그 모드로 게임을 시작한다.
     private void storeModeSelection(PlayMode playMode, Button[] modebuttons) {
         GameMode[] availableModes = {
             GameMode.NORMAL,
@@ -185,7 +237,8 @@ public class AppController {
         for (int i = 0; i < modebuttons.length; i++) {
             GameMode selectedMode = availableModes[i];
             modebuttons[i].setOnAction(event -> {
-                GameSettings selectedSettings = settingsStore.saveGameMode(selectedMode);
+                settingsStore.saveGameMode(selectedMode);
+                startGame(playMode, settingsStore.gameSettingsFor(playMode));
             });
         }
     }
