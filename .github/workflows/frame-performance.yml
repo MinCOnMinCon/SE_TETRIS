@@ -1,0 +1,47 @@
+name: Frame Performance Test
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frame-performance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: 저장소 코드 가져오기
+        uses: actions/checkout@v6
+
+      - name: Java 21 준비
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: 가상 화면과 그래픽 라이브러리 설치
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb xauth libgtk-3-0t64 libgl1
+
+      - name: 프레임 성능 테스트 실행
+        env:
+          TETRIS_FRAME_PERFORMANCE: 'true'
+        run: >
+          xvfb-run -a bash ./gradlew test
+          --tests tetris.gamescene.FramePerformanceTest
+          --rerun-tasks --no-daemon
+
+      - name: 테스트 보고서 저장
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: frame-performance-reports
+          path: |
+            performance-reports/
+            build/reports/tests/test/
+            build/test-results/test/
