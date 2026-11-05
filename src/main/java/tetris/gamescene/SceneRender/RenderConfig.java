@@ -2,6 +2,9 @@ package tetris.gamescene.scenerender;
 import javafx.scene.paint.Color;
 import tetris.settings.GameSettings; // 저장된 게임 해상도와 색상 모드
 public class RenderConfig{
+
+    final private double STANDARD_WIDTH = 1280; // 기준이 되는 너비
+    final private double STANDARD_HEIGHT = 720; // 기준이 되는 높이
     public double gameSceneWidth = 800; // 게임 씬 전체의 너비(px)
     public double gameSceneHeight = 1000; // 게임 씬 전체의 높이(px)
 
@@ -54,7 +57,7 @@ public class RenderConfig{
         colorMode = settings.colorMode(); // 블록 미리보기에 사용할 색상 모드 적용
         blockQueueDisplayCount = queueDisplayCount;
 
-        double scale = Math.min(gameSceneWidth / 1280.0, gameSceneHeight / 720.0);
+        double scale = Math.min(gameSceneWidth / STANDARD_WIDTH, gameSceneHeight / STANDARD_HEIGHT);
 
         blockSide *= scale;
         scenePadding *= scale;

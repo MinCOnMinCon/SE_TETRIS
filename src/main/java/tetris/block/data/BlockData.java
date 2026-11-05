@@ -3,7 +3,7 @@ package tetris.block.data;
 import java.util.ArrayList;
 
 import javafx.scene.paint.Color;
-import tetris.block.data.ItemType;
+
 
 /*
     BlockData 클래스는 테트리스 블럭의 모양과 색상 정보, 위치를 저장

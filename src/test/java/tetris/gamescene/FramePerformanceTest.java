@@ -34,6 +34,10 @@ import tetris.settings.KeyBindingSettings;
  * TETRIS_FRAME_WARMUP_SECONDS(기본 5), TETRIS_FRAME_DURATION_SECONDS(기본 60),
  * TETRIS_FRAME_MAX_SLOW_PERCENT(기본 1), TETRIS_FRAME_MINIMUM_FPS(기본 30)으로 조정한다.
  * 일반 test 실행에서는 건너뛰며, 실행 시 실제 그래픽 환경이 필요하다.
+ * 
+ * frameProfiler를 이용해 게임 씬에서 주어진 동작을 주기적으로 실행하여 GameController의 핸들러 호출 간격을 기록한다.
+ * 깃허브에 풀리퀘를 올릴 때 자동으로 가상 환경을 만들어 테스트하여 기준을 넘으면 풀리퀘가 가능해진다.
+ * 
  */
 @EnabledIfEnvironmentVariable(named = "TETRIS_FRAME_PERFORMANCE", matches = "(?i)true")
 class FramePerformanceTest {

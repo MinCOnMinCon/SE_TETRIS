@@ -6,7 +6,6 @@ import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.GameProgress;
-import java.util.Objects;
 import tetris.settings.GameSettings.Difficulty;
 
 /*
