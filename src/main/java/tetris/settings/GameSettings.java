@@ -56,11 +56,29 @@ public final class GameSettings {
 
     public enum GameMode {
         NORMAL("일반 모드"),
-        ITEM("아이템 모드");
+        ITEM("아이템 모드"),
+        TIMELIMIT("시간제한 모드");
 
         private final String displayName;
 
         GameMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
+    public enum PlayMode {
+        SOLO("SoloPlay"),
+        LOCAL("LocalMultiPlay"),
+        ONLINE("OnlineMultiPlay");
+
+        private final String displayName;
+
+        PlayMode(String displayName) {
             this.displayName = displayName;
         }
 
