@@ -71,8 +71,8 @@ public final class SettingsStore {
 
     private static List<KeyBindingSettings> createDefaultLocalPlayers() {
         List<KeyBindingSettings> players = new ArrayList<>();
-        players.add(KeyBindingSettings.arrowPlayerLocalDefaults());
-        players.add(KeyBindingSettings.wasdPlayerLocalDefaults());
+        players.add(KeyBindingSettings.player1LocalDefaults());
+        players.add(KeyBindingSettings.player2LocalDefaults());
         return players;
     }
 
@@ -353,8 +353,8 @@ public final class SettingsStore {
 
     public void resetLocalKeyBindings() {
         localCommonKeys.resetToDefaults();
-        localPlayerKeys.get(0).copyFrom(KeyBindingSettings.arrowPlayerLocalDefaults());
-        localPlayerKeys.get(1).copyFrom(KeyBindingSettings.wasdPlayerLocalDefaults());
+        localPlayerKeys.get(0).copyFrom(KeyBindingSettings.player1LocalDefaults());
+        localPlayerKeys.get(1).copyFrom(KeyBindingSettings.player2LocalDefaults());
     }
 
     // 솔로와 온라인은 현재 설정 스냅샷을, 로컬은 추가 설정의 키를 담은 스냅샷을 만든다.
