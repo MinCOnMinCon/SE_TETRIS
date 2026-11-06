@@ -30,7 +30,7 @@ public class VersusRenderer {
         root.setMaxSize(width, height);
 
         double gameHeight = height;
-        if (settings.gameMode() == GameMode.TIMEOUT) {
+        if (settings.gameMode() == GameMode.TIMELIMIT) {
             double timerHeight = height / 8;
             CreateTimerPane(width, timerHeight);
             gameHeight -= timerHeight;
