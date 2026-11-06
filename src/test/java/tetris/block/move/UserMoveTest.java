@@ -7,7 +7,6 @@ import javafx.scene.paint.Color;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorPalette;
 import tetris.block.data.CurrentBlock;
-import tetris.block.move.BlockController;
 import tetris.gamescene.GameProgress;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.gamescene.board.GameBoard;

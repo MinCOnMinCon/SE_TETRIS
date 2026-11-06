@@ -169,7 +169,7 @@ class BlockDeleteTest {
         CurrentBlock currentBlock = new CurrentBlock(
                 itemData, nextBlocks, null, true, false, gameBoard, () -> {});
         GameScore score = new GameScore(progress);
-        int[] clearedRows = new int[GameBoard.maxClearedLines];
+        
 
         assertEquals(2, itemData.GetShape().length);
         assertEquals(4, itemData.GetShape()[0].length);
