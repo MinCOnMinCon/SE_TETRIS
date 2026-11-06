@@ -13,7 +13,11 @@ import tetris.gamescene.board.BoardElement;
 */
 
 public class BlockRotate {
-    public static void Rotate(CurrentBlock currentBlock, boolean isRotateRight) {
+    private CurrentBlock currentBlock;
+    public BlockRotate(CurrentBlock currentBlock) {
+        this.currentBlock = currentBlock;
+    }
+    public void Rotate(boolean isRotateRight) {
         BlockData blockData = currentBlock.GetCurrentBlock();
         BoardElement[][] board = currentBlock.GetBoard();
         // 무게추 회전 고정
@@ -50,7 +54,7 @@ public class BlockRotate {
         }
     }
         
-    public static boolean[][] RotateRight(boolean[][] originalShape) {
+    public boolean[][] RotateRight(boolean[][] originalShape) {
         int rows = originalShape.length;
         int cols = originalShape[0].length;
         // 시계방향 90도 회전 공식 적용
@@ -64,7 +68,7 @@ public class BlockRotate {
         return rotatedShape;
     }
 
-    public static boolean[][] RotateLeft(boolean[][] originalShape) {
+    public boolean[][] RotateLeft(boolean[][] originalShape) {
         int rows = originalShape.length;
         int cols = originalShape[0].length;
         // 반시계방향 90도 회전 공식 적용
@@ -78,7 +82,7 @@ public class BlockRotate {
         return rotatedShape;
     }
 
-    private static boolean IsNoBlock(BlockData blockData, BoardElement[][] board) {
+    private boolean IsNoBlock(BlockData blockData, BoardElement[][] board) {
         int x = blockData.GetX();
         int y = blockData.GetY();
 
