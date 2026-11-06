@@ -9,6 +9,8 @@ import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
 import java.util.Arrays;
 
+import javafx.scene.paint.Color;
+
 /*
     BlockMove 클래스는 테트리스 블럭의 기본적인 이동 기능을 제공하는 클래스
     BlockMove.MoveRight(BlockData, BoardElement[][]) 블럭을 오른쪽으로 이동
@@ -68,10 +70,6 @@ public class BlockMove {
         else if (currentBlock.GetCurrentBlock().IsItem()) {
             int itemX, itemY;
             boardCopy(board);
-            int deletedRows[] = new int[GameBoard.maxClearedLines];
-            for (int i = 0; i < deletedRows.length; i++) {
-                deletedRows[i] = -1;
-            }
             switch (currentBlock.GetCurrentBlock().GetItemType()) {
                 case DEL_HLINE: // 가로선 삭제
                     MoveFix();
@@ -111,16 +109,7 @@ public class BlockMove {
                     break;
             }
             if(currentBlock.GetCanMoveH()) {
-                int[] tmpDeletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
-                // if (deletedRows[0] != -1) {
-                //     int i = 1;
-                //     for (int index : tmpDeletedRows) {
-                //         if (index == -1) break;
-                //         deletedRows[i++] = index;
-                //     }
-                // }
-                // else
-                    deletedRows = tmpDeletedRows;
+                int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
 
                 System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);                
                 currentBlock.SetDelBoard(GetDelBoard(deletedRows));
@@ -185,6 +174,7 @@ public class BlockMove {
                 deletedBoard[i] = new BoardElement[oldBoard[row].length];
                 for (int j = 0; j < oldBoard[row].length; j++) {
                     deletedBoard[i][j] = oldBoard[row][j];
+                    deletedBoard[i][j].setElementColor(Color.GRAY);
                 }
             }
             return deletedBoard;
