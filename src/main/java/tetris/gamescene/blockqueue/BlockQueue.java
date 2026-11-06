@@ -52,7 +52,7 @@ public class BlockQueue {
     public BlockData GetNextBlock() {
         BlockData nextBlock = DeQ();
         BlockData blockData;
-        if (progress.GetClearedLineCount() / 10 > progress.GetMadeItemCount() && gameMode == GameMode.ITEM) { // TODO: 아이템 모드일 때만 되도록
+        if (progress.GetClearedLineCount() / 10 > progress.GetMadeItemCount() && gameMode == GameMode.ITEM) { 
             
             blockData = blockGenerator.GetItemBlock();
             progress.AddMadeItemCount(1);

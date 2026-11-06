@@ -6,18 +6,30 @@ import java.nio.file.Path; // 파일 경로 표현
 import java.nio.charset.StandardCharsets; // UTF-8 점수 파일 읽기
 import java.util.ArrayList; // 동적 배열
 import java.util.List; // 리스트 인터페이스
+import java.util.Objects;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 
 // 점수 파일을 읽는 클래스
 public class ScoreLoader {
+    private final Path scoreFile;
+
+    public ScoreLoader() {
+        this(new ScoreStorage().scoreFile());
+    }
+
+    // 테스트가 사용자 점수 파일 대신 임시 파일을 읽도록 경로를 받는다.
+    ScoreLoader(Path scoreFile) {
+        this.scoreFile = Objects.requireNonNull(scoreFile);
+    }
+
     // 사용자 데이터 폴더의 scores.csv에서 점수 데이터를 읽어 목록으로 반환
     public List<ScoreRecord> loadScores() { // 파일 점수 목록 로드
         // 결과를 담을 리스트 생성
         List<ScoreRecord> scores = new ArrayList<>();
 
         // 점수 저장 파일 경로 지정
-        Path path = ScoreStorage.SCORE_FILE; // 저장 기능과 같은 사용자 점수 파일 사용
+        Path path = scoreFile;
 
         // 파일이 없으면 빈 리스트 반환
         if (!Files.exists(path)) {

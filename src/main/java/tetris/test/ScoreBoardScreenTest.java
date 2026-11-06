@@ -15,8 +15,6 @@ public class ScoreBoardScreenTest {
     }
 
     public static void Run(String... args) {
-        SettingsStore.load();
-        ScoreStorage.initialize();
         Application.launch(TestApplication.class, args);
     }
 
@@ -25,9 +23,13 @@ public class ScoreBoardScreenTest {
 
         @Override
         public void start(Stage stage) {
+            SettingsStore settingsStore = new SettingsStore();
+            settingsStore.load();
+            new ScoreStorage().initialize();
+            GameSettings savedSettings = settingsStore.getGameSettings();
             Scene scene = new Scene(new BorderPane(),
-                    GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
-            appController = new AppController(stage, scene);
+                    savedSettings.screenWidth(), savedSettings.screenHeight());
+            appController = new AppController(stage, scene, settingsStore);
             stage.setTitle("ScoreBoardScreenTest");
             stage.setScene(scene);
             stage.show();

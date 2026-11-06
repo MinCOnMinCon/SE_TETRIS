@@ -1,22 +1,27 @@
 package tetris.scoreboard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import tetris.settings.GameSettings.Difficulty;
+import tetris.settings.GameSettings.GameMode;
 
 class ScoreRecordTest {
     @Test
-    void exposesScoreDetailsAndCanClearHighlight() {
-        ScoreRecord record = new ScoreRecord("TetrisFan", 2400, Difficulty.NORMAL);
+    void exposesScoreDetails() {
+        ScoreRecord record = new ScoreRecord("TetrisFan", 2400, Difficulty.NORMAL, GameMode.ITEM);
 
         assertEquals("TetrisFan", record.getName());
         assertEquals(2400, record.getScore());
         assertEquals(Difficulty.NORMAL, record.getDifficulty());
-        assertTrue(record.isHighlight());
-        record.setFalseHighlight();
-        assertFalse(record.isHighlight());
+        assertEquals(GameMode.ITEM, record.getGameMode());
+    }
+
+    @Test
+    void missingGameModeBecomesNormal() {
+        ScoreRecord record = new ScoreRecord("anon", 1, Difficulty.HARD, null);
+
+        assertEquals(Difficulty.HARD, record.getDifficulty());
+        assertEquals(GameMode.NORMAL, record.getGameMode());
     }
 }

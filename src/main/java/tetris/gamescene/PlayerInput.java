@@ -6,6 +6,7 @@ import java.util.Map;
 
 
 import tetris.settings.KeyBindingSettings; // 설정 화면과 공유하는 동작 종류
+import tetris.settings.KeyBindingSettings.ActionType;
 import javafx.scene.input.KeyCode;
 import tetris.block.move.BlockController;
 
@@ -34,18 +35,25 @@ public class PlayerInput {
         // 해당 클래스의 키 바인딩 키-밸류를 수정하는 걸 막기 위한 코드
 	}
 
-	public void HandleKeyCode(KeyCode keyCode) {
+	public void HandleKeyCode(KeyCode keyCode) { // 1인 모드에서 플레이어의 키 입력을 처리
+		
+		KeyBindingSettings.ActionType action = keyBindings.get(keyCode);
+
+		HandleAction(action);
+
+	}
+
+	public void HandleAction(ActionType action){ 
+		// 대전 모드일 때, 대전모드 관리자가 플레이어 입력이 누구껀지 확인해 그 플레이어의 인풋 매니저의 이 함수를 호출함. 
+		// 그때 파라미터로 입력에 맞는 액션 타입을 제공해서 처리하게 한다.
 		if (!inputEnabled) {
 			return;
 		}
-
-		KeyBindingSettings.ActionType actionType = keyBindings.get(keyCode);
-
-		if (actionType == null) {
+		if (action == null) {
 			return;
 		}
 
-		switch (actionType) {
+		switch (action) {
 			case MOVE_LEFT:
 				blockController.MoveLeft();
 				break;
@@ -72,7 +80,6 @@ public class PlayerInput {
 				break;
 		}
 	}
-
 	public void SetInputEnabled(boolean inputEnabled) {
 		this.inputEnabled = inputEnabled;
 	}

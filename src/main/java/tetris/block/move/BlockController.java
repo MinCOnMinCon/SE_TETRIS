@@ -1,10 +1,8 @@
 package tetris.block.move;
 
 import tetris.block.data.CurrentBlock;
-import tetris.block.move.AutoMove;
 import tetris.gamescene.GameProgress;
 import tetris.gamescene.score.GameScore;
-import tetris.gamescene.GameProgress;
 import tetris.block.rotate.BlockRotate;
 
 public class BlockController {

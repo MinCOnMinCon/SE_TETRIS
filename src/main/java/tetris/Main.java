@@ -12,25 +12,24 @@ import tetris.scoreboard.ScoreStorage; // 점수 저장 파일을 준비하는 �
 
 // 프로그램 실행을 시작하는 진입점 클래스
 // public class Main extends Application {
-public class Main extends Application{
-    // Java 프로그램이 처음 실행되는 메서드
-    public static void main(String[] args) {
-        SettingsStore.load(); // 저장된 해상도, 색상 모드, 키 설정을 불러옴
-        ScoreStorage.initialize(); // 닉네임과 점수를 기록할 사용자 파일을 준비
-        launch(args); // JavaFX 창을 실행
-        
+public class Main extends Application {
+    private final SettingsStore settingsStore = new SettingsStore();
 
-        
+    // Java 프로그램이 처음 실행되는 메서드. JVM이 이 이름과 public static 형태만 찾는다.
+    public static void main(String[] args) {
+        launch(args); // JavaFX 창을 실행
     }
 
-    
     @Override
     public void start(Stage stage) { // Scene과 Stage로 시작 화면 루트를 만든 뒤 화면 전환을 맡긴다
-        Scene scene = new Scene(new BorderPane(), GameSettings.getScreenWidth(), GameSettings.getScreenHeight());
+        settingsStore.load(); // 저장된 해상도, 색상 모드, 키 설정을 불러옴
+        new ScoreStorage().initialize(); // 닉네임과 점수를 기록할 사용자 파일을 준비
+        GameSettings savedSettings = settingsStore.getGameSettings();
+        Scene scene = new Scene(new BorderPane(), savedSettings.screenWidth(), savedSettings.screenHeight());
         stage.setTitle("Tetris");
-        stage.setResizable(true);
+        stage.setResizable(false);
         stage.setScene(scene);
-        new AppController(stage, scene).ShowStartScreen();
+        new AppController(stage, scene, settingsStore).ShowStartScreen();
         stage.show();
     }
    

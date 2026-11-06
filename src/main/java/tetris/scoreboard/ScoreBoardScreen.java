@@ -24,69 +24,97 @@ public class ScoreBoardScreen {
         this.backButton.setOnAction(e -> onBack.run());
     }
 
-    //onBack.run()이 AppController의 ShowStartScreen()을 호출하도록 연결
+    // 점수 표, 제목, 뒤로가기 버튼을 만들어 화면에 배치한다.
     public TableView<ScoreRecord> makeSB() {
         table = createScoreTableView();
-
-        // 제목 라벨 생성 및 스타일 지정
-        Label title = new Label("Top 10 Scores");
-        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-        // 뒤로가기 버튼 생성
-        backButton = new Button("뒤로가기");
-
-        backButton.setPrefSize(180, 50);
-        backButton.setStyle("-fx-font-size: 16px;");
-        
-
-        // 제목과 표를 세로로 배치하는 루트 컨테이너
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(15));
-        content.setAlignment(Pos.CENTER);
-        content.getChildren().addAll(title, table, backButton);
-
-        // 전체 화면을 감싸는 BorderPane
-        root = new BorderPane();
-        root.setStyle("-fx-background-color: black;");
-        root.setCenter(content);
-
+        Label title = createTitleLabel();
+        backButton = createBackButton();
+        root = createRoot(title, table, backButton);
         return table;
     }
 
-    public static TableView<ScoreRecord> createScoreTableView() {
-        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
+    private Label createTitleLabel() {
+        Label title = new Label("Top 10 Scores");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
+        return title;
+    }
+
+    private Button createBackButton() {
+        Button button = new Button("뒤로가기");
+        button.setPrefSize(180, 50);
+        button.setStyle("-fx-font-size: 16px;");
+        return button;
+    }
+
+    private BorderPane createRoot(Label title, TableView<ScoreRecord> scoreTable, Button button) {
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+        content.setAlignment(Pos.CENTER);
+        content.getChildren().addAll(title, scoreTable, button);
+
+        BorderPane screen = new BorderPane();
+        screen.setStyle("-fx-background-color: black;");
+        screen.setCenter(content);
+        return screen;
+    }
+
+    public TableView<ScoreRecord> createScoreTableView() {
+        TableView<ScoreRecord> scoreTable = createScoreTable();
+        scoreTable.setItems(FXCollections.observableArrayList(loadTopScores()));
+        return scoreTable;
+    }
+
+    private List<ScoreRecord> loadTopScores() {
+        return new ScoreLoader().loadScores().stream().limit(10).toList();
+    }
+
+    private TableView<ScoreRecord> createScoreTable() {
         TableView<ScoreRecord> scoreTable = new TableView<>();
         scoreTable.setStyle("-fx-font-size: 15px;");
+        scoreTable.getColumns().addAll(
+                createRankColumn(scoreTable),
+                createNameColumn(),
+                createScoreColumn(),
+                createDifficultyColumn(),
+                createGameModeColumn());
+        return scoreTable;
+    }
 
+    private TableColumn<ScoreRecord, Integer> createRankColumn(TableView<ScoreRecord> scoreTable) {
         TableColumn<ScoreRecord, Integer> rankColumn = new TableColumn<>("순위");
         rankColumn.setCellValueFactory(cellData -> {
             int index = scoreTable.getItems().indexOf(cellData.getValue());
             return new javafx.beans.property.SimpleIntegerProperty(index + 1).asObject();
         });
+        return rankColumn;
+    }
 
+    private TableColumn<ScoreRecord, String> createNameColumn() {
         TableColumn<ScoreRecord, String> nameColumn = new TableColumn<>("이름");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        return nameColumn;
+    }
 
+    private TableColumn<ScoreRecord, Integer> createScoreColumn() {
         TableColumn<ScoreRecord, Integer> scoreColumn = new TableColumn<>("점수");
         scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
+        return scoreColumn;
+    }
 
-        TableColumn<ScoreRecord, GameSettings.Difficulty> difficultyColumn =
-            new TableColumn<>("난이도");
+    private TableColumn<ScoreRecord, GameSettings.Difficulty> createDifficultyColumn() {
+        TableColumn<ScoreRecord, GameSettings.Difficulty> difficultyColumn = new TableColumn<>("난이도");
         difficultyColumn.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
+        return difficultyColumn;
+    }
 
-        TableColumn<ScoreRecord, GameSettings.GameMode> gameModeColumn =
-            new TableColumn<>("모드");
+    private TableColumn<ScoreRecord, GameSettings.GameMode> createGameModeColumn() {
+        TableColumn<ScoreRecord, GameSettings.GameMode> gameModeColumn = new TableColumn<>("모드");
         gameModeColumn.setCellValueFactory(new PropertyValueFactory<>("gameMode"));
-
-        scoreTable.getColumns().addAll(
-            rankColumn, nameColumn, scoreColumn, difficultyColumn, gameModeColumn);
-        scoreTable.setItems(FXCollections.observableArrayList(top10));
-        return scoreTable;
+        return gameModeColumn;
     }
 
     public void refreshScores() {
-        List<ScoreRecord> top10 = new ScoreLoader().loadScores().stream().limit(10).toList();
-        table.setItems(FXCollections.observableArrayList(top10));
+        table.setItems(FXCollections.observableArrayList(loadTopScores()));
     }
 
     public BorderPane showSB() {
