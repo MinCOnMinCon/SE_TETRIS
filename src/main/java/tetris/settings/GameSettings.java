@@ -56,7 +56,8 @@ public final class GameSettings {
 
     public enum GameMode {
         NORMAL("일반 모드"),
-        ITEM("아이템 모드");
+        ITEM("아이템 모드"),
+        TIMEOUT("시간제한 모드");
 
         private final String displayName;
 

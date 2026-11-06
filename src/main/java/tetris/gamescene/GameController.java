@@ -238,6 +238,10 @@ public class GameController {
 		gameLoop.start();
 	}
 
+    public int GetScore() {
+        return score.GetGameScore();
+    }
+
 	public Parent GetRoot() {
 		return gameRoot;
 	}
