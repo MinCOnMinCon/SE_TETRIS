@@ -169,14 +169,15 @@ class BlockDeleteTest {
         CurrentBlock currentBlock = new CurrentBlock(
                 itemData, nextBlocks, null, true, false, gameBoard, () -> {});
         GameScore score = new GameScore(progress);
-        
+        BlockMove movement = new BlockMove(currentBlock, score, progress);
+        int[] clearedRows = new int[GameBoard.maxClearedLines];
 
         assertEquals(2, itemData.GetShape().length);
         assertEquals(4, itemData.GetShape()[0].length);
         assertTrue(itemData.GetShape()[0][1]);
         assertTrue(itemData.GetShape()[1][0]);
 
-        BlockMove.MoveDown(currentBlock, score, progress);
+        movement.MoveDown();
 
         assertFalse(currentBlock.GetCanMoveH());
         for (int col = x; col < x + 4; col++) {
@@ -189,12 +190,12 @@ class BlockDeleteTest {
         board[y + 1][x + 1].setBlock(false);
         int floorY = GameBoard.boardRow - itemData.GetShape().length;
         while (itemData.GetY() < floorY) {
-            BlockMove.MoveDown(currentBlock, score, progress);
+            movement.MoveDown();
         }
         assertEquals(floorY, itemData.GetY());
         assertFalse(currentBlock.GetCanMoveH());
-        assertFalse(BlockMove.IsNoBlock(0, currentBlock));
-        BlockMove.MoveDown(currentBlock, score, progress);
+        assertFalse(movement.IsNoBlock(0));
+        movement.MoveDown();
 
         assertTrue(currentBlock.GetCanMoveH());
         assertTrue(board[floorY][x + 1].isBlock());
@@ -229,6 +230,6 @@ class BlockDeleteTest {
                 itemData, nextBlocks, null, true, false, gameBoard, () -> {});
 
         board[y + 1][x].setBlock(true);
-        BlockMove.MoveDown(currentBlock, score, progress);
+        new BlockMove(currentBlock, score, progress).MoveDown();
     }
 }

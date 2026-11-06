@@ -8,6 +8,8 @@ import tetris.block.rotate.BlockRotate;
 public class BlockController {
     private final CurrentBlock currentBlock;
     private final AutoMove autoMove;
+    private final BlockMove blockMove;
+    private final BlockRotate blockRotate;
     private final GameScore gameScore;
     private final GameProgress progress;
 
@@ -16,32 +18,34 @@ public class BlockController {
         this.autoMove = autoMove;
         this.gameScore = gameScore;
         this.progress = progress;
+        this.blockMove = new BlockMove(currentBlock, gameScore, progress);
+        this.blockRotate = new BlockRotate(currentBlock);
     }
 
 
     public void BlockHolding() {
-        BlockMove.BlockHolding(currentBlock);
+        blockMove.BlockHolding();
     }
     public void MoveLeft() {
-        BlockMove.MoveLeft(currentBlock);
+        blockMove.MoveLeft();
     }
     public void MoveRight() {
-        BlockMove.MoveRight(currentBlock);
+        blockMove.MoveRight();
     }
     public void MoveDown() {
-        BlockMove.MoveDown(currentBlock, gameScore, progress);
+        blockMove.MoveDown();
     }
     public void MoveDownMax() {
-        BlockMove.MoveDownMax(currentBlock, gameScore, progress);
+        blockMove.MoveDownMax();
     }
     public void TimeUpdate(int msTime) {
-        autoMove.TimeUpdate(msTime, gameScore, progress);
+        autoMove.TimeUpdate(msTime, gameScore, progress, blockMove);
     }
     public void RotateClock() {
-        BlockRotate.Rotate(currentBlock, true);
+        blockRotate.Rotate(true);
     }
     public void RotateCounterClock() {
-        BlockRotate.Rotate(currentBlock, false);
+        blockRotate.Rotate(false);
     }
 
     public CurrentBlock GetCurrentBlock() {

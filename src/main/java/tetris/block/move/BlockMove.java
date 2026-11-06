@@ -4,9 +4,10 @@ import tetris.block.blocks.BlockDelete;
 import tetris.gamescene.GameProgress;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.BlockData;
-
+import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
+import java.util.Arrays;
 
 /*
     BlockMove 클래스는 테트리스 블럭의 기본적인 이동 기능을 제공하는 클래스
@@ -18,36 +19,46 @@ import tetris.gamescene.score.GameScore;
 */
 
 public class BlockMove {
-    public static void BlockHolding(CurrentBlock CurrentBlock) {
-        CurrentBlock.BlockHold();
+    private CurrentBlock currentBlock;
+    private GameScore gameScore;
+    private GameProgress progress;
+    private BoardElement[][] oldBoard;
+
+    public BlockMove(CurrentBlock currentBlock, GameScore gameScore, GameProgress progress) {
+        this.currentBlock = currentBlock;
+        this.gameScore = gameScore;
+        this.progress = progress;
     }
-    public static void MoveRight(CurrentBlock currentBlock) {
-        if (currentBlock.GetCanMoveH() && IsNoBlock(1, currentBlock)) {
+    public void BlockHolding() {
+        currentBlock.BlockHold();
+    }
+    public void MoveRight() {
+        if (currentBlock.GetCanMoveH() && IsNoBlock(1)) {
             currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() + 1);
         }
     }
-    public static void MoveLeft(CurrentBlock currentBlock) {
-        if (currentBlock.GetCanMoveH() && IsNoBlock(-1, currentBlock)) {
+    public void MoveLeft() {
+        if (currentBlock.GetCanMoveH() && IsNoBlock(-1)) {
             currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() - 1);
         }
     }
-    public static void MoveDownMax(CurrentBlock currentBlock, GameScore gameScore, GameProgress progress) {
+    public void MoveDownMax() {
         // 블럭이 맨 아래로 이동하고 AutoMove가 돌때까지 기다림
         // 바로 다음 블럭 생성 필요 시 수정 필요
-        while (IsNoBlock(0, currentBlock)) {
-            MoveDown(currentBlock, gameScore, progress);
+        while (IsNoBlock(0)) {
+            MoveDown();
             gameScore.AddGameScore(1); // 하드 드롭의 한 칸당 추가 점수
         }
-        MoveDown(currentBlock, gameScore, progress);
+        MoveDown();
         //gameScore.AddGameScore(10); // 추가 점수 - 그냥 스페이스 계속 누르면 무조건 이 점수는 얻을 수 있어서 주석 처리
     }
 
 
     // 실제로 한 칸 내려갔을 때만 기본 낙하 점수를 추가한다.
-    public static void MoveDown(CurrentBlock currentBlock, GameScore gameScore, GameProgress progress) {
+    public void MoveDown() {
         int[] clearedRows = currentBlock.GetGameBoard().GetClearedRows();
         BoardElement[][] board = currentBlock.GetBoard();
-        if (IsNoBlock(0, currentBlock)) {
+        if (IsNoBlock(0)) {
             currentBlock.GetCurrentBlock().SetY(currentBlock.GetCurrentBlock().GetY() + 1);
             if (currentBlock.GetCanMoveH())
                 gameScore.AddBlockDownScore();
@@ -56,15 +67,19 @@ public class BlockMove {
         }
         else if (currentBlock.GetCurrentBlock().IsItem()) {
             int itemX, itemY;
+            boardCopy(board);
+            int deletedRows[] = new int[GameBoard.maxClearedLines];
+            for (int i = 0; i < deletedRows.length; i++) {
+                deletedRows[i] = -1;
+            }
             switch (currentBlock.GetCurrentBlock().GetItemType()) {
                 case DEL_HLINE: // 가로선 삭제
-                    MoveFix(currentBlock);
+                    MoveFix();
                     itemY = currentBlock.GetCurrentBlock().GetY() + currentBlock.GetCurrentBlock().GetItemPos()[1];
-                    BlockDelete.DeleteHLine(board, itemY);
-                    int deletedRow[] = {-1};
-                    deletedRow[0] = itemY;
-                    gameScore.AddLineClearScore(1);
-                    System.arraycopy(deletedRow, 0, clearedRows, 0, deletedRow.length); // 삭제되는 행 번호 gameboard에 넘기기
+                    BlockDelete.DeleteEmptyHLine(board, itemY);
+                    //deletedRows[0] = itemY;
+                    //gameScore.AddLineClearScore(1);
+                    //System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
                     break;
                 case DEL_4VLINE: // 무게추 세로 4줄 삭제
                     if (currentBlock.GetCanMoveH()) {
@@ -73,49 +88,58 @@ public class BlockMove {
                     }
                     else {
                         currentBlock.SetCanMoveH(true);
-                        MoveFix(currentBlock);
+                        MoveFix();
                     }
                     break;
                 case DEL_VLINE: // 세로선 삭제
-                    MoveFix(currentBlock);
+                    MoveFix();
                     itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetCurrentBlock().GetItemPos()[0];
                     BlockDelete.DeleteVLine(board, itemX);
                     break;
                 case DEL_VEMPTY: // 세로 공백 삭제
-                    MoveFix(currentBlock);
+                    MoveFix();
                     itemX = currentBlock.GetCurrentBlock().GetX() + currentBlock.GetCurrentBlock().GetItemPos()[0];
                     BlockDelete.DeleteVEmpty(board, itemX);
                     break;
                 case DEL_AEMPTY: // 주변 공백 삭제
-                    MoveFix(currentBlock);
+                    MoveFix();
                     itemX = currentBlock.GetCurrentBlock().GetX();
                     itemY = currentBlock.GetCurrentBlock().GetY();
                     BlockDelete.DeleteAroundEmpty(board, itemX, itemY);
                     break;
                 default:
                     break;
-                }
-
+            }
             if(currentBlock.GetCanMoveH()) {
-                int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
-                
-                System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);
-                
+                int[] tmpDeletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
+                // if (deletedRows[0] != -1) {
+                //     int i = 1;
+                //     for (int index : tmpDeletedRows) {
+                //         if (index == -1) break;
+                //         deletedRows[i++] = index;
+                //     }
+                // }
+                // else
+                    deletedRows = tmpDeletedRows;
+
+                System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);                
+                currentBlock.SetDelBoard(GetDelBoard(deletedRows));
                 currentBlock.MoveEnd();
             }
             
         }
         else {
+            boardCopy(board);
             // 테트리스가 바닥에 닿았을 때 블럭 고정 및 새 블럭 생성 로직
-            MoveFix(currentBlock);
+            MoveFix();
             int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
             System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
-
+            currentBlock.SetDelBoard(GetDelBoard(deletedRows));
             currentBlock.MoveEnd();
         
         }
     }
-    private static void MoveFix(CurrentBlock currentBlock) {
+    private void MoveFix() {
         BoardElement[][] board = currentBlock.GetBoard();
         BlockData currentBlockData = currentBlock.GetCurrentBlock();
         int x = currentBlockData.GetX();
@@ -131,7 +155,43 @@ public class BlockMove {
         }
         currentBlock.SetFalseIsHolded();
     }
-    public static boolean IsNoBlock(int direction, CurrentBlock currentBlock) {
+    private void boardCopy(BoardElement[][] board) {
+        // 블럭을 고정하기 전 보드 상태를 깊은 복사
+        oldBoard = new BoardElement[board.length][];
+        for (int row = 0; row < board.length; row++) {
+            oldBoard[row] = new BoardElement[board[row].length];
+            for (int col = 0; col < board[row].length; col++) {
+                BoardElement source = board[row][col];
+                BoardElement copy = new BoardElement(
+                    source.getElementColor(),
+                    source.isBlock()
+                );
+                copy.setPatternType(source.getPatternType());
+                oldBoard[row][col] = copy;
+            }
+        }
+    }
+    private BoardElement[][] GetDelBoard(int[] deletedRows) {
+        BoardElement[][] deletedBoard;
+        int deletedRowCount = 0;
+        while (deletedRowCount < deletedRows.length && deletedRows[deletedRowCount] != -1) {
+            deletedRowCount++;
+        }
+        Arrays.sort(deletedRows, 0, deletedRowCount);
+        if (deletedRows[1] != -1) {
+            deletedBoard = new BoardElement[oldBoard.length][];
+            for (int i = 0; i < deletedRowCount; i++) {
+                int row = deletedRows[i];
+                deletedBoard[i] = new BoardElement[oldBoard[row].length];
+                for (int j = 0; j < oldBoard[row].length; j++) {
+                    deletedBoard[i][j] = oldBoard[row][j];
+                }
+            }
+            return deletedBoard;
+        }
+        return null;
+    }
+    public boolean IsNoBlock(int direction) {
         BlockData blockData = currentBlock.GetCurrentBlock();
         int x = blockData.GetX();
         int y = blockData.GetY();

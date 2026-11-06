@@ -37,7 +37,7 @@ public class AutoMove {
     }
     
 
-    public void TimeUpdate(int msTime, GameScore gameScore, GameProgress progress) {
+    public void TimeUpdate(int msTime, GameScore gameScore, GameProgress progress, BlockMove BlockMove) {
         SetFallInterval(progress.GetLevel());
         currentTimeMillis += msTime;
         if (currentBlock != null && !currentBlock.GetCurrentBlock().equals(prevBlockData)) {
@@ -47,7 +47,7 @@ public class AutoMove {
         if (currentTimeMillis >= intervalMillis) {
             currentTimeMillis -= intervalMillis; // Reset the timer
             if (currentBlock != null) {
-                BlockMove.MoveDown(currentBlock, gameScore, progress);
+                BlockMove.MoveDown();
             }
         } 
     }

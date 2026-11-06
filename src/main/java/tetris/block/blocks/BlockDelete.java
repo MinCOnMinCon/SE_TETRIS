@@ -8,6 +8,16 @@ import tetris.gamescene.score.GameScore;
 import java.util.Arrays;
 
 public class BlockDelete {
+    // private BoardElement[][] board;
+    // private int[] itemDelPos;
+    // private GameScore gameScore;
+    // private GameProgress progress;
+    // public BlockDelete(BoardElement[][] board, int[] itemDelPos, GameScore gameScore, GameProgress progress) {
+    //     this.board = board;
+    //     this.itemDelPos = itemDelPos;
+    //     this.gameScore = gameScore;
+    //     this.progress = progress;
+    // }
     public static int[] DelCompleteLines(BoardElement[][] board, GameScore gameScore, GameProgress progress) {
             int index[] = FindDelLines(board);
             int scoreIndex = -1;
@@ -53,6 +63,11 @@ public class BlockDelete {
         board[0] = new BoardElement[board[0].length]; // 최상단 행 초기화
         for (int col = 0; col < board[0].length; col++) {
             board[0][col] = new BoardElement();
+        }
+    }
+    public static void DeleteEmptyHLine(BoardElement[][] board, int row) {
+        for (int i = 0; i < board[0].length; i++) {
+            board[row][i].setBlock(true);
         }
     }
     // ItemType.DEL_4VLINE
