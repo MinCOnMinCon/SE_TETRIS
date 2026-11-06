@@ -24,6 +24,7 @@ public class CurrentBlock {
     private boolean isHolded;
     private GameBoard board;
     private final Runnable onGameOver;
+    private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
 
     public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockData blockHolding, 
         boolean canMoveH, boolean isHolded, GameBoard board, Runnable onGameOver) {
@@ -69,6 +70,48 @@ public class CurrentBlock {
     public GameBoard GetGameBoard() {
         return this.board;
     }
+    public BoardElement[][] GetDelBoard() {
+        return this.deletedBoard;
+    }
+    public void SetDelBoard(BoardElement[][] deletedBoard) {
+        this.deletedBoard = deletedBoard;
+    }
+    public void PrintDelBoard() {
+        if (deletedBoard == null) {
+            System.out.println("삭제된 보드가 없습니다.");
+            return;
+        }
+
+        System.out.println("삭제된 보드 (# = 블록, . = 빈칸):");
+        for (BoardElement[] row : deletedBoard) {
+            if (row == null) {
+                continue;
+            }
+            for (BoardElement element : row) {
+                System.out.print(element.isBlock() ? '#' : '.');
+            }
+            System.out.println();
+        }
+    }
+    /*
+    가로줄 아이템 삭제 이펙트도 정상 작동
+    deletedBoard
+        
+        가로줄 삭제
+            삭제된 보드 (# = 블록, . = 빈칸):
+            ########..
+            ###.####..
+        압축기
+            삭제된 보드 (# = 블록, . = 빈칸):
+            ###.######
+            ###.######
+            ###.######
+        역폭탄
+            삭제된 보드 (# = 블록, . = 빈칸):
+            #####..###
+            #####..###
+            #######.##
+    */
     
     
 
@@ -79,6 +122,7 @@ public class CurrentBlock {
         }
         this.canMoveH = true;
         SetCurrentBlock(blockData);
+        PrintDelBoard();
     }
     public void MoveEnd() {
         MoveEnd(nextBlocks.GetNextBlock());
