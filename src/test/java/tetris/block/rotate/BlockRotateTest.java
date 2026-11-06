@@ -18,11 +18,12 @@ class BlockRotateTest {
         GameBoard gameBoard = new GameBoard();
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
+        BlockRotate rotation = new BlockRotate(current);
 
-        BlockRotate.Rotate(current, true);
+        rotation.Rotate(true);
         assertArrayEquals(new boolean[][] {{true, true}, {true, false}, {true, false}},
                 data.GetShape());
-        BlockRotate.Rotate(current, false);
+        rotation.Rotate(false);
         assertArrayEquals(original, data.GetShape());
     }
 
@@ -37,8 +38,9 @@ class BlockRotateTest {
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
         gameBoard.GetBoard()[4][3].setBlock(true);
+        BlockRotate rotation = new BlockRotate(current);
 
-        BlockRotate.Rotate(current, true);
+        rotation.Rotate(true);
 
         assertArrayEquals(original, data.GetShape());
     }
@@ -53,8 +55,9 @@ class BlockRotateTest {
         GameBoard gameBoard = new GameBoard();
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
+        BlockRotate rotation = new BlockRotate(current);
 
-        BlockRotate.Rotate(current, true);
+        rotation.Rotate(true);
 
         assertArrayEquals(original, data.GetShape());
     }
