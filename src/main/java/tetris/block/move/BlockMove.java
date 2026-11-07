@@ -3,6 +3,7 @@ package tetris.block.move;
 import tetris.block.blocks.BlockDelete;
 import tetris.gamescene.GameProgress;
 import tetris.block.data.CurrentBlock;
+import tetris.block.data.PatternType;
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.board.BoardElement;
@@ -168,13 +169,16 @@ public class BlockMove {
         }
         Arrays.sort(deletedRows, 0, deletedRowCount);
         if (deletedRows[1] != -1) {
-            deletedBoard = new BoardElement[oldBoard.length][];
+            deletedBoard = new BoardElement[deletedRowCount][];
             for (int i = 0; i < deletedRowCount; i++) {
                 int row = deletedRows[i];
                 deletedBoard[i] = new BoardElement[oldBoard[row].length];
                 for (int j = 0; j < oldBoard[row].length; j++) {
                     deletedBoard[i][j] = oldBoard[row][j];
-                    deletedBoard[i][j].setElementColor(Color.GRAY);
+                    if (deletedBoard[i][j].isBlock()) {
+                        deletedBoard[i][j].setElementColor(Color.GRAY);
+                        deletedBoard[i][j].setPatternType(PatternType.NONE);
+                    }
                 }
             }
             return deletedBoard;

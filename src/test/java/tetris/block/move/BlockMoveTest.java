@@ -9,8 +9,10 @@ import javafx.scene.paint.Color;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorPalette;
 import tetris.block.data.CurrentBlock;
+import tetris.block.data.PatternType;
 import tetris.gamescene.GameProgress;
 import tetris.gamescene.blockqueue.BlockQueue;
+import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
 import tetris.settings.GameSettings.Difficulty;
@@ -42,8 +44,12 @@ class BlockMoveTest {
         GameBoard board = new GameBoard();
         for (int col = 0; col < GameBoard.boardCol; col++) {
             board.GetBoard()[18][col].setBlock(true);
+            board.GetBoard()[18][col].setElementColor(Color.RED);
+            board.GetBoard()[18][col].setPatternType(PatternType.GRID);
             if (col > 0) {
                 board.GetBoard()[19][col].setBlock(true);
+                board.GetBoard()[19][col].setElementColor(Color.RED);
+                board.GetBoard()[19][col].setPatternType(PatternType.GRID);
             }
         }
 
@@ -67,7 +73,17 @@ class BlockMoveTest {
         movement.MoveDown();
 
         assertNotSame(data, current.GetCurrentBlock());
-        assertNotNull(current.GetDelBoard());
+        BoardElement[][] deletedBoard = current.GetDelBoard();
+        assertNotNull(deletedBoard);
+        assertEquals(2, deletedBoard.length);
+        for (int row = 0; row < deletedBoard.length; row++) {
+            for (int col = 0; col < GameBoard.boardCol; col++) {
+                if (deletedBoard[row][col].isBlock()) {
+                    assertEquals(Color.GRAY, deletedBoard[row][col].getElementColor());
+                    assertEquals(PatternType.NONE, deletedBoard[row][col].getPatternType());
+                }
+            }
+        }
         for (int row = 18; row < GameBoard.boardRow; row++) {
             for (int col = 0; col < GameBoard.boardCol; col++) {
                 assertFalse(board.GetBoard()[row][col].isBlock());
