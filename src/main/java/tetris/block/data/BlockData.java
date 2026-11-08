@@ -1,8 +1,8 @@
 package tetris.block.data;
 
 import java.util.ArrayList;
-
 import javafx.scene.paint.Color;
+
 
 
 /*
@@ -17,8 +17,9 @@ import javafx.scene.paint.Color;
 
 public class BlockData {
     private boolean[][] shape;
-    private ColorPalette colorPalette;
+    private ColorType colorType;
     private int colorMode; // 0: 일반, 1: 적녹색맹, 2: 청황색맹
+    private Color color; // 현재 색상
     private int x;
     private int y;
     private boolean item;
@@ -27,9 +28,9 @@ public class BlockData {
     private PatternType patternType = PatternType.NONE;
     private int[][] currentShapeIndex;
 
-    public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos) {
+    public BlockData(boolean[][] shape, ColorType colorType, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos) {
         this.shape = shape;
-        this.colorPalette = colorPalette;
+        this.colorType = colorType;
         this.colorMode = colorMode;
         this.x = x;
         this.y = y;
@@ -38,14 +39,11 @@ public class BlockData {
         this.itemPos = itemPos;
         this.currentShapeIndex = currentShapeIndex(shape);
     }
-    public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode) {
-        this(shape, colorPalette, colorMode, 3, 0, false, ItemType.NORMAL, null); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
-    }
-    public BlockData(boolean[][] shape, ColorPalette colorPalette, int colorMode, int x, int y) {
-        this(shape, colorPalette, colorMode, x, y, false, ItemType.NORMAL, null);
+    public BlockData(boolean[][] shape, ColorType colorType, int colorMode) {
+        this(shape, colorType, colorMode, 3, 0, false, ItemType.NORMAL, null); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
     }
     public BlockData(boolean[][] shape, int x, int y) {
-        this(shape, null, 0, x, y, false, ItemType.NORMAL, null);
+        this(shape, ColorType.GRAY, 0, x, y, false, ItemType.NORMAL, null);
     }
 
 
@@ -69,8 +67,17 @@ public class BlockData {
         this.shape = shape;
         this.currentShapeIndex = currentShapeIndex(shape);
     }
-    public Color GetCurrentColor() {
-        return this.colorPalette.GetColor(colorMode);
+    public ColorType GetColorType() {
+        return this.colorType;
+    }
+    public int GetColorMode() {
+        return this.colorMode;
+    }
+    public Color GetColor() {
+        if (this.color == null) {
+            this.color = ColorTypeConverter.ConvertEnumToColor(this.colorType, this.colorMode);
+        }
+        return this.color;
     }
     public int GetX() { return this.x; }
     public void SetX(int x) { this.x = x; }
