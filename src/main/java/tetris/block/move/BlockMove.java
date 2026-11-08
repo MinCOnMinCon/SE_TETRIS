@@ -5,12 +5,11 @@ import tetris.gamescene.GameProgress;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.PatternType;
 import tetris.block.data.BlockData;
-import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
-import java.util.Arrays;
+import tetris.block.data.ColorType;
 
-import javafx.scene.paint.Color;
+import java.util.Arrays;
 
 /*
     BlockMove 클래스는 테트리스 블럭의 기본적인 이동 기능을 제공하는 클래스
@@ -140,12 +139,13 @@ public class BlockMove {
             int i = coord[0];
             int j = coord[1];
             board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
-            board[y + i][x + j].setElementColor(currentBlockData.GetCurrentColor()); // 블럭 색상 설정
+            board[y + i][x + j].setElementColorType(currentBlockData.GetColorType()); // 블럭 색상 설정
             board[y + i][x + j].setPatternType(currentBlockData.GetPatternType()); // 고정 후에도 패턴 유지
         }
         currentBlock.SetFalseIsHolded();
     }
     private void boardCopy(BoardElement[][] board) {
+        int colorMode = board[0][0].getElementColorMode();
         // 블럭을 고정하기 전 보드 상태를 깊은 복사
         oldBoard = new BoardElement[board.length][];
         for (int row = 0; row < board.length; row++) {
@@ -153,8 +153,9 @@ public class BlockMove {
             for (int col = 0; col < board[row].length; col++) {
                 BoardElement source = board[row][col];
                 BoardElement copy = new BoardElement(
-                    source.getElementColor(),
-                    source.isBlock()
+                    source.getElementColorType(),
+                    source.isBlock(),
+                    colorMode
                 );
                 copy.setPatternType(source.getPatternType());
                 oldBoard[row][col] = copy;
@@ -176,7 +177,7 @@ public class BlockMove {
                 for (int j = 0; j < oldBoard[row].length; j++) {
                     deletedBoard[i][j] = oldBoard[row][j];
                     if (deletedBoard[i][j].isBlock()) {
-                        deletedBoard[i][j].setElementColor(Color.GRAY);
+                        deletedBoard[i][j].setElementColorType(ColorType.GRAY);
                         deletedBoard[i][j].setPatternType(PatternType.NONE);
                     }
                 }
