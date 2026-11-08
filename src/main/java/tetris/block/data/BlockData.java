@@ -1,5 +1,6 @@
 package tetris.block.data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import javafx.scene.paint.Color;
 
@@ -15,11 +16,14 @@ import javafx.scene.paint.Color;
     GetX(), SetX(), GetY(), SetY() 메서드를 통해 블록의 위치를 가져오고 설정
 */
 
-public class BlockData {
+public class BlockData implements Serializable {
+    // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
+    private static final long serialVersionUID = 1L;
     private boolean[][] shape;
     private ColorType colorType;
-    private int colorMode; // 0: 일반, 1: 적녹색맹, 2: 청황색맹
-    private Color color; // 현재 색상
+    // transient로 데이터 전송 시 NULL값으로 변경
+    private transient int colorMode; // 0: 일반, 1: 적녹색맹, 2: 청황색맹
+    private transient Color color; // 현재 색상
     private int x;
     private int y;
     private boolean item;

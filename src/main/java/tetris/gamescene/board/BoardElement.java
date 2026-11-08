@@ -1,17 +1,21 @@
 package tetris.gamescene.board;
 
+import java.io.Serializable;
+
 import javafx.scene.paint.Color;
 import tetris.block.data.ColorType;
 import tetris.block.data.PatternType;
 import tetris.block.data.ColorTypeConverter;
 
-public class BoardElement{
-
-    private Color elementColor;
+public class BoardElement implements Serializable{
+    // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
+    private static final long serialVersionUID = 1L;
+    // transient로 데이터 전송 시 NULL값으로 변경
+    private transient Color elementColor;
     private ColorType colorType;
     private boolean isBlock;
-    private int colorMode;
-    private PatternType patternType = PatternType.NONE;
+    private transient int colorMode;
+    private transient PatternType patternType = PatternType.NONE;
 
 
     public BoardElement(ColorType colorType, boolean block, int colorMode){

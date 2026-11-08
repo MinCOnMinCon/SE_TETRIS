@@ -25,12 +25,10 @@ public class CurrentBlock {
     private boolean isHolded;
     private GameBoard board;
     private final Runnable onGameOver;
+    private boolean isVersusMode = false;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
     private List<BoardElement[][]> versusBoards; // 상대의 삭제된 보드의 줄들을 저장
     private boolean canDefend = true; // 상대의 공격을 방어할 수 있는지 여부
-    private int host;
-    private int client;
-    private boolean isHost;
 
     public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockData blockHolding, 
         boolean canMoveH, boolean isHolded, GameBoard board, Runnable onGameOver) {
@@ -46,11 +44,9 @@ public class CurrentBlock {
     public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver) {
         this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
     }
-    public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver, int host, int client, boolean isHost) {
+    public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver, boolean isVersusMode) {
         this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
-        this.host = host;
-        this.client = client;
-        this.isHost = isHost;
+        this.isVersusMode = isVersusMode;
         versusBoards = new java.util.ArrayList<>();
     }
 
@@ -83,6 +79,9 @@ public class CurrentBlock {
     }
     public GameBoard GetGameBoard() {
         return this.board;
+    }
+    public boolean GetIsVersusMode() {
+        return isVersusMode;
     }
     public BoardElement[][] GetDelBoard() {
         BoardElement[][] tmp = this.deletedBoard;
