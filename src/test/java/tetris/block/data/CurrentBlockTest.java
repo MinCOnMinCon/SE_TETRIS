@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javafx.scene.paint.Color;
 import org.junit.jupiter.api.Test;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.board.GameBoard;
@@ -14,7 +13,7 @@ import tetris.gamescene.board.GameBoard;
 class CurrentBlockTest {
     @Test
     void storesCurrentBlockAndMovementState() {
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BlockData initialBlock = createBlock(0, 0);
         CurrentBlock currentBlock = new CurrentBlock(
                 initialBlock, null, null, true, false, board, () -> {});
@@ -35,7 +34,7 @@ class CurrentBlockTest {
 
     @Test
     void moveEndAcceptsNextBlockWhenSpawnCellsAreEmpty() {
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BlockData initialBlock = createBlock(0, 0);
         BlockData nextBlock = createBlock(2, 3);
         CurrentBlock currentBlock = new CurrentBlock(
@@ -49,7 +48,7 @@ class CurrentBlockTest {
 
     @Test
     void moveEndKeepsCurrentBlockAndSignalsGameOverWhenSpawnIsBlocked() {
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BlockData initialBlock = createBlock(0, 0);
         BlockData blockedBlock = createBlock(2, 3);
         board.GetBoard()[3][2].setBlock(true);
@@ -67,8 +66,8 @@ class CurrentBlockTest {
     @Test
     void getDelBoardReturnsAndClearsDeletedBoard() {
         CurrentBlock currentBlock = new CurrentBlock(
-                createBlock(0, 0), null, null, true, false, new GameBoard(), () -> {});
-        BoardElement[][] deletedBoard = {{new BoardElement()}};
+                createBlock(0, 0), null, null, true, false, new GameBoard(0), () -> {});
+        BoardElement[][] deletedBoard = {{new BoardElement(0)}};
         currentBlock.SetDelBoard(deletedBoard);
 
         assertSame(deletedBoard, currentBlock.GetDelBoard());
@@ -78,9 +77,9 @@ class CurrentBlockTest {
     @Test
     void versusBoardsCanBeAddedAndPoppedInOrder() {
         CurrentBlock currentBlock = new CurrentBlock(
-                createBlock(0, 0), null, null, true, false, new GameBoard(), () -> {});
-        BoardElement[][] firstBoard = {{new BoardElement()}};
-        BoardElement[][] secondBoard = {{new BoardElement()}};
+                createBlock(0, 0), null, null, true, false, new GameBoard(0), () -> {});
+        BoardElement[][] firstBoard = {{new BoardElement(0)}};
+        BoardElement[][] secondBoard = {{new BoardElement(0)}};
 
         currentBlock.AddVersusBoards(firstBoard);
         currentBlock.AddVersusBoards(secondBoard);
@@ -92,10 +91,10 @@ class CurrentBlockTest {
 
     @Test
     void moveEndAppliesAndConsumesQueuedVersusBoards() {
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BoardElement[] attackRow = new BoardElement[GameBoard.boardCol];
         for (int col = 0; col < attackRow.length; col++) {
-            attackRow[col] = new BoardElement();
+            attackRow[col] = new BoardElement(0);
         }
         attackRow[0].setBlock(true);
         CurrentBlock currentBlock = new CurrentBlock(
@@ -110,7 +109,6 @@ class CurrentBlockTest {
     }
 
     private static BlockData createBlock(int x, int y) {
-        return new BlockData(new boolean[][] {{true}},
-                new ColorPalette(Color.WHITE, Color.WHITE, Color.WHITE), 0, x, y);
+        return new BlockData(new boolean[][] {{true}}, x, y);
     }
 }

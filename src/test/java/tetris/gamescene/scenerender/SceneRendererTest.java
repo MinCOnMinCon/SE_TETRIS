@@ -50,7 +50,7 @@ class SceneRendererTest {
                     width + "x" + height, width, height, 0,
                     java.util.Map.of(), GameSettings.Difficulty.NORMAL, GameSettings.GameMode.NORMAL);
             RenderConfig config = new RenderConfig(settings, 3);
-            GameBoard board = new GameBoard();
+            GameBoard board = new GameBoard(0);
             BlockData[] queue = {
                 new BlockO(0).GetBlockData(),
                 new BlockO(0).GetBlockData(),

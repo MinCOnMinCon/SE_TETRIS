@@ -6,17 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javafx.scene.paint.Color;
 import org.junit.jupiter.api.Test;
+import tetris.block.data.ColorType;
 
 class BoardElementTest {
     @Test
-    void storesAndUpdatesBlockStateAndColor() {
-        BoardElement element = new BoardElement();
+    void lazilyConvertsAndInvalidatesCachedColorWhenTypeChanges() {
+        BoardElement element = new BoardElement(0);
 
         assertFalse(element.isBlock());
         assertEquals(Color.BLACK, element.getElementColor());
         element.setBlock(true);
-        element.setElementColor(Color.CYAN);
+        element.setElementColorType(ColorType.BlockI);
         assertTrue(element.isBlock());
         assertEquals(Color.CYAN, element.getElementColor());
+
+        element.setElementColorType(ColorType.BlockO);
+        assertEquals(Color.YELLOW, element.getElementColor());
     }
 }

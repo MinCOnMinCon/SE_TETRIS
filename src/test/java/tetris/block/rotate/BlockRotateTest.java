@@ -15,7 +15,7 @@ class BlockRotateTest {
             {true, true, true}
         };
         BlockData data = new BlockData(original, 3, 2);
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
         BlockRotate rotation = new BlockRotate(current);
@@ -34,7 +34,7 @@ class BlockRotateTest {
             {true, true, true}
         };
         BlockData data = new BlockData(original, 3, 2);
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
         gameBoard.GetBoard()[4][3].setBlock(true);
@@ -52,7 +52,7 @@ class BlockRotateTest {
             {true, true, true}
         };
         BlockData data = new BlockData(original, 3, 18);
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
         BlockRotate rotation = new BlockRotate(current);

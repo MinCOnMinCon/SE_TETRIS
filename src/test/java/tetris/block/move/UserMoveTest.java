@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javafx.scene.paint.Color;
 import tetris.block.data.BlockData;
-import tetris.block.data.ColorPalette;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.GameProgress;
 import tetris.gamescene.blockqueue.BlockQueue;
@@ -20,7 +19,7 @@ class UserMoveTest {
     void delegatesHorizontalMovementToBlockMovement() {
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
         GameProgress progress = new GameProgress();
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, board, () -> {});
         BlockController controller = new BlockController(
@@ -37,11 +36,9 @@ class UserMoveTest {
     @Test
     void hardDropLocksBlockAndAwardsDropAndHardDropScores() {
         GameProgress progress = new GameProgress();
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         BlockQueue queue = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
-        BlockData data = new BlockData(
-                new boolean[][] {{true}},
-                new ColorPalette(Color.WHITE, Color.WHITE, Color.WHITE), 0, 4, 0);
+        BlockData data = new BlockData(new boolean[][] {{true}}, 4, 0);
         CurrentBlock current = new CurrentBlock(
                 data, queue, null, true, false, gameBoard, () -> {});
         GameScore score = new GameScore(progress);

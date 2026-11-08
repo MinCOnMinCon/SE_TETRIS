@@ -13,11 +13,13 @@ class BlockDataTest {
     @Test
     void tracksShapePositionColorAndItemProperties() {
         boolean[][] shape = {{true, false}};
-        ColorPalette palette = new ColorPalette(Color.RED, Color.GREEN, Color.BLUE);
-        BlockData data = new BlockData(shape, palette, 2, 4, 5, false, ItemType.NORMAL, null);
+        BlockData data = new BlockData(
+                shape, ColorType.BlockI, 2, 4, 5, false, ItemType.NORMAL, null);
 
         assertSame(shape, data.GetShape());
-        assertEquals(Color.BLUE, data.GetCurrentColor());
+        assertEquals(ColorType.BlockI, data.GetColorType());
+        assertEquals(2, data.GetColorMode());
+        assertEquals(Color.BLUE, data.GetColor());
         assertEquals(4, data.GetX());
         assertEquals(5, data.GetY());
         assertFalse(data.IsItem());

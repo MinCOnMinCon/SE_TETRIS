@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class SceneRenderStateTest {
     @Test
     void carriesGameStateWithoutReplacingReferences() {
-        BoardElement[][] board = {{new BoardElement()}};
+        BoardElement[][] board = {{new BoardElement(0)}};
         BlockData current = new BlockData(new boolean[][] {{true}}, 1, 2);
         BlockData queued = new BlockData(new boolean[][] {{true}}, 3, 4);
         BlockData held = new BlockData(new boolean[][] {{true}}, 5, 6);
