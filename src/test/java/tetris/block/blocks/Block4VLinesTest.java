@@ -21,7 +21,7 @@ class Block4VLinesTest {
     @Test
     void usesGrayForEveryColorMode() {
         for (int colorMode = 0; colorMode <= 2; colorMode++) {
-            assertSame(Color.GRAY, new Block4VLines(colorMode).GetBlockData().GetCurrentColor());
+            assertSame(Color.GRAY, new Block4VLines(colorMode).GetBlockData().GetColor());
         }
     }
 }

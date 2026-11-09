@@ -57,12 +57,13 @@ public class BlockDelete {
     }
     // 이동 끝 + ItemType.DEL_HLine
     public static void DeleteHLine(BoardElement[][] board, int row) {
+        int colorMode = board[0][0].getElementColorMode();
         for (int j = row; j > 0; j--) {
             board[j] = board[j - 1]; // 위의 행을 한 칸 아래로 이동
         }
         board[0] = new BoardElement[board[0].length]; // 최상단 행 초기화
         for (int col = 0; col < board[0].length; col++) {
-            board[0][col] = new BoardElement();
+            board[0][col] = new BoardElement(colorMode);
         }
     }
     public static void DeleteEmptyHLine(BoardElement[][] board, int row) {
@@ -72,21 +73,24 @@ public class BlockDelete {
     }
     // ItemType.DEL_4VLINE
     public static void Delete4VLines(BoardElement[][] board, BlockData blockData) {// 블럭의 x, y 좌표
+        int colorMode = board[0][0].getElementColorMode();
         int line = blockData.GetX();
         int row = blockData.GetY();
         if (row + 2 < 0 || row + 2 >= 20)   return;
         for (int i = 0; i < 4; i++){
-            board[row + 2][line + i] = new BoardElement();
+            board[row + 2][line + i] = new BoardElement(colorMode);
         }
     }
     // ItemType.DEL_VLINE 세로줄 삭제
     public static void DeleteVLine(BoardElement[][] board, int line) {
+        int colorMode = board[0][0].getElementColorMode();
         for (BoardElement[] row : board) {
-            row[line] = new BoardElement();
+            row[line] = new BoardElement(colorMode);
         }
     }
     // ItemType.DEL_VEMPTY 압축기
     public static void DeleteVEmpty(BoardElement[][] board, int line) {
+        int colorMode = board[0][0].getElementColorMode();
         int currentRowIndex = 0;
         int start = -1;
         for (BoardElement[] row : board) {
@@ -97,7 +101,7 @@ public class BlockDelete {
                 for (int j = currentRowIndex; j > start; j--) {
                     board[j][line] = board[j - 1][line]; // 위의 칸을 한 칸 아래로 이동
                 }
-                board[start][line] = new BoardElement(); // 시작 칸 초기화
+                board[start][line] = new BoardElement(colorMode); // 시작 칸 초기화
             }
             currentRowIndex++;
         }
@@ -109,7 +113,7 @@ public class BlockDelete {
             for (int j = (row-1); (j < (row+2))&&(j < 20); j++) {
                 if(!board[j][i].isBlock()) {
                     board[j][i].setBlock(true);
-                    board[j][i].setElementColor(dot.GetCurrentColor());
+                    board[j][i].setElementColorType(dot.GetColorType());
                 }
             }
         }

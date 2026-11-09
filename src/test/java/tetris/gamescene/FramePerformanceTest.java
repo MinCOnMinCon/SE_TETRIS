@@ -20,10 +20,10 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import tetris.block.blocks.BlockI;
 import tetris.block.data.BlockData;
+import tetris.block.data.ColorType;
 import tetris.gamescene.board.BoardElement;
 import tetris.settings.GameSettings;
 import tetris.settings.KeyBindingSettings;
@@ -210,12 +210,13 @@ class FramePerformanceTest {
             for (int row = 0; row < board.length; row++) {
                 for (int col = 0; col < board[row].length; col++) {
                     boolean filled = row >= block.GetY() + firstRow;
-                    board[row][col] = new BoardElement(filled ? Color.GRAY : Color.BLACK, filled);
+                    board[row][col] = new BoardElement(
+                            filled ? ColorType.GRAY : ColorType.NONE, filled, 0);
                 }
             }
             for (int row = 0; row < shape.length; row++) {
                 for (int col = 0; col < shape[row].length; col++) {
-                    if (shape[row][col]) board[block.GetY() + row][block.GetX() + col] = new BoardElement();
+                    if (shape[row][col]) board[block.GetY() + row][block.GetX() + col] = new BoardElement(0);
                 }
             }
         }

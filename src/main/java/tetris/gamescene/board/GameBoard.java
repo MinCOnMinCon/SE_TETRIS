@@ -17,8 +17,8 @@ public class GameBoard {
     private BoardElement [][] board;
     private final int[] clearedRows = new int[maxClearedLines];
     
-    public GameBoard(){
-        InitGameBoard();
+    public GameBoard(int colorMode){
+        InitGameBoard(colorMode);
     }
 
     public BoardElement[][] GetBoard(){
@@ -30,13 +30,13 @@ public class GameBoard {
         return clearedRows;
     }
 
-    public void InitGameBoard(){
+    public void InitGameBoard(int colorMode){
         Arrays.fill(clearedRows, -1);
         board = new BoardElement[boardRow][boardCol];
         for(int row = 0; row < board.length; row++){
             for(int col = 0; col < board[row].length; col++){
                 
-                board[row][col] = new BoardElement();
+                board[row][col] = new BoardElement(colorMode);
                 
             
             }

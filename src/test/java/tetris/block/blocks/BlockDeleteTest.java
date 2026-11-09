@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import javafx.scene.paint.Color;
 import org.junit.jupiter.api.Test;
 import tetris.block.data.BlockData;
-import tetris.block.data.ColorPalette;
+import tetris.block.data.ColorType;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.ItemType;
 import tetris.block.move.BlockMove;
@@ -22,7 +22,7 @@ import tetris.settings.GameSettings.GameMode;
 class BlockDeleteTest {
     @Test
     void findsAndClearsCompleteSingleRowAndAwardsLineScore() {
-        BoardElement[][] board = new GameBoard().GetBoard();
+        BoardElement[][] board = new GameBoard(0).GetBoard();
         for (BoardElement element : board[19]) {
             element.setBlock(true);
         }
@@ -43,7 +43,7 @@ class BlockDeleteTest {
         int[] expectedScores = {0, 100, 300, 500, 800};
 
         for (int linesToClear = 1; linesToClear <= 4; linesToClear++) {
-            BoardElement[][] board = new GameBoard().GetBoard();
+            BoardElement[][] board = new GameBoard(0).GetBoard();
             int firstClearedRow = GameBoard.boardRow - linesToClear;
             board[firstClearedRow - 1][0].setBlock(true);
 
@@ -73,7 +73,7 @@ class BlockDeleteTest {
 
     @Test
     void horizontalLineDeletionRemovesItsTargetRow() {
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         BoardElement[][] board = gameBoard.GetBoard();
         board[9][0].setBlock(true);
         fillRow(board, 10);
@@ -89,7 +89,7 @@ class BlockDeleteTest {
 
     @Test
     void verticalLineItemDeletesItsTargetColumnOnly() {
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         BoardElement[][] board = gameBoard.GetBoard();
         for (BoardElement[] row : board) {
             row[4].setBlock(true);
@@ -107,7 +107,7 @@ class BlockDeleteTest {
 
     @Test
     void verticalCompressorMovesBlocksDownIntoEmptyCells() {
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         BoardElement[][] board = gameBoard.GetBoard();
         board[2][4].setBlock(true);
         board[5][4].setBlock(true);
@@ -123,7 +123,7 @@ class BlockDeleteTest {
 
     @Test
     void areaItemFillsNearbyEmptyCellsAndClearsCompletedRow() {
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         BoardElement[][] board = gameBoard.GetBoard();
         for (int col : new int[] {0, 1, 2, 6, 7, 8, 9}) {
             board[10][col].setBlock(true);
@@ -149,7 +149,7 @@ class BlockDeleteTest {
 
     @Test
     void fourVerticalLineBlockClearsFourCellsWhileFallingAndFixesAtFloor() {
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
         BoardElement[][] board = gameBoard.GetBoard();
         int x = 3;
         int y = 0;
@@ -218,7 +218,7 @@ class BlockDeleteTest {
         BoardElement[][] board = gameBoard.GetBoard();
         BlockData itemData = new BlockData(
                 new boolean[][] {{true}},
-                new ColorPalette(Color.GRAY, Color.GRAY, Color.GRAY),
+                ColorType.GRAY,
                 0,
                 x,
                 y,

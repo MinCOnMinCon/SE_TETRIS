@@ -1,5 +1,6 @@
 package tetris.block.data;
 
+import java.util.List;
 import java.util.Objects;
 
 import tetris.gamescene.blockqueue.BlockQueue;
@@ -24,7 +25,10 @@ public class CurrentBlock {
     private boolean isHolded;
     private GameBoard board;
     private final Runnable onGameOver;
+    private boolean isVersusMode = false;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
+    private List<BoardElement[][]> versusBoards; // 상대의 삭제된 보드의 줄들을 저장
+    private boolean canDefend = true; // 상대의 공격을 방어할 수 있는지 여부
 
     public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockData blockHolding, 
         boolean canMoveH, boolean isHolded, GameBoard board, Runnable onGameOver) {
@@ -35,9 +39,15 @@ public class CurrentBlock {
         this.isHolded = isHolded;
         this.board = board;
         this.onGameOver = Objects.requireNonNull(onGameOver);
+        //versusBoards = new java.util.ArrayList<>();
     }
     public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver) {
         this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
+    }
+    public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver, boolean isVersusMode) {
+        this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
+        this.isVersusMode = isVersusMode;
+        versusBoards = new java.util.ArrayList<>();
     }
 
     public BlockData GetCurrentBlock() {
@@ -70,11 +80,30 @@ public class CurrentBlock {
     public GameBoard GetGameBoard() {
         return this.board;
     }
+    public boolean GetIsVersusMode() {
+        return isVersusMode;
+    }
     public BoardElement[][] GetDelBoard() {
-        return this.deletedBoard;
+        BoardElement[][] tmp = this.deletedBoard;
+        this.deletedBoard = null; // 반환 후 삭제된 보드 초기화
+        return tmp;
     }
     public void SetDelBoard(BoardElement[][] deletedBoard) {
         this.deletedBoard = deletedBoard;
+    }
+    public List<BoardElement[][]> GetVersusBoards() {
+        return this.versusBoards;
+    }
+    public BoardElement[][] PopVersusBoards() {
+        if (this.versusBoards.isEmpty()) {
+            return null;
+        }
+        return this.versusBoards.remove(0);
+    }
+    public void AddVersusBoards(BoardElement[][] versusBoard) {
+        if (this.versusBoards == null)
+            this.versusBoards = new java.util.ArrayList<>();
+        this.versusBoards.add(versusBoard);
     }
     public void PrintDelBoard() {
         if (deletedBoard == null) {
@@ -122,7 +151,12 @@ public class CurrentBlock {
         }
         this.canMoveH = true;
         SetCurrentBlock(blockData);
-        PrintDelBoard();
+        PrintDelBoard(); // 삭제된 보드 확인
+        // if (deletedBoard != null) {
+        //     this.versusBoards.add(GetDelBoard());
+        // }
+        if (versusBoards != null && !versusBoards.isEmpty())
+            Attacked();
     }
     public void MoveEnd() {
         MoveEnd(nextBlocks.GetNextBlock());
@@ -169,5 +203,31 @@ public class CurrentBlock {
         }
         
         return true; // 아무 충돌이 없으므로 이동 가능
+    }
+    private void Attacked() {
+        while (!versusBoards.isEmpty()) {
+            BoardElement[][] versusBoard = PopVersusBoards();
+            int size = versusBoard.length;
+            System.out.println("상대의 공격! 삭제된 줄 수: " + size);
+            BoardElement[][] myBoard = board.GetBoard();
+            for (int i = 0; i < size; i++) {
+                for (BoardElement myCol : myBoard[i]) {
+                    if (myCol.isBlock()) {
+                        canDefend = false;
+                        break;
+                    }
+                }
+            }
+            int mySize = myBoard.length;
+            for (int j = 0; j < mySize; j++) {
+                if (j + size < mySize) {
+                    myBoard[j] = myBoard[j + size];
+                } else {
+                    myBoard[j] = versusBoard[j - (mySize - size)];
+                }
+            }
+            if (!canDefend)
+                onGameOver.run();
+        }
     }
 }

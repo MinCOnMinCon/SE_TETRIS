@@ -3,10 +3,12 @@ package tetris.block.move;
 import tetris.block.blocks.BlockDelete;
 import tetris.gamescene.GameProgress;
 import tetris.block.data.CurrentBlock;
+import tetris.block.data.PatternType;
 import tetris.block.data.BlockData;
-import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.score.GameScore;
+import tetris.block.data.ColorType;
+
 import java.util.Arrays;
 
 /*
@@ -68,10 +70,6 @@ public class BlockMove {
         else if (currentBlock.GetCurrentBlock().IsItem()) {
             int itemX, itemY;
             boardCopy(board);
-            int deletedRows[] = new int[GameBoard.maxClearedLines];
-            for (int i = 0; i < deletedRows.length; i++) {
-                deletedRows[i] = -1;
-            }
             switch (currentBlock.GetCurrentBlock().GetItemType()) {
                 case DEL_HLINE: // 가로선 삭제
                     MoveFix();
@@ -111,16 +109,7 @@ public class BlockMove {
                     break;
             }
             if(currentBlock.GetCanMoveH()) {
-                int[] tmpDeletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
-                // if (deletedRows[0] != -1) {
-                //     int i = 1;
-                //     for (int index : tmpDeletedRows) {
-                //         if (index == -1) break;
-                //         deletedRows[i++] = index;
-                //     }
-                // }
-                // else
-                    deletedRows = tmpDeletedRows;
+                int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
 
                 System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);                
                 currentBlock.SetDelBoard(GetDelBoard(deletedRows));
@@ -150,12 +139,13 @@ public class BlockMove {
             int i = coord[0];
             int j = coord[1];
             board[y + i][x + j].setBlock(true); // 블럭을 보드에 고정
-            board[y + i][x + j].setElementColor(currentBlockData.GetCurrentColor()); // 블럭 색상 설정
+            board[y + i][x + j].setElementColorType(currentBlockData.GetColorType()); // 블럭 색상 설정
             board[y + i][x + j].setPatternType(currentBlockData.GetPatternType()); // 고정 후에도 패턴 유지
         }
         currentBlock.SetFalseIsHolded();
     }
     private void boardCopy(BoardElement[][] board) {
+        int colorMode = board[0][0].getElementColorMode();
         // 블럭을 고정하기 전 보드 상태를 깊은 복사
         oldBoard = new BoardElement[board.length][];
         for (int row = 0; row < board.length; row++) {
@@ -163,8 +153,9 @@ public class BlockMove {
             for (int col = 0; col < board[row].length; col++) {
                 BoardElement source = board[row][col];
                 BoardElement copy = new BoardElement(
-                    source.getElementColor(),
-                    source.isBlock()
+                    source.getElementColorType(),
+                    source.isBlock(),
+                    colorMode
                 );
                 copy.setPatternType(source.getPatternType());
                 oldBoard[row][col] = copy;
@@ -179,12 +170,16 @@ public class BlockMove {
         }
         Arrays.sort(deletedRows, 0, deletedRowCount);
         if (deletedRows[1] != -1) {
-            deletedBoard = new BoardElement[oldBoard.length][];
+            deletedBoard = new BoardElement[deletedRowCount][];
             for (int i = 0; i < deletedRowCount; i++) {
                 int row = deletedRows[i];
                 deletedBoard[i] = new BoardElement[oldBoard[row].length];
                 for (int j = 0; j < oldBoard[row].length; j++) {
                     deletedBoard[i][j] = oldBoard[row][j];
+                    if (deletedBoard[i][j].isBlock()) {
+                        deletedBoard[i][j].setElementColorType(ColorType.GRAY);
+                        deletedBoard[i][j].setPatternType(PatternType.NONE);
+                    }
                 }
             }
             return deletedBoard;

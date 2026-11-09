@@ -17,7 +17,7 @@ class BlockHoldingTest {
     void holdsCurrentBlockAndDoesNotHoldTwiceBeforeItLands() {
         GameProgress progress = new GameProgress();
         BlockQueue queue = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(queue, board, () -> {});
         BlockData heldBlock = current.GetCurrentBlock();
 

@@ -34,7 +34,7 @@ public class ItemRenderer {
                 || itemX >= shape[itemY].length || !shape[itemY][itemX]) return;
 
         // 블록 색과 기호 색이 비슷하면 기호가 묻히므로, 배경인 블록의 밝기를 계산한다.
-        Color color = block.GetCurrentColor();
+        Color color = block.GetColor();
         // 눈이 느끼는 밝기에 맞춰 RGB에 가중치를 적용한다(초록의 영향이 가장 크다).
         double brightness = 0.299 * color.getRed()
                 + 0.587 * color.getGreen() + 0.114 * color.getBlue();

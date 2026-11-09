@@ -17,6 +17,7 @@ import java.util.Objects;
 
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.*;
+import tetris.block.data.ColorType;
 
 public class SceneRenderer  {
     private final ItemRenderer itemRenderer = new ItemRenderer();
@@ -102,7 +103,7 @@ public class SceneRenderer  {
         if (currentBlock == null) return renderBoard;
 
         boolean[][] shape = currentBlock.GetShape();
-        Color color = currentBlock.GetCurrentColor();
+        ColorType colorType = currentBlock.GetColorType();
         for (int row = 0; row < shape.length; row++) {
             for (int col = 0; col < shape[row].length; col++) {
                 if (!shape[row][col]) continue;
@@ -111,7 +112,7 @@ public class SceneRenderer  {
                 if (boardRow < 0 || boardRow >= renderBoard.length
                         || boardCol < 0 || boardCol >= renderBoard[boardRow].length) continue;
                 // 새 요소에 패턴을 복사해 원본 보드의 요소는 수정하지 않는다.
-                BoardElement element = new BoardElement(color, true);
+                BoardElement element = new BoardElement(colorType, true, currentBlock.GetColorMode());
                 element.setPatternType(currentBlock.GetPatternType());
                 renderBoard[boardRow][boardCol] = element;
             }
@@ -248,7 +249,7 @@ public class SceneRenderer  {
         if (side <= 0) return;
         double startX = (canvas.getWidth() - cols * side) / 2;
         double startY = top + (height - rows * side) / 2;
-        Color color = block.GetCurrentColor();
+        Color color = block.GetColor();
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
         graphicsContext.setFill(color);
         graphicsContext.setStroke(sceneRenderData.borderColor);

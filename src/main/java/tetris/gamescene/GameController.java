@@ -91,7 +91,7 @@ public class GameController {
 
 		gameSettings = settings;
         previousFrameTime = 0;
-		board = new GameBoard();
+		board = new GameBoard(settings.colorMode());
 		progress = new GameProgress();
         progress.OnLinesCleared(initialClearedLineCount);
 		score = new GameScore(progress);
