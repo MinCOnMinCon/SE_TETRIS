@@ -1,9 +1,12 @@
 package tetris.versusmode;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javafx.animation.AnimationTimer;
+import javafx.animation.PauseTransition;
 import javafx.scene.Parent;
+import javafx.util.Duration;
 import tetris.gamescene.GameController;
 import tetris.settings.GameSettings;
 
@@ -16,6 +19,7 @@ public class VersusManager {
     private final GameController player2;
     private final VersusInput input;
     private final VersusRenderer renderer;
+    private final Consumer<MatchResult> onMatchEnded;
     private long previousFrameTime;
     private MatchState state = MatchState.READY;
     private MatchResult result;
@@ -38,8 +42,9 @@ public class VersusManager {
     // TODO: 공격 정보 타입과 플레이어별 공격 대기열, 전달·소비 시점 정의.
     // TODO: 선택적인 제한시간 관리자 연결.
 
-    public VersusManager(GameSettings settings) {
+    public VersusManager(GameSettings settings, Consumer<MatchResult> onMatchEnded) {
         Objects.requireNonNull(settings);
+        this.onMatchEnded = Objects.requireNonNull(onMatchEnded);
         player1 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER1), settings);
         player2 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER2), settings);
         input = new VersusInput(this::PauseGame, player1.playerInput, player2.playerInput,
@@ -109,7 +114,10 @@ public class VersusManager {
         GetRoot().setOnKeyReleased(null);
         player1.CleanGame();
         player2.CleanGame();
-        // TODO: 제한시간 정지, 결과 표시와 화면 전환 연결.
+        renderer.RenderFinish();
+        PauseTransition finishDelay = new PauseTransition(Duration.seconds(3));
+        finishDelay.setOnFinished(event -> onMatchEnded.accept(this.result));
+        finishDelay.play();
     }
 
     public Parent GetRoot() { return renderer.GetRoot(); }

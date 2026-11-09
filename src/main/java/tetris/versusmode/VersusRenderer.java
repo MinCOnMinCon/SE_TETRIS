@@ -10,10 +10,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import tetris.settings.GameSettings;
-import tetris.settings.GameSettings.GameMode;
 
 public class VersusRenderer {
     private final BorderPane root = new BorderPane(); // 두 플레이어의 게임 컨트롤러 화면이 들어갈 큰 화면
+    private final Label timerLabel = new Label();
 
     public VersusRenderer(Parent player1Root, Parent player2Root, GameSettings settings) {
         Objects.requireNonNull(player1Root);
@@ -29,12 +29,9 @@ public class VersusRenderer {
         root.setPrefSize(width, height);
         root.setMaxSize(width, height);
 
-        double gameHeight = height;
-        if (settings.gameMode() == GameMode.TIMELIMIT) {
-            double timerHeight = height / 8;
-            CreateTimerPane(width, timerHeight);
-            gameHeight -= timerHeight;
-        }
+        double timerHeight = height / 8;
+        CreateTimerPane(width, timerHeight);
+        double gameHeight = height - timerHeight;
 
         StackPane left = CreatePlayerPane(player1Root, width / 2, gameHeight);
         StackPane right = CreatePlayerPane(player2Root, width / 2, gameHeight);
@@ -42,12 +39,24 @@ public class VersusRenderer {
     }
 
     private void CreateTimerPane(double width, double height) {
-        Label timerLabel = new Label("남은 시간 --:--");
         StackPane timerPane = new StackPane(timerLabel);
         timerPane.setMinSize(width, height);
         timerPane.setPrefSize(width, height);
         timerPane.setMaxSize(width, height);
         root.setTop(timerPane);
+    }
+
+    public void RenderTime(double remainingTimeMs) {
+        if (remainingTimeMs < 0) {
+            throw new IllegalArgumentException("남은 시간은 0 이상의 유한한 값이어야 합니다.");
+        }
+        long totalSeconds = (long) Math.ceil(remainingTimeMs / 1000.0);
+        timerLabel.setText(String.format("남은 시간 %02d:%02d",
+                totalSeconds / 60, totalSeconds % 60));
+    }
+
+    public void RenderFinish() {
+        timerLabel.setText("FINISH");
     }
 
     private StackPane CreatePlayerPane(Parent screen, double width, double height) {
