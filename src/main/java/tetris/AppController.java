@@ -1,5 +1,6 @@
 package tetris;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import javafx.application.Platform;
@@ -23,6 +24,12 @@ import tetris.settings.GameSettings.GameMode;
 import tetris.settings.GameSettings.PlayMode;
 import tetris.scoreboard.ScoreBoardScreen;
 import tetris.settings.SettingsScreen;
+import tetris.versusmode.OnlineConnectScreen;
+import tetris.versusmode.OnlineLobbyClient;
+import tetris.versusmode.OnlineLobbyScreen;
+import tetris.versusmode.OnlineLobbyServer;
+import tetris.versusmode.OnlineRoleScreen;
+import tetris.versusmode.RecentHostStore;
 
 /**
  * Scene과 Stage를 가진 시작 화면 루트를 받아, 하나의 창에서 화면을 전환한다.
@@ -35,6 +42,9 @@ public class AppController {
     private GameController gameController;
     private PauseScene pauseScene;
     private GameOverRoot gameOverRoot;
+    private OnlineLobbyServer onlineLobbyServer;
+    private OnlineLobbyClient onlineLobbyClient;
+    private OnlineConnectScreen onlineConnectScreen;
 
     public AppController(Stage stage, Scene scene, SettingsStore settingsStore) {
         this.stage = Objects.requireNonNull(stage, "stage cannot be null");
@@ -43,6 +53,7 @@ public class AppController {
     }
 
     public void ShowStartScreen() {
+        closeOnlineLobby();
         StartScreen startScreen = new StartScreen(stage, scene);
         startScreen.makeStartScreen(
             this::ShowSoloGame, this::ShowLocalMultiGame, this::ShowOnlineMultiGame, this::ShowScoreBoard, this::ShowSettings);
@@ -61,7 +72,94 @@ public class AppController {
     }
 
     public void ShowOnlineMultiGame() {
-        gameModeSelectScreen(PlayMode.ONLINE);
+        showOnlineRoleScreen(null);
+    }
+
+    private void showOnlineRoleScreen(String errorMessage) {
+        closeOnlineLobby();
+        OnlineRoleScreen roleScreen = new OnlineRoleScreen(
+                this::showOnlineServerLobby, this::showOnlineConnectScreen, this::ShowStartScreen);
+        roleScreen.showError(errorMessage);
+        scene.setOnKeyPressed(null);
+        stage.setTitle("Tetris - 온라인");
+        scene.setRoot(roleScreen.getRoot());
+        roleScreen.getRoot().requestFocus();
+    }
+
+    private void showOnlineServerLobby() {
+        closeOnlineLobby();
+        OnlineLobbyScreen lobby = new OnlineLobbyScreen(
+                OnlineLobbyScreen.Role.SERVER, settingsStore.getGameMode(), () -> showOnlineRoleScreen(null));
+        try {
+            onlineLobbyServer = new OnlineLobbyServer(lobby);
+            onlineLobbyServer.start();
+        } catch (IOException exception) {
+            showOnlineRoleScreen("서버 포트를 열 수 없습니다.");
+            return;
+        }
+        showLobby(lobby);
+    }
+
+    private void showOnlineConnectScreen() {
+        closeOnlineLobby();
+        onlineConnectScreen = new OnlineConnectScreen(
+                new RecentHostStore(), this::connectOnlineClient, () -> showOnlineRoleScreen(null));
+        scene.setOnKeyPressed(null);
+        stage.setTitle("Tetris - 온라인 접속");
+        scene.setRoot(onlineConnectScreen.getRoot());
+        onlineConnectScreen.getRoot().requestFocus();
+    }
+
+    private void connectOnlineClient(String host) {
+        OnlineConnectScreen connectScreen = onlineConnectScreen;
+        OnlineLobbyScreen lobby = new OnlineLobbyScreen(
+                OnlineLobbyScreen.Role.CLIENT, settingsStore.getGameMode(), () -> showOnlineRoleScreen(null));
+        OnlineLobbyClient client;
+        try {
+            client = new OnlineLobbyClient(host, lobby);
+        } catch (RuntimeException exception) {
+            connectScreen.showError("ip를 입력해주세요");
+            return;
+        }
+        onlineLobbyClient = client;
+        lobby.setOnReady(client::sendReady);
+        Thread connectThread = new Thread(() -> {
+            try {
+                client.connect();
+                new RecentHostStore().save(host);
+                Platform.runLater(() -> {
+                    if (onlineLobbyClient == client) {
+                        showLobby(lobby);
+                    }
+                });
+            } catch (IOException exception) {
+                Platform.runLater(() -> {
+                    if (onlineConnectScreen == connectScreen) {
+                        connectScreen.showError("접속에 실패했습니다.");
+                    }
+                });
+            }
+        }, "online-lobby-connect");
+        connectThread.setDaemon(true);
+        connectThread.start();
+    }
+
+    private void showLobby(OnlineLobbyScreen lobby) {
+        scene.setOnKeyPressed(null);
+        stage.setTitle("Tetris - 대전 대기");
+        scene.setRoot(lobby.getRoot());
+        lobby.getRoot().requestFocus();
+    }
+
+    private void closeOnlineLobby() {
+        if (onlineLobbyServer != null) {
+            onlineLobbyServer.close();
+            onlineLobbyServer = null;
+        }
+        if (onlineLobbyClient != null) {
+            onlineLobbyClient.close();
+            onlineLobbyClient = null;
+        }
     }
 
     private void startGame(PlayMode playMode, GameSettings gameSettings) {
@@ -185,7 +283,7 @@ public class AppController {
         modeSelectionRoot.requestFocus();
     }
 
-    // 시작 화면과 같이 마우스, 위·아래 방향키, Enter로 버튼을 선택하고 실행한다.
+    // 시작 화면과 같이 마우스, 위·아래 방향키, Enter로 버튼을 선택하고 실행
     private void bindModeSelection(Parent root, Button[] buttons) {
         int[] selectedIndex = {0};
         updateModeSelection(buttons, selectedIndex[0]);
@@ -201,6 +299,7 @@ public class AppController {
                 event -> handleModeKey(event, buttons, selectedIndex));
     }
 
+    //방향키 및 엔터로 버튼 이동 및 선택
     private void handleModeKey(KeyEvent event, Button[] buttons, int[] selectedIndex) {
         if (event.getCode() == KeyCode.DOWN) {
             if (selectedIndex[0] < buttons.length - 1) {
@@ -217,6 +316,7 @@ public class AppController {
         }
     }
 
+    //현재 선택된 버튼 하이라이트
     private void updateModeSelection(Button[] buttons, int selectedIndex) {
         for (int i = 0; i < buttons.length; i++) {
             if (i == selectedIndex) {
