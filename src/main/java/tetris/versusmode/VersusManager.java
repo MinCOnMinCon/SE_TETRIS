@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.util.Duration;
 import tetris.gamescene.GameController;
 import tetris.settings.GameSettings;
+import tetris.settings.GameSettings.GameMode;
 
 public class VersusManager {
     public enum Player { PLAYER1, PLAYER2 }
@@ -19,6 +20,8 @@ public class VersusManager {
     private final GameController player2;
     private final VersusInput input;
     private final VersusRenderer renderer;
+    private final VersusTimer timer;
+    private final Runnable onPauseRequested;
     private final Consumer<MatchResult> onMatchEnded;
     private long previousFrameTime;
     private MatchState state = MatchState.READY;
@@ -35,15 +38,21 @@ public class VersusManager {
             double deltaTimeMs = (now - previousFrameTime) / 1_000_000.0;
             previousFrameTime = now;
             input.Update(deltaTimeMs);
-            // TODO: 제한시간 관리자 갱신 연결.
+
+            if (timer != null &&state == MatchState.RUNNING) { // input.Update에서 게임이 끝나 EndMatch가 나 시간 업데이트나는 걸 막음
+                timer.Update(deltaTimeMs);
+                if (state == MatchState.RUNNING) { // timer.update에서 시간 만료가 되면 Endmatch가 나 FINISH가 떠야될 곳에 시간이 업데이트 되는 걸 막음.
+                    renderer.RenderTime(timer.GetRemainingTimeMs());
+                    }
+            }
         }
     };
 
     // TODO: 공격 정보 타입과 플레이어별 공격 대기열, 전달·소비 시점 정의.
-    // TODO: 선택적인 제한시간 관리자 연결.
 
-    public VersusManager(GameSettings settings, Consumer<MatchResult> onMatchEnded) {
+    public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<MatchResult> onMatchEnded) {
         Objects.requireNonNull(settings);
+        this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onMatchEnded = Objects.requireNonNull(onMatchEnded);
         player1 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER1), settings);
         player2 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER2), settings);
@@ -51,6 +60,13 @@ public class VersusManager {
                 settings.playerKeyBindings());
         input.SetInputEnabled(false);
         renderer = new VersusRenderer(player1.GetRoot(), player2.GetRoot(), settings);
+        if(settings.gameMode() == GameMode.TIMELIMIT){
+            timer = new VersusTimer(this::HandleTimeExpired);
+            renderer.RenderTime(timer.GetRemainingTimeMs());
+        }
+        else{
+            timer = null;
+        }
         Parent root = renderer.GetRoot();
         root.setFocusTraversable(true);
         root.setOnKeyPressed(event -> input.HandleKeyPressed(event.getCode()));
@@ -66,7 +82,6 @@ public class VersusManager {
         previousFrameTime = 0;
         updateLoop.start();
         GetRoot().requestFocus();
-        // TODO: 제한시간 모드의 타이머 시작.
     }
 
     public void PauseGame() {
@@ -76,7 +91,7 @@ public class VersusManager {
         updateLoop.stop();
         player1.PauseGame();
         player2.PauseGame();
-        // TODO: 제한시간 정지, 일시정지 UI 연결.
+        onPauseRequested.run();
     }
 
     public void ResumeGame() {
@@ -88,7 +103,6 @@ public class VersusManager {
         previousFrameTime = 0;
         updateLoop.start();
         GetRoot().requestFocus();
-        // TODO: 제한시간 재개.
     }
 
     public void HandlePlayerDefeat(Player loser) { // 플레이어 한 명이 패배해서 이 함수를 호출

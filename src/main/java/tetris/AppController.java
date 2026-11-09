@@ -23,6 +23,8 @@ import tetris.settings.GameSettings.GameMode;
 import tetris.settings.GameSettings.PlayMode;
 import tetris.scoreboard.ScoreBoardScreen;
 import tetris.settings.SettingsScreen;
+import tetris.versusmode.VersusManager;
+import tetris.versusmode.VersusManager.MatchResult;
 
 /**
  * Scene과 Stage를 가진 시작 화면 루트를 받아, 하나의 창에서 화면을 전환한다.
@@ -33,6 +35,7 @@ public class AppController {
     private final SettingsStore settingsStore;
     private ScoreBoardScreen scoreBoardScreen;
     private GameController gameController;
+    private VersusManager versusManager;
     private PauseScene pauseScene;
     private GameOverRoot gameOverRoot;
 
@@ -65,18 +68,27 @@ public class AppController {
     }
 
     private void startGame(PlayMode playMode, GameSettings gameSettings) {
+        scene.setOnKeyPressed(null);// 게임 시작 시 키 이벤트 초기화
         if(playMode == PlayMode.SOLO) {
             gameController = new GameController(
                 this::ShowPauseScreen, this::ShowSoloEndGame, gameSettings);
+            scene.setRoot(gameController.GetRoot());
+            gameController.GetRoot().requestFocus();
+            gameController.GameStart();
         }
-        else {
+        else if(playMode == PlayMode.LOCAL) {
+            versusManager = new VersusManager(gameSettings, this::ShowPauseScreen, this::ShowMultiEndGame);
+            scene.setRoot(versusManager.GetRoot());
+            versusManager.GetRoot().requestFocus();
+            versusManager.GameStart();
+        }
+        else {// TODO: 온라인 멀티 모드일 때 처리 아직 구현 X
             gameController = new GameController(
                 this::ShowPauseScreen, this::ShowMultiEndGame, gameSettings);
+            scene.setRoot(gameController.GetRoot());
+            gameController.GetRoot().requestFocus();
+            gameController.GameStart();
         }
-        scene.setOnKeyPressed(null);// 게임 시작 시 키 이벤트 초기화
-        scene.setRoot(gameController.GetRoot());// 게임 화면 루트로 전환
-        gameController.GetRoot().requestFocus();// 게임 화면 루트에 포커스 설정
-        gameController.GameStart();// 게임 시작
     }
 
     public void ShowSettings() {
@@ -113,15 +125,19 @@ public class AppController {
     }
 
     public void ResumeGame() {
-        if (gameController == null) {
-            return;
-        }
-
         scene.setOnKeyPressed(null);
-        Parent gameSceneRoot = gameController.GetRoot();
-        scene.setRoot(gameSceneRoot);
-        gameSceneRoot.requestFocus();
-        gameController.ResumeGame();
+        if (versusManager != null && versusManager.GetState() == VersusManager.MatchState.PAUSED) {
+            Parent gameSceneRoot = versusManager.GetRoot();
+            scene.setRoot(gameSceneRoot);
+            gameSceneRoot.requestFocus();
+            versusManager.ResumeGame();
+        } else if (gameController != null){
+            
+            Parent gameSceneRoot = gameController.GetRoot();
+            scene.setRoot(gameSceneRoot);
+            gameSceneRoot.requestFocus();
+            gameController.ResumeGame();
+        }
     }
 
     public void ShowSoloEndGame(GameResult result) {
@@ -135,6 +151,10 @@ public class AppController {
 
     public void ShowMultiEndGame(GameResult result) {
         //TODO: 멀티플레이 종료 화면 구현
+    }
+
+    public void ShowMultiEndGame(MatchResult result) {
+        //TODO: 대전 결과를 받는 멀티플레이 종료 화면 구현
     }
 
     // 게임 모드 선택 화면을 표시하고, 선택된 모드에 따라 게임 설정을 저장
