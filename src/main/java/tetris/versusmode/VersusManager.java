@@ -2,6 +2,8 @@ package tetris.versusmode;
 
 import java.util.Objects;
 
+import javafx.animation.AnimationTimer;
+import javafx.scene.Parent;
 import tetris.gamescene.GameController;
 import tetris.settings.GameSettings;
 
@@ -12,17 +14,42 @@ public class VersusManager {
 
     private final GameController player1;
     private final GameController player2;
+    private final VersusInput input;
+    private final VersusRenderer renderer;
+    private long previousFrameTime;
     private MatchState state = MatchState.READY;
     private MatchResult result;
 
-    // TODO: 공격 정보 타입과 플레이어별 공격 대기열, 전달·소비 시점 정의.
-    // TODO: 공통 입력 처리자, 선택적인 제한시간 관리자, 대전 렌더러 연결.
+    private final AnimationTimer updateLoop = new AnimationTimer() {
+        @Override
+        public void handle(long now) {
+            if (state != MatchState.RUNNING) return;
+            if (previousFrameTime == 0) {
+                previousFrameTime = now;
+                return;
+            }
+            double deltaTimeMs = (now - previousFrameTime) / 1_000_000.0;
+            previousFrameTime = now;
+            input.Update(deltaTimeMs);
+            // TODO: 제한시간 관리자 갱신 연결.
+        }
+    };
 
-    public VersusManager(GameSettings player1Settings, GameSettings player2Settings) {
-        player1 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER1), player1Settings);
-        player2 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER2), player2Settings);
-        // TODO: 두 GetRoot()를 렌더러에 전달하고 공통 입력·패배·시간 종료 연결.
-        
+    // TODO: 공격 정보 타입과 플레이어별 공격 대기열, 전달·소비 시점 정의.
+    // TODO: 선택적인 제한시간 관리자 연결.
+
+    public VersusManager(GameSettings settings) {
+        Objects.requireNonNull(settings);
+        player1 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER1), settings);
+        player2 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER2), settings);
+        input = new VersusInput(this::PauseGame, player1.playerInput, player2.playerInput,
+                settings.playerKeyBindings());
+        input.SetInputEnabled(false);
+        renderer = new VersusRenderer(player1.GetRoot(), player2.GetRoot(), settings);
+        Parent root = renderer.GetRoot();
+        root.setFocusTraversable(true);
+        root.setOnKeyPressed(event -> input.HandleKeyPressed(event.getCode()));
+        root.setOnKeyReleased(event -> input.HandleKeyReleased(event.getCode()));
     }
 
     public void GameStart() {
@@ -30,15 +57,21 @@ public class VersusManager {
         state = MatchState.RUNNING;
         player1.GameStart();
         player2.GameStart();
-        // TODO: 공통 입력 활성화, 제한시간 모드의 타이머 시작.
+        input.SetInputEnabled(true);
+        previousFrameTime = 0;
+        updateLoop.start();
+        GetRoot().requestFocus();
+        // TODO: 제한시간 모드의 타이머 시작.
     }
 
     public void PauseGame() {
         if (state != MatchState.RUNNING) return;
         state = MatchState.PAUSED;
+        input.SetInputEnabled(false);
+        updateLoop.stop();
         player1.PauseGame();
         player2.PauseGame();
-        // TODO: 공통 입력 차단, 타이머 정지, 일시정지 UI 연결.
+        // TODO: 제한시간 정지, 일시정지 UI 연결.
     }
 
     public void ResumeGame() {
@@ -46,7 +79,11 @@ public class VersusManager {
         state = MatchState.RUNNING;
         player1.ResumeGame();
         player2.ResumeGame();
-        // TODO: 공통 입력 활성화, 타이머 재개, 포커스 복구.
+        input.SetInputEnabled(true);
+        previousFrameTime = 0;
+        updateLoop.start();
+        GetRoot().requestFocus();
+        // TODO: 제한시간 재개.
     }
 
     public void HandlePlayerDefeat(Player loser) { // 플레이어 한 명이 패배해서 이 함수를 호출
@@ -66,12 +103,16 @@ public class VersusManager {
         if (state == MatchState.ENDED) return;
         state = MatchState.ENDED;
         this.result = result;
+        input.SetInputEnabled(false);
+        updateLoop.stop();
+        GetRoot().setOnKeyPressed(null);
+        GetRoot().setOnKeyReleased(null);
         player1.CleanGame();
         player2.CleanGame();
-        // TODO: 공통 입력 해제, 타이머 정지, 결과 표시와 화면 전환 연결.
+        // TODO: 제한시간 정지, 결과 표시와 화면 전환 연결.
     }
 
-    // TODO: 렌더러 연결 후 GetRoot() 제공.
+    public Parent GetRoot() { return renderer.GetRoot(); }
     public MatchState GetState() { return state; }
     public MatchResult GetResult() { return result; }
 }
