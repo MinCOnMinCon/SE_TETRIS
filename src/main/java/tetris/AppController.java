@@ -83,11 +83,7 @@ public class AppController {
             versusManager.GameStart();
         }
         else {// TODO: 온라인 멀티 모드일 때 처리 아직 구현 X
-            gameController = new GameController(
-                this::ShowPauseScreen, this::ShowMultiEndGame, gameSettings);
-            scene.setRoot(gameController.GetRoot());
-            gameController.GetRoot().requestFocus();
-            gameController.GameStart();
+            
         }
     }
 

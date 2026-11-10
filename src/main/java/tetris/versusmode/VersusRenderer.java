@@ -9,6 +9,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import tetris.settings.GameSettings;
 
 public class VersusRenderer {
@@ -28,6 +31,7 @@ public class VersusRenderer {
         root.setMinSize(width, height);
         root.setPrefSize(width, height);
         root.setMaxSize(width, height);
+        root.setStyle("-fx-background-color: black;");
 
         double timerHeight = height / 8;
         CreateTimerPane(width, timerHeight);
@@ -39,6 +43,8 @@ public class VersusRenderer {
     }
 
     private void CreateTimerPane(double width, double height) {
+        timerLabel.setTextFill(Color.WHITE);
+        timerLabel.setFont(Font.font(height * 0.35));
         StackPane timerPane = new StackPane(timerLabel);
         timerPane.setMinSize(width, height);
         timerPane.setPrefSize(width, height);
@@ -56,6 +62,8 @@ public class VersusRenderer {
     }
 
     public void RenderFinish() {
+        timerLabel.setFont(Font.font("System", FontWeight.BOLD,
+                root.getPrefHeight() / 8 * 0.6));
         timerLabel.setText("FINISH");
     }
 
@@ -64,6 +72,7 @@ public class VersusRenderer {
         pane.setMinSize(width, height);
         pane.setPrefSize(width, height);
         pane.setMaxSize(width, height);
+        pane.setStyle("-fx-background-color: black;");
 
         screen.applyCss();
         screen.autosize();
@@ -80,9 +89,9 @@ public class VersusRenderer {
             return;
         }
 
-        double scale = Math.min(1.0, Math.min(
+        double scale = Math.min(
                 width / bounds.getWidth(),
-                height / bounds.getHeight()));
+                height / bounds.getHeight());
         screen.setScaleX(scale);
         screen.setScaleY(scale);
     }

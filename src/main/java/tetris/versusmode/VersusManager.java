@@ -8,6 +8,7 @@ import javafx.animation.PauseTransition;
 import javafx.scene.Parent;
 import javafx.util.Duration;
 import tetris.gamescene.GameController;
+import tetris.gamescene.board.BoardElement;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.GameMode;
 
@@ -39,6 +40,11 @@ public class VersusManager {
             previousFrameTime = now;
             input.Update(deltaTimeMs);
 
+            if (state == MatchState.RUNNING) { // 매 프레임마다 각 플레이어의 삭제한 줄을 읽어와 상대방의 versusBoard로 던져줌
+                TransferAttack(Player.PLAYER1);
+                TransferAttack(Player.PLAYER2);
+            }
+
             if (timer != null &&state == MatchState.RUNNING) { // input.Update에서 게임이 끝나 EndMatch가 나 시간 업데이트나는 걸 막음
                 timer.Update(deltaTimeMs);
                 if (state == MatchState.RUNNING) { // timer.update에서 시간 만료가 되면 Endmatch가 나 FINISH가 떠야될 곳에 시간이 업데이트 되는 걸 막음.
@@ -48,7 +54,6 @@ public class VersusManager {
         }
     };
 
-    // TODO: 공격 정보 타입과 플레이어별 공격 대기열, 전달·소비 시점 정의.
 
     public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<MatchResult> onMatchEnded) {
         Objects.requireNonNull(settings);
@@ -116,6 +121,16 @@ public class VersusManager {
         int comparison = Integer.compare(player1.GetScore(), player2.GetScore());
         EndMatch(comparison > 0 ? MatchResult.PLAYER1_WIN
                 : comparison < 0 ? MatchResult.PLAYER2_WIN : MatchResult.DRAW);
+    }
+
+    public void TransferAttack(Player sender) {
+        Objects.requireNonNull(sender);
+        GameController source = sender == Player.PLAYER1 ? player1 : player2;
+        GameController target = sender == Player.PLAYER1 ? player2 : player1;
+        BoardElement[][] attack = source.GetDelBoard();
+        if (attack != null) {
+            target.AddVersusBoards(attack);
+        }
     }
 
     private void EndMatch(MatchResult result) { // HandlePlayerDefeat, HandleTimeExpired 함수로 호출됨. 게임을 정리하는 역할

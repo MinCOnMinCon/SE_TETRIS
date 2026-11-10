@@ -16,9 +16,9 @@ class RenderConfigTest {
     // 큐는 실제 게임과 동일하게 3개를 표시한다.
     @ParameterizedTest(name = "{0}x{1} 해상도의 렌더링 값")
     @CsvSource({
-        "1280, 720,  22, 16, 12, 40, 24, 112, 128, 420, 164, 144, 20, 18",
-        "1920, 1080, 33, 24, 18, 60, 36, 168, 192, 630, 246, 216, 30, 27",
-        "2560, 1440, 44, 32, 24, 80, 48, 224, 256, 840, 328, 288, 40, 36"
+        "1280, 720,  22, 16, 12, 30, 24, 112, 128, 410, 142, 80, 20, 18",
+        "1920, 1080, 33, 24, 18, 45, 36, 168, 192, 615, 213, 120, 30, 27",
+        "2560, 1440, 44, 32, 24, 60, 48, 224, 256, 820, 284, 160, 40, 36"
     })
     void matchesExpectedValuesForEachResolution(
             int width, int height, double blockSide, double gap, double padding,
@@ -57,6 +57,8 @@ class RenderConfigTest {
                 () -> assertEquals(holdingHeight, config.blockHoldingCanvasHeight, "blockHoldingCanvasHeight"),
                 () -> assertEquals(panelWidth, config.scoreCanvasWidth, "scoreCanvasWidth"),
                 () -> assertEquals(scoreHeight, config.scoreCanvasHeight, "scoreCanvasHeight"),
+                () -> assertEquals(panelWidth, config.attackedBoardWidth, "attackedBoardWidth"),
+                () -> assertEquals(panelWidth, config.attackedBoardHeight, "attackedBoardHeight"),
                 () -> assertEquals(scoreFontSize, config.scoreFontSize, "scoreFontSize"),
                 () -> assertEquals(titleFontSize, config.titleFontSize, "titleFontSize"));
 

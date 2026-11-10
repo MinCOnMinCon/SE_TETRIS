@@ -8,22 +8,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.image.PixelReader;
+import javafx.scene.paint.Color;
 
 import tetris.block.blocks.BlockO;
 import tetris.block.data.BlockData;
+import tetris.block.data.ColorType;
+import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.board.GameBoard;
 import tetris.settings.GameSettings;
+import tetris.settings.GameSettings.PlayMode;
 
 class SceneRendererTest {
     @BeforeAll
@@ -95,6 +102,57 @@ class SceneRendererTest {
                     NullPointerException.class, () -> renderer.CreateRoot(null));
             assertEquals("state must not be null", exception.getMessage());
         });
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PlayMode.class, names = {"LOCAL", "ONLINE"})
+    void drawsPendingAttacksInOrderAtBottomAndClearsOldRows(PlayMode playMode) throws Exception {
+        runOnFxThread(() -> {
+            GameSettings settings = new GameSettings("1280x720", 1280, 720, 0,
+                    java.util.Map.of(), GameSettings.Difficulty.NORMAL, GameSettings.GameMode.NORMAL);
+            RenderConfig config = new RenderConfig(settings, 3);
+            SceneRenderer renderer = new SceneRenderer(config, playMode);
+            BoardElement[][] board = new GameBoard(0).GetBoard();
+            BoardElement[][] first = attackRows(2, ColorType.BlockJ);
+            first[1][0] = new BoardElement(0);
+            BoardElement[][] second = attackRows(1, ColorType.BlockZ);
+            SceneRenderState state = new SceneRenderState(board, null, 0,
+                    new BlockData[0], null, List.of(first, second));
+            BorderPane root = (BorderPane) renderer.CreateRoot(state);
+            VBox right = (VBox) ((HBox) root.getCenter()).getChildren().get(2);
+            assertEquals(3, right.getChildren().size());
+            Canvas attack = (Canvas) right.getChildren().get(2);
+            assertCanvasSize(attack, 128, 128);
+            PixelReader pixels = attack.snapshot(null, null).getPixelReader();
+            assertEquals(config.panelColor, pixels.getColor(6, 83));
+            assertEquals(Color.BLUE, pixels.getColor(6, 96));
+            assertEquals(Color.BLACK, pixels.getColor(6, 108));
+            assertEquals(Color.RED, pixels.getColor(6, 121));
+            assertEquals(ColorType.BlockJ, first[0][0].getElementColorType());
+
+            BoardElement[][] overflow = attackRows(4, ColorType.BlockZ);
+            renderer.UpdateRoot(new SceneRenderState(board, null, 0, new BlockData[0], null,
+                    List.of(attackRows(8, ColorType.BlockJ), overflow)));
+            pixels = attack.snapshot(null, null).getPixelReader();
+            assertEquals(Color.BLUE, pixels.getColor(6, 96));
+            assertEquals(Color.RED, pixels.getColor(6, 108));
+            assertEquals(Color.RED, pixels.getColor(6, 121));
+            assertEquals(4, overflow.length);
+
+            renderer.UpdateRoot(new SceneRenderState(board, null, 0, new BlockData[0], null, List.of()));
+            pixels = attack.snapshot(null, null).getPixelReader();
+            assertEquals(config.panelColor, pixels.getColor(6, 121));
+        });
+    }
+
+    private static BoardElement[][] attackRows(int rows, ColorType color) {
+        BoardElement[][] attack = new BoardElement[rows][10];
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < 10; col++) {
+                attack[row][col] = new BoardElement(color, true, 0);
+            }
+        }
+        return attack;
     }
 
     private static void assertCanvasSize(Canvas canvas, double width, double height) {
