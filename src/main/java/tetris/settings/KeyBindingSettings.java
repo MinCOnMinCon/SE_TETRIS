@@ -58,8 +58,8 @@ public final class KeyBindingSettings {
         bindings.put(ActionType.PAUSE, List.of(KeyCode.ESCAPE));
     }
 
-    // 플레이어1의 키 배정 회전과 홀드는 JKL, 하드 드롭은 마침표
-    public static KeyBindingSettings player1LocalDefaults() {
+    // 플레이어2의 키 배정 회전과 홀드는 JKL, 하드 드롭은 마침표
+    public static KeyBindingSettings player2LocalDefaults() {
         KeyBindingSettings settings = new KeyBindingSettings();
         settings.setKeyCode(ActionType.MOVE_LEFT, KeyCode.LEFT);
         settings.setKeyCode(ActionType.MOVE_RIGHT, KeyCode.RIGHT);
@@ -71,8 +71,8 @@ public final class KeyBindingSettings {
         return settings;
     }
 
-    // 플레이어2의 키 배정 회전과 홀드는 CVB, 하드 드롭은 스페이스
-    public static KeyBindingSettings player2LocalDefaults() {
+    // 플레이어1의 키 배정 회전과 홀드는 CVB, 하드 드롭은 스페이스
+    public static KeyBindingSettings player1LocalDefaults() {
         KeyBindingSettings settings = new KeyBindingSettings();
         settings.setKeyCode(ActionType.MOVE_LEFT, KeyCode.A);
         settings.setKeyCode(ActionType.MOVE_RIGHT, KeyCode.D);

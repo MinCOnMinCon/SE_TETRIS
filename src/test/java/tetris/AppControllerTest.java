@@ -100,6 +100,13 @@ class AppControllerTest {
             assertEquals("Tetris", stage.getTitle());
             assertEquals("TETRIS", ((Label) ((BorderPane) scene.getRoot()).getTop()).getText());
             assertFalse(Files.exists(settingsFile));
+
+            controller.ShowOnlineMultiGame();
+            javafx.scene.layout.BorderPane onlineRoot = (javafx.scene.layout.BorderPane) scene.getRoot();
+            VBox onlineMenu = (VBox) onlineRoot.getCenter();
+            assertEquals("Tetris - 온라인", stage.getTitle());
+            assertEquals("Server", ((Button) onlineMenu.getChildren().get(1)).getText());
+            assertEquals("Client", ((Button) onlineMenu.getChildren().get(2)).getText());
         });
     }
 
