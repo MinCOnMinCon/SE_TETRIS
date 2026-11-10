@@ -19,7 +19,7 @@ public class RenderConfig{
     public double blockPreviewPadding = 12; // 블럭 큐의 미리보기 블럭 슬롯 내부의 상하좌우 여백(px)
     public double panelBottomPadding = 12; // 큐·홀딩·점수판 내용 영역의 하단 여백(px)
     public double scoreHPadding = 12; // 점수 숫자의 좌우 여백(px)
-    public double panelTitleHeight = 40; // NEXT·HOLD·SCORE 제목에 할당하는 상단 영역의 높이(px)
+    public double panelTitleHeight = 30; // NEXT·HOLD·SCORE 제목에 할당하는 상단 영역의 높이(px)
 
     public double previewBlockSide = 24; // 큐·홀딩 미리보기 블럭 한 칸의 기본 크기(px), 공간이 부족하면 축소
     public double previewSlotHeight = 112; // 미리보기 블록 슬롯의 높이 및 홀딩 기본 영역 높이(px)
@@ -32,11 +32,16 @@ public class RenderConfig{
     public double blockQueueCanvasHeight;
 
     public double blockHoldingCanvasWidth = 128; // 홀딩 캔버스의 너비(px)
-    public double blockHoldingCanvasHeight = panelTitleHeight + previewSlotHeight + panelBottomPadding; // 홀딩 캔버스의 높이(px): 제목 + 미리보기 영역 + 하단 여백
+    public double blockHoldingCanvasHeight = panelTitleHeight + previewSlotHeight; // 홀딩 캔버스의 높이(px): 제목 + 미리보기 영역
 
     public double scoreCanvasWidth = 128; // 점수판 캔버스의 너비(px)
-    public double scoreCanvasHeight = 144; // 점수판 캔버스의 높이(px)
+    public double scoreCanvasHeight = 80; // 점수판 캔버스의 높이(px)
     public double scoreFontSize = 20; // 점수 숫자의 글자 크기
+
+    public double attackedBoardWidth = 128;
+    public double attackedBoardHeight = 128;
+    public int attackedBoardRows = 10;
+    public int attackedBoardColumns = 10;
 
     public double titleFontSize = 18; // NEXT·HOLD·SCORE 제목의 글자 크기
    
@@ -79,10 +84,12 @@ public class RenderConfig{
         scoreCanvasWidth *= scale;
         scoreCanvasHeight *= scale;
         scoreFontSize *= scale;
+        attackedBoardWidth *= scale;
+        attackedBoardHeight *= scale;
         titleFontSize *= scale;
 
         // 조정된 크기로 계산하여 배율이 중복 적용되지 않도록 한다.
-        blockHoldingCanvasHeight = panelTitleHeight + previewSlotHeight + panelBottomPadding;
+        blockHoldingCanvasHeight = panelTitleHeight + previewSlotHeight;
         blockQueueCanvasHeight = panelTitleHeight + panelBottomPadding
                 + blockQueueDisplayCount * previewSlotHeight
                 + Math.max(0, blockQueueDisplayCount - 1) * previewSlotGap;

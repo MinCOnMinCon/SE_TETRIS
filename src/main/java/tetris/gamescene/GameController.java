@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Parent;
 import tetris.gamescene.board.GameBoard;
+import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.scenerender.RenderConfig;
 import tetris.gamescene.scenerender.SceneRenderState;
 import tetris.gamescene.scenerender.SceneRenderer;
@@ -17,6 +18,7 @@ import tetris.block.move.AutoMove;
 import tetris.block.move.BlockController;
 
 import tetris.settings.GameSettings;
+import tetris.settings.GameSettings.PlayMode;
 
 
 public class GameController {
@@ -26,8 +28,6 @@ public class GameController {
 	private final GameProgress progress;
 	
 	private final CurrentBlock currentBlock;
-
-	private final AutoMove autoMove;
 
     private final BlockController blockController;
 
@@ -58,7 +58,7 @@ public class GameController {
     // 대전모드 관리자가 사용할 생성자 함수
     public GameController(Consumer<GameResult> onGameEnded, GameSettings settings) {
         this(() -> {}, onGameEnded, settings, 0, 
-        Boolean.getBoolean("tetris.profile") ? new FrameProfiler() : null, false);
+        Boolean.getBoolean("tetris.profile") ? new FrameProfiler() : null, false, PlayMode.LOCAL);
         //온퍼즈리퀘스티드에 아무것도 안 넣어서 플레이어 인풋이 일시정지 화면을 못 띄우도록 막는다.
         //레지스터 키 인풋을 폴스로 설정해서 컨트롤러가 가지는 루트에 입력이 들어가지 않도록 막는다. 대전모드일 때는 
         // 입력을 관리자가 갖고 있는 루트만 받아야 한다.
@@ -69,6 +69,8 @@ public class GameController {
             GameSettings settings){
         this(onPauseRequested, onGameEnded, settings, 0);
     }
+
+    
     //GameSceneTest에서 사용하기 위한 생성자 함수
     public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings, int initialClearedLineCount){
@@ -85,6 +87,13 @@ public class GameController {
     private GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings, int initialClearedLineCount, FrameProfiler profiler,
             boolean registerKeyInput) {
+        this(onPauseRequested, onGameEnded, settings, initialClearedLineCount, profiler,
+                registerKeyInput, PlayMode.SOLO);
+    }
+
+    private GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
+            GameSettings settings, int initialClearedLineCount, FrameProfiler profiler,
+            boolean registerKeyInput, PlayMode playMode) {
         this.profiler = profiler;
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onGameEnded = Objects.requireNonNull(onGameEnded);
@@ -100,18 +109,18 @@ public class GameController {
 		
 		currentBlock = new CurrentBlock(blockQueue, board, this::StopGame);
  
-		autoMove = new AutoMove(currentBlock, gameSettings.difficulty()); 
+		AutoMove autoMove = new AutoMove(currentBlock, gameSettings.difficulty()); 
 
         blockController = new BlockController(currentBlock, autoMove, score, progress);
 
 
 		
 		RenderConfig renderConfig = new RenderConfig(gameSettings, blockQueue.GetMaxQueueSize());
-		renderer = new SceneRenderer(renderConfig);
+		renderer = new SceneRenderer(renderConfig, playMode);
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
 		
         //대전모드면 퍼즈 게임 콜백
-        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), currentBlock.GetBlockHolding());
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
         gameRoot = renderer.CreateRoot(state);
         if (registerKeyInput) {
             playerInput = new PlayerInput(gameSettings.keyBindings(), blockController, this::PauseGame);
@@ -171,7 +180,7 @@ public class GameController {
             }
 
             SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
-                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding());
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
             renderer.UpdateRoot(state);
         }
     }
@@ -240,6 +249,14 @@ public class GameController {
 
     public int GetScore() {
         return score.GetGameScore();
+    }
+
+    public BoardElement[][] GetDelBoard() {
+        return currentBlock.GetDelBoard();
+    }
+
+    public void AddVersusBoards(BoardElement[][] versusBoard) {
+        currentBlock.AddVersusBoards(versusBoard);
     }
 
 	public Parent GetRoot() {
