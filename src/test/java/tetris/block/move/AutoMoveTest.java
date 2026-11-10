@@ -14,7 +14,7 @@ class AutoMoveTest {
     @Test
     void movesBlockAfterFallIntervalAndAwardsDropScore() {
         GameProgress progress = new GameProgress();
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, board, () -> {});

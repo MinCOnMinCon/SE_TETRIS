@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class GameBoardTest {
     @Test
     void initializesAnEmptyBoardAndClearedRows() {
-        GameBoard gameBoard = new GameBoard();
+        GameBoard gameBoard = new GameBoard(0);
 
         assertEquals(GameBoard.boardRow, gameBoard.GetBoard().length);
         assertEquals(GameBoard.boardCol, gameBoard.GetBoard()[0].length);

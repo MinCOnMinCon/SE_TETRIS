@@ -19,7 +19,7 @@ import tetris.settings.KeyBindingSettings.ActionType;
 class PlayerInputTest {
     @Test
     void dispatchesConfiguredMovementAndPauseKeys() {
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, board, () -> {});
@@ -43,7 +43,7 @@ class PlayerInputTest {
 
     @Test
     void ignoresConfiguredKeysWhenInputIsDisabled() {
-        GameBoard board = new GameBoard();
+        GameBoard board = new GameBoard(0);
         BlockData data = new BlockData(new boolean[][] {{true}}, 4, 4);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, board, () -> {});
