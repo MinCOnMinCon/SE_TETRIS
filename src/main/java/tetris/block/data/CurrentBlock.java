@@ -145,18 +145,18 @@ public class CurrentBlock {
     
 
     public void MoveEnd(BlockData blockData) {
-        if(!CanGetNextBlock(blockData)){
-            onGameOver.run();
-            return;
-        }
-        this.canMoveH = true;
-        SetCurrentBlock(blockData);
         PrintDelBoard(); // 삭제된 보드 확인
         // if (deletedBoard != null) {
         //     this.versusBoards.add(GetDelBoard());
         // }
         if (versusBoards != null && !versusBoards.isEmpty())
             Attacked();
+        if(!CanGetNextBlock(blockData)){
+            onGameOver.run();
+            return;
+        }
+        this.canMoveH = true;
+        SetCurrentBlock(blockData);
     }
     public void MoveEnd() {
         MoveEnd(nextBlocks.GetNextBlock());
