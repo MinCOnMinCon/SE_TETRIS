@@ -15,6 +15,8 @@ public class NetworkData implements Serializable {
     private BlockData blockHolding;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
     private int score;
+    private boolean isPaused;
+    private boolean isEnded;
     private int hostIP;
     private int clientIP;
     private boolean isHost;
@@ -57,5 +59,11 @@ public class NetworkData implements Serializable {
     }
     public boolean GetIsHost() {
         return isHost;
+    }
+    public boolean GetIsPaused() {
+        return isPaused;
+    }
+    public boolean GetIsEnded() {
+        return isEnded;
     }
 }
