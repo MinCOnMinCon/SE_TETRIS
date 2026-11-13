@@ -67,7 +67,7 @@ public class VersusOverRoot extends StackPane {
         // 3. 화면 배치 및 조립 (레이아웃)
         setScene();
     }
-
+ 
     private void setNodes(VersusResult result) {
         baseScreen = new BorderPane();
         baseScreen.setStyle("-fx-background-color: black;");
