@@ -14,11 +14,16 @@ public class BlockController {
     private final GameProgress progress;
 
     public BlockController(CurrentBlock currentBlock, AutoMove autoMove, GameScore gameScore, GameProgress progress) {
+        this(currentBlock, autoMove, gameScore, progress, null);
+    }
+
+    public BlockController(CurrentBlock currentBlock, AutoMove autoMove, GameScore gameScore,
+            GameProgress progress, Runnable onLineClear) {
         this.currentBlock = currentBlock;
         this.autoMove = autoMove;
         this.gameScore = gameScore;
         this.progress = progress;
-        this.blockMove = new BlockMove(currentBlock, gameScore, progress);
+        this.blockMove = new BlockMove(currentBlock, gameScore, progress, onLineClear);
         this.blockRotate = new BlockRotate(currentBlock);
     }
 
@@ -40,6 +45,9 @@ public class BlockController {
     }
     public void TimeUpdate(int msTime) {
         autoMove.TimeUpdate(msTime, gameScore, progress, blockMove);
+    }
+    public void FinishDeleteAfterEffect() {
+        blockMove.FinishDeleteAfterEffect();
     }
     public void RotateClock() {
         blockRotate.Rotate(true);

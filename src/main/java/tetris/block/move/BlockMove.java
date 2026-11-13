@@ -25,11 +25,19 @@ public class BlockMove {
     private GameScore gameScore;
     private GameProgress progress;
     private BoardElement[][] oldBoard;
+    private int[] deletedRows; // 삭제된 행 인덱스를 나타낸다.
+    private final Runnable onLineClear;
 
     public BlockMove(CurrentBlock currentBlock, GameScore gameScore, GameProgress progress) {
+        this(currentBlock, gameScore, progress, null);
+    }
+
+    public BlockMove(CurrentBlock currentBlock, GameScore gameScore, GameProgress progress,
+            Runnable onLineClear) {
         this.currentBlock = currentBlock;
         this.gameScore = gameScore;
         this.progress = progress;
+        this.onLineClear = onLineClear;
     }
     public void BlockHolding() {
         currentBlock.BlockHold();
@@ -109,11 +117,10 @@ public class BlockMove {
                     break;
             }
             if(currentBlock.GetCanMoveH()) {
-                int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
+                deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
 
                 System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);                
-                currentBlock.SetDelBoard(GetDelBoard(deletedRows));
-                currentBlock.MoveEnd();
+                RequestLineClearEffect();
             }
             
         }
@@ -121,13 +128,27 @@ public class BlockMove {
             boardCopy(board);
             // 테트리스가 바닥에 닿았을 때 블럭 고정 및 새 블럭 생성 로직
             MoveFix();
-            int[] deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
+            deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
             System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
-            currentBlock.SetDelBoard(GetDelBoard(deletedRows));
-            currentBlock.MoveEnd();
+            RequestLineClearEffect();
         
         }
     }
+    private void RequestLineClearEffect() {
+        if (deletedRows[0] != -1 && onLineClear != null) {
+            onLineClear.run();
+        } else {
+            FinishDeleteAfterEffect();
+        }
+    }
+
+    public void FinishDeleteAfterEffect() {
+        if (deletedRows == null) return;
+        currentBlock.SetDelBoard(GetDelBoard(deletedRows)); // 적에게 공격할 줄을 설정함.
+        currentBlock.MoveEnd();
+        deletedRows = null;
+    }
+
     private void MoveFix() {
         BoardElement[][] board = currentBlock.GetBoard();
         BlockData currentBlockData = currentBlock.GetCurrentBlock();
