@@ -111,7 +111,8 @@ public class GameController {
  
 		AutoMove autoMove = new AutoMove(currentBlock, gameSettings.difficulty()); 
 
-        blockController = new BlockController(currentBlock, autoMove, score, progress);
+        blockController = new BlockController(currentBlock, autoMove, score, progress,
+                this::StartLineClearEffect);
 
 
 		
@@ -148,6 +149,12 @@ public class GameController {
         }
     };
 
+    private void StartLineClearEffect() {
+        lineClearEffectRunning = true;
+        lineClearEffectTime = 0;
+        playerInput.SetInputEnabled(false);
+    }
+
     private void updateFrame(long now) {
         if (previousFrameTime == 0) { // 첫 프레임에는 업데이트 동작을 하지 않고 이전 프레임 타임만 업데이트 함. 그 다음부터 이전 프레임 타임을 사용해 델타 타임을 계산해 사용
             previousFrameTime = now;
@@ -158,24 +165,19 @@ public class GameController {
         previousFrameTime = now;
         int[] clearedRows = board.GetClearedRows();
 
-        if (clearedRows[0] != -1 || lineClearEffectRunning) {
-            if (!lineClearEffectRunning) {
-                lineClearEffectRunning = true;
-                lineClearEffectTime = 0;
-                playerInput.SetInputEnabled(false);
-            }
-
+        if (lineClearEffectRunning) {
             renderer.DrawLineClearEffect(clearedRows, lineClearEffectTime);
             lineClearEffectTime += deltaTime;
 
             if (lineClearEffectTime >= lineClearEffectDuration) {
+                blockController.FinishDeleteAfterEffect();
                 Arrays.fill(clearedRows, -1);
                 lineClearEffectRunning = false;
-                playerInput.SetInputEnabled(true);
+                playerInput.SetInputEnabled(!stopped && !paused);
             }
         } else {
-            blockController.TimeUpdate(deltaTime);
-            if (stopped) { //autoMove로 게임이 종료될 수 있으므로 검증
+            blockController.TimeUpdate(deltaTime); // automove 호출
+            if (stopped || lineClearEffectRunning) { // 자동 낙하로 게임 종료 또는 줄 삭제 이펙트가 시작될 수 있다.
                 return;
             }
 

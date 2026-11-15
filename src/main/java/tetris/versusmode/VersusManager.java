@@ -15,7 +15,9 @@ import tetris.settings.GameSettings.GameMode;
 public class VersusManager {
     public enum Player { PLAYER1, PLAYER2 }
     public enum MatchState { READY, RUNNING, PAUSED, ENDED }
-    public enum MatchResult { PLAYER1_WIN, PLAYER2_WIN, DRAW }
+    public enum MatchOutcome { PLAYER1_WIN, PLAYER2_WIN, DRAW }
+
+    public record MatchResult(MatchOutcome outcome, int player1Score, int player2Score) {}
 
     private final GameController player1;
     private final GameController player2;
@@ -113,14 +115,14 @@ public class VersusManager {
     public void HandlePlayerDefeat(Player loser) { // 플레이어 한 명이 패배해서 이 함수를 호출
         Objects.requireNonNull(loser);
         if (state != MatchState.RUNNING) return;
-        EndMatch(loser == Player.PLAYER1 ? MatchResult.PLAYER2_WIN : MatchResult.PLAYER1_WIN);
+        EndMatch(loser == Player.PLAYER1 ? MatchOutcome.PLAYER2_WIN : MatchOutcome.PLAYER1_WIN);
     }
 
     public void HandleTimeExpired() { // 제한 시간 모드일 때, 시간이 만료될 때 이 함수 호출
         if (state != MatchState.RUNNING) return;
         int comparison = Integer.compare(player1.GetScore(), player2.GetScore());
-        EndMatch(comparison > 0 ? MatchResult.PLAYER1_WIN
-                : comparison < 0 ? MatchResult.PLAYER2_WIN : MatchResult.DRAW);
+        EndMatch(comparison > 0 ? MatchOutcome.PLAYER1_WIN
+                : comparison < 0 ? MatchOutcome.PLAYER2_WIN : MatchOutcome.DRAW);
     }
 
     public void TransferAttack(Player sender) {
@@ -133,10 +135,10 @@ public class VersusManager {
         }
     }
 
-    private void EndMatch(MatchResult result) { // HandlePlayerDefeat, HandleTimeExpired 함수로 호출됨. 게임을 정리하는 역할
+    private void EndMatch(MatchOutcome outcome) { // HandlePlayerDefeat, HandleTimeExpired 함수로 호출됨. 게임을 정리하는 역할
         if (state == MatchState.ENDED) return;
         state = MatchState.ENDED;
-        this.result = result;
+        this.result = new MatchResult(outcome, player1.GetScore(), player2.GetScore());
         input.SetInputEnabled(false);
         updateLoop.stop();
         GetRoot().setOnKeyPressed(null);
