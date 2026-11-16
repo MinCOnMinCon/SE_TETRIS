@@ -17,12 +17,19 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import tetris.block.data.CurrentBlock;
+import tetris.gamescene.GameProgress;
+import tetris.gamescene.blockqueue.BlockQueue;
+import tetris.gamescene.board.GameBoard;
 import tetris.onlinemulti.OnlineConnectScreen;
 import tetris.onlinemulti.OnlineLobbyClient;
 import tetris.onlinemulti.OnlineLobbyScreen;
 import tetris.onlinemulti.OnlineLobbyServer;
+import tetris.onlinemulti.NetworkController;
+import tetris.onlinemulti.NetworkData;
 import tetris.onlinemulti.RecentHostStore;
 import tetris.onlinemulti.OnlineLobbyScreen.Role;
+import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
 
 class OnlineLobbyScreenTest {
@@ -154,6 +161,67 @@ class OnlineLobbyScreenTest {
             client.close();
             servers[0].close();
         }
+    }
+
+    @Test
+    void networkDataUsesTheEstablishedLobbyConnectionInBothDirections() throws Exception {
+        OnlineLobbyScreen[] screens = new OnlineLobbyScreen[2];
+        OnlineLobbyServer[] servers = new OnlineLobbyServer[1];
+        NetworkController[] controllers = new NetworkController[2];
+        runOnFxThread(() -> {
+            screens[0] = new OnlineLobbyScreen(Role.SERVER, GameMode.NORMAL, () -> {});
+            screens[1] = new OnlineLobbyScreen(Role.CLIENT, GameMode.NORMAL, () -> {});
+            servers[0] = new OnlineLobbyServer(screens[0], 0);
+            controllers[0] = new NetworkController(servers[0]);
+            try {
+                servers[0].start();
+            } catch (Exception exception) {
+                throw new IllegalStateException(exception);
+            }
+        });
+
+        OnlineLobbyClient client = new OnlineLobbyClient("127.0.0.1", servers[0].getPort(), screens[1]);
+        controllers[1] = new NetworkController(client);
+        CountDownLatch serverReceived = new CountDownLatch(1);
+        CountDownLatch clientReceived = new CountDownLatch(1);
+        NetworkData[] received = new NetworkData[2];
+        controllers[0].setOnDataReceived(data -> {
+            received[0] = data;
+            serverReceived.countDown();
+        });
+        controllers[1].setOnDataReceived(data -> {
+            received[1] = data;
+            clientReceived.countDown();
+        });
+
+        try {
+            client.connect();
+            assertTrue(waitUntil(() -> {
+                try {
+                    return readOnFx(() -> "준비중".equals(screens[0].getClientStatusText()));
+                } catch (Exception exception) {
+                    return false;
+                }
+            }));
+
+            controllers[1].send(createNetworkData(12));
+            assertTrue(serverReceived.await(5, TimeUnit.SECONDS));
+            assertEquals(12, received[0].GetVersusScore());
+
+            controllers[0].send(createNetworkData(34));
+            assertTrue(clientReceived.await(5, TimeUnit.SECONDS));
+            assertEquals(34, received[1].GetVersusScore());
+        } finally {
+            client.close();
+            servers[0].close();
+        }
+    }
+
+    private static NetworkData createNetworkData(int score) {
+        GameProgress progress = new GameProgress();
+        BlockQueue queue = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
+        CurrentBlock currentBlock = new CurrentBlock(queue, new GameBoard(0), () -> {});
+        return new NetworkData(currentBlock, score, 1, 2, true);
     }
 
     private static TextField hostField(OnlineConnectScreen screen) {

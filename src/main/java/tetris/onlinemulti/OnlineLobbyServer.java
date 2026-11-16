@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 import javafx.application.Platform;
 import tetris.settings.GameSettings.GameMode;
@@ -23,6 +24,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
     private PrintWriter clientWriter;
     private volatile boolean running;
     private final Object writeLock = new Object();
+    private volatile Consumer<String> networkPayloadHandler = payload -> {};
 
     public OnlineLobbyServer(OnlineLobbyScreen lobby) {
         this(lobby, DEFAULT_PORT);
@@ -51,6 +53,25 @@ public final class OnlineLobbyServer implements AutoCloseable {
 
     public void sendMode(GameMode mode) {
         send("MODE " + (mode == null ? GameMode.NORMAL.name() : mode.name()));
+    }
+
+    void setNetworkPayloadHandler(Consumer<String> handler) {
+        if (handler == null) {
+            throw new NullPointerException("handler cannot be null");
+        }
+        networkPayloadHandler = handler;
+    }
+
+    void sendNetworkPayload(String payload) throws IOException {
+        synchronized (writeLock) {
+            if (clientWriter == null) {
+                throw new IOException("Lobby client is not connected.");
+            }
+            clientWriter.println("DATA " + payload);
+            if (clientWriter.checkError()) {
+                throw new IOException("Failed to send network data.");
+            }
+        }
     }
 
     @Override
@@ -94,6 +115,8 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
                     Platform.runLater(() -> lobby.addIncomingMessage(message));
+                } else if (line.startsWith("DATA ")) {
+                    networkPayloadHandler.accept(line.substring("DATA ".length()));
                 }
             }
         } finally {
