@@ -25,7 +25,6 @@ import javafx.stage.Stage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import tetris.onlinemulti.OnlineMultiController;
 import tetris.settings.SettingsStore;
 
 class AppControllerTest {
@@ -75,9 +74,7 @@ class AppControllerTest {
             Scene scene = new Scene(new BorderPane(), 960, 540);
             stage.setScene(scene);
             SettingsStore settingsStore = new SettingsStore(settingsFile);
-            OnlineMultiController onlineController = new OnlineMultiController(stage, scene, settingsStore);
-            AppController controller = new AppController(
-                    stage, scene, settingsStore, onlineController::show);
+            AppController controller = new AppController(stage, scene, settingsStore);
 
             controller.ShowStartScreen();
             Parent startRoot = scene.getRoot();
@@ -111,6 +108,7 @@ class AppControllerTest {
             assertEquals("Tetris - 온라인", stage.getTitle());
             assertEquals("Server", ((Button) onlineMenu.getChildren().get(1)).getText());
             assertEquals("Client", ((Button) onlineMenu.getChildren().get(2)).getText());
+            controller.close();
         });
     }
 

@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 import javafx.application.Platform;
@@ -17,8 +18,10 @@ public final class OnlineLobbyClient implements AutoCloseable {
     private final String host;
     private final int port;
     private final OnlineLobbyScreen lobby;
-    private Socket socket;
+    private volatile Socket socket;
     private PrintWriter writer;
+    private volatile ConnectionHeartbeat heartbeat;
+    private volatile boolean intentionallyClosed;
     private final Object writeLock = new Object();
 
     public OnlineLobbyClient(String hostText, OnlineLobbyScreen lobby) {
@@ -35,16 +38,34 @@ public final class OnlineLobbyClient implements AutoCloseable {
     }
 
     public void connect() throws IOException {
+        if (intentionallyClosed) {
+            throw new SocketException("Client connection has been closed");
+        }
         Socket connected = new Socket();
-        connected.connect(new InetSocketAddress(host, port), 3000);
         socket = connected;
+        if (intentionallyClosed) {
+            closeQuietly(connected);
+            throw new SocketException("Client connection has been closed");
+        }
+        connected.connect(new InetSocketAddress(host, port), 3000);
+        if (intentionallyClosed) {
+            closeQuietly(connected);
+            throw new SocketException("Client connection has been closed");
+        }
         synchronized (writeLock) {
             writer = new PrintWriter(
                     new OutputStreamWriter(connected.getOutputStream(), StandardCharsets.UTF_8), true);
         }
+        ConnectionHeartbeat connectionHeartbeat = new ConnectionHeartbeat(
+                () -> sendHeartbeat(connected, "PING"),
+                () -> sendHeartbeat(connected, "PONG"),
+                () -> closeQuietly(connected));
+        heartbeat = connectionHeartbeat;
+        connectionHeartbeat.start();
         lobby.setOnChat(text -> sendLine("CHAT " + text));
         Platform.runLater(() -> lobby.showServerAddress(host));
-        Thread readerThread = new Thread(this::readHost, "online-lobby-client");
+        Thread readerThread = new Thread(
+                () -> readHost(connected, connectionHeartbeat), "online-lobby-client");
         readerThread.setDaemon(true);
         readerThread.start();
     }
@@ -64,24 +85,25 @@ public final class OnlineLobbyClient implements AutoCloseable {
 
     @Override
     public void close() {
+        intentionallyClosed = true;
+        if (heartbeat != null) {
+            heartbeat.close();
+            heartbeat = null;
+        }
         synchronized (writeLock) {
             writer = null;
         }
-        if (socket != null) {
-            try {
-                socket.close();
-            } catch (IOException exception) {
-                // 이미 닫힌 접속은 무시한다.
-            }
-        }
+        closeQuietly(socket);
     }
 
-    private void readHost() {
+    private void readHost(Socket connected, ConnectionHeartbeat connectionHeartbeat) {
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
+                new InputStreamReader(connected.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("MODE ")) {
+                if (connectionHeartbeat.handleMessage(line)) {
+                    continue;
+                } else if (line.startsWith("MODE ")) {
                     GameMode mode = GameMode.valueOf(line.substring("MODE ".length()).trim());
                     Platform.runLater(() -> {
                         lobby.showMode(mode);
@@ -96,6 +118,33 @@ public final class OnlineLobbyClient implements AutoCloseable {
             }
         } catch (IOException | IllegalArgumentException exception) {
             // 호스트가 닫히면 읽기를 끝낸다.
+        } finally {
+            connectionHeartbeat.close();
+            if (heartbeat == connectionHeartbeat) {
+                heartbeat = null;
+            }
+            if (!intentionallyClosed) {
+                Platform.runLater(() -> {
+                    lobby.setClientConnected(false);
+                    lobby.addAnnouncementMessage("서버 연결이 끊어졌습니다.");
+                });
+            }
+        }
+    }
+
+    private void sendHeartbeat(Socket connected, String line) {
+        synchronized (writeLock) {
+            if (socket == connected && writer != null) {
+                writer.println(line);
+            }
+        }
+    }
+
+    private void closeQuietly(Socket connected) {
+        try {
+            connected.close();
+        } catch (IOException exception) {
+            // 이미 닫힌 접속은 무시한다.
         }
     }
 
