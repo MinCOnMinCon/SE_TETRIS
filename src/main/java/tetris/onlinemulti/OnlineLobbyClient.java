@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
@@ -65,17 +66,13 @@ public final class OnlineLobbyClient implements AutoCloseable {
     }
 
     void setNetworkPayloadHandler(Consumer<String> handler) {
-        if (handler == null) {
-            throw new NullPointerException("handler cannot be null");
-        }
+        Objects.requireNonNull(handler, "handler cannot be null");
         networkPayloadHandler = handler;
     }
 
     void sendNetworkPayload(String payload) throws IOException {
         synchronized (writeLock) {
-            if (writer == null) {
-                throw new IOException("Lobby connection is not established.");
-            }
+            Objects.requireNonNull(writer, "Lobby connection is not established.");
             writer.println("DATA " + payload);
             if (writer.checkError()) {
                 throw new IOException("Failed to send network data.");
