@@ -33,6 +33,7 @@ public class GameController {
 
 	private final SceneRenderer renderer;
 	private final Parent gameRoot;
+    private SceneRenderState renderState;
 
 	private final GameSettings gameSettings;
     public final PlayerInput playerInput;
@@ -45,6 +46,7 @@ public class GameController {
     private final int lineClearEffectDuration = 1000; // 밀리초
     private int lineClearEffectTime = 0;
     private boolean lineClearEffectRunning = false;
+    private long effectId = 0;
 
     private final Runnable onPauseRequested;
     private final Consumer<GameResult> onGameEnded;
@@ -121,8 +123,7 @@ public class GameController {
 		// renderconfig에 블럭 큐 최대 사이즈 필요해 이렇게 전달함.
 		
         //대전모드면 퍼즈 게임 콜백
-        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(), blockQueue.GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
-        gameRoot = renderer.CreateRoot(state);
+        gameRoot = renderer.CreateRoot(GetRenderState());
         if (registerKeyInput) {
             playerInput = new PlayerInput(gameSettings.keyBindings(), blockController, this::PauseGame);
             gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
@@ -150,6 +151,7 @@ public class GameController {
     };
 
     private void StartLineClearEffect() {
+        effectId++;
         lineClearEffectRunning = true;
         lineClearEffectTime = 0;
         playerInput.SetInputEnabled(false);
@@ -181,9 +183,7 @@ public class GameController {
                 return;
             }
 
-            SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
-                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
-            renderer.UpdateRoot(state);
+            renderer.UpdateRoot(GetRenderState());
         }
     }
 
@@ -248,6 +248,28 @@ public class GameController {
 		playerInput.SetInputEnabled(!lineClearEffectRunning);
 		gameLoop.start();
 	}
+
+    // 조회 시점의 게임 상태를 저장해 반환하며 내부 배열과 블록은 복사하지 않는다.
+    public SceneRenderState GetRenderState() {
+        renderState = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
+        return renderState;
+    }
+
+    // 현재 줄 삭제 이펙트가 진행 중인지 반환한다.
+    public boolean GetLineClearEffectRunning() {
+        return lineClearEffectRunning;
+    }
+
+    // 줄 삭제 이펙트를 표시할 행 번호 배열을 반환한다.
+    public int[] GetClearedRows() {
+        return board.GetClearedRows();
+    }
+
+    // 마지막으로 시작한 줄 삭제 이펙트의 ID를 반환한다.
+    public long GetEffectId() {
+        return effectId;
+    }
 
     public int GetScore() {
         return score.GetGameScore();

@@ -21,6 +21,10 @@ public class NetworkData implements Serializable {
     private int clientIP;
     private boolean isHost;
 
+    // 관리자가 매 프레임 빈 데이터를 만든 뒤 담당 객체들이 필요한 필드를 채운다.
+    public NetworkData() {
+    }
+
     public NetworkData(CurrentBlock currentBlock, int score, int hostIP, int clientIP, boolean isHost) {
         this.board = currentBlock.GetBoard();
         this.blockData = currentBlock.GetCurrentBlock();
@@ -31,6 +35,36 @@ public class NetworkData implements Serializable {
         this.hostIP = hostIP;
         this.clientIP = clientIP;
         this.isHost = isHost;
+    }
+
+    // 추출기가 복사한 고정 보드를 설정한다.
+    public void SetBoard(BoardElement[][] board) {
+        this.board = board;
+    }
+
+    // 추출기가 복사한 현재 블록을 설정한다.
+    public void SetBlock(BlockData blockData) {
+        this.blockData = blockData;
+    }
+
+    // 추출기가 복사한 NEXT 목록을 설정한다.
+    public void SetNextBlocks(BlockData[] nextBlocks) {
+        this.nextBlocks = nextBlocks;
+    }
+
+    // 추출기가 복사한 HOLD 블록을 설정한다.
+    public void SetBlockHolding(BlockData blockHolding) {
+        this.blockHolding = blockHolding;
+    }
+
+    // 이번에 소비한 새 공격 줄을 설정하며 공격이 없으면 null로 설정한다.
+    public void SetDeletedBoard(BoardElement[][] deletedBoard) {
+        this.deletedBoard = deletedBoard;
+    }
+
+    // 자기 게임의 현재 점수를 설정한다.
+    public void SetScore(int score) {
+        this.score = score;
     }
 
     public BoardElement[][] GetBoard() {
