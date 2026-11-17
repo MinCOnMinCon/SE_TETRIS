@@ -18,7 +18,7 @@ public class BlockDelete {
     //     this.gameScore = gameScore;
     //     this.progress = progress;
     // }
-    public static int[] DelCompleteLines(BoardElement[][] board, GameScore gameScore, GameProgress progress) {
+    public static void DelCompleteLines(BoardElement[][] board, GameScore gameScore, GameProgress progress) {
             int index[] = FindDelLines(board);
             int scoreIndex = -1;
             
@@ -31,7 +31,6 @@ public class BlockDelete {
                 gameScore.AddLineClearScore(scoreIndex + 1);
                 progress.OnLinesCleared(scoreIndex + 1);
             }
-            return index;
 
     }
 

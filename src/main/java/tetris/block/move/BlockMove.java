@@ -117,7 +117,7 @@ public class BlockMove {
                     break;
             }
             if(currentBlock.GetCanMoveH()) {
-                deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress);
+                deletedRows = BlockDelete.FindDelLines(board);
 
                 System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length);                
                 RequestLineClearEffect();
@@ -128,22 +128,23 @@ public class BlockMove {
             boardCopy(board);
             // 테트리스가 바닥에 닿았을 때 블럭 고정 및 새 블럭 생성 로직
             MoveFix();
-            deletedRows = BlockDelete.DelCompleteLines(board, gameScore, progress); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
+            deletedRows = BlockDelete.FindDelLines(board); // 완료된 줄 삭제 + 삭제되는 행 번호 저장
             System.arraycopy(deletedRows, 0, clearedRows, 0, deletedRows.length); // 삭제되는 행 번호 gameboard에 넘기기
             RequestLineClearEffect();
-        
         }
     }
     private void RequestLineClearEffect() {
         if (deletedRows[0] != -1 && onLineClear != null) {
             onLineClear.run();
         } else {
-            FinishDeleteAfterEffect();
+            FinishDeleteAfterEffect(null);
         }
     }
 
-    public void FinishDeleteAfterEffect() {
+    public void FinishDeleteAfterEffect(BoardElement[][] board) {
         if (deletedRows == null) return;
+        if (board != null)
+            BlockDelete.DelCompleteLines(board, gameScore, progress);
         currentBlock.SetDelBoard(GetDelBoard(deletedRows)); // 적에게 공격할 줄을 설정함.
         currentBlock.MoveEnd();
         deletedRows = null;

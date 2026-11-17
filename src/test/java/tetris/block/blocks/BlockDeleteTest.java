@@ -55,7 +55,8 @@ class BlockDeleteTest {
 
             GameProgress progress = new GameProgress();
             GameScore score = new GameScore(progress);
-            int[] clearedRows = BlockDelete.DelCompleteLines(board, score, progress);
+            int[] clearedRows = BlockDelete.FindDelLines(board);
+            BlockDelete.DelCompleteLines(board, score, progress);
 
             for (int i = 0; i < linesToClear; i++) {
                 assertEquals(firstClearedRow + i, clearedRows[i]);

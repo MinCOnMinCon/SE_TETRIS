@@ -9,6 +9,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import javafx.application.Platform;
 import tetris.settings.GameSettings.GameMode;
@@ -23,6 +25,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
     private volatile ConnectionHeartbeat heartbeat;
     private volatile boolean intentionallyClosed;
     private final Object writeLock = new Object();
+    private volatile Consumer<String> networkPayloadHandler = payload -> {};
 
     public OnlineLobbyClient(String hostText, OnlineLobbyScreen lobby) {
         HostAddress address = HostAddress.parse(hostText);
@@ -83,6 +86,21 @@ public final class OnlineLobbyClient implements AutoCloseable {
         }
     }
 
+    void setNetworkPayloadHandler(Consumer<String> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        networkPayloadHandler = handler;
+    }
+
+    void sendNetworkPayload(String payload) throws IOException {
+        synchronized (writeLock) {
+            Objects.requireNonNull(writer, "Lobby connection is not established.");
+            writer.println("DATA " + payload);
+            if (writer.checkError()) {
+                throw new IOException("Failed to send network data.");
+            }
+        }
+    }
+
     @Override
     public void close() {
         intentionallyClosed = true;
@@ -114,6 +132,8 @@ public final class OnlineLobbyClient implements AutoCloseable {
                     Platform.runLater(() -> lobby.addIncomingMessage(message));
                 } else if ("START".equals(line)) {
                     Platform.runLater(lobby::clearMessages);
+                } else if (line.startsWith("DATA ")) {
+                    networkPayloadHandler.accept(line.substring("DATA ".length()));
                 }
             }
         } catch (IOException | IllegalArgumentException exception) {
