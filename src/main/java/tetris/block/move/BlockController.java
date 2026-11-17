@@ -47,7 +47,7 @@ public class BlockController {
         autoMove.TimeUpdate(msTime, gameScore, progress, blockMove);
     }
     public void FinishDeleteAfterEffect() {
-        blockMove.FinishDeleteAfterEffect();
+        blockMove.FinishDeleteAfterEffect(currentBlock.GetBoard());
     }
     public void RotateClock() {
         blockRotate.Rotate(true);

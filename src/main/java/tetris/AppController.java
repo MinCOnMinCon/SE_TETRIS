@@ -1,7 +1,6 @@
 package tetris;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -17,6 +16,7 @@ import javafx.scene.layout.VBox;
 import tetris.gameoverscene.GameOverRoot;
 import tetris.gamescene.GameController;
 import tetris.gamescene.GameResult;
+import tetris.onlinemulti.OnlineMultiController;
 import tetris.pausescene.PauseScene;
 import tetris.settings.GameSettings;
 import tetris.settings.SettingsStore;
@@ -34,7 +34,7 @@ public class AppController {
     private final Stage stage;
     private final Scene scene;
     private final SettingsStore settingsStore;
-    private final Consumer<Runnable> onOnlineMultiRequested;
+    private final OnlineMultiController onlineMultiController;
     private ScoreBoardScreen scoreBoardScreen;
     private GameController gameController;
     private VersusManager versusManager;
@@ -42,19 +42,15 @@ public class AppController {
     private GameOverRoot gameOverRoot;
 
     public AppController(Stage stage, Scene scene, SettingsStore settingsStore) {
-        this(stage, scene, settingsStore, ignored -> {});
-    }
-
-    public AppController(Stage stage, Scene scene, SettingsStore settingsStore,
-            Consumer<Runnable> onOnlineMultiRequested) {
         this.stage = Objects.requireNonNull(stage, "stage cannot be null");
         this.scene = Objects.requireNonNull(scene, "scene cannot be null");
         this.settingsStore = Objects.requireNonNull(settingsStore, "settingsStore cannot be null");
-        this.onOnlineMultiRequested = Objects.requireNonNull(
-                onOnlineMultiRequested, "onOnlineMultiRequested cannot be null");
+        this.onlineMultiController = new OnlineMultiController(
+                settingsStore, this::showOnlineScreen);
     }
 
     public void ShowStartScreen() {
+        onlineMultiController.close();
         StartScreen startScreen = new StartScreen(stage, scene);
         startScreen.makeStartScreen(
             this::ShowSoloGame, this::ShowLocalMultiGame, this::ShowOnlineMultiGame, this::ShowScoreBoard, this::ShowSettings);
@@ -73,7 +69,18 @@ public class AppController {
     }
 
     public void ShowOnlineMultiGame() {
-        onOnlineMultiRequested.accept(this::ShowStartScreen);
+        onlineMultiController.show(this::ShowStartScreen);
+    }
+
+    private void showOnlineScreen(String title, Parent root) {
+        scene.setOnKeyPressed(null);
+        stage.setTitle(title);
+        scene.setRoot(root);
+        root.requestFocus();
+    }
+
+    public void close() {
+        onlineMultiController.close();
     }
 
     private void startGame(PlayMode playMode, GameSettings gameSettings) {

@@ -163,6 +163,10 @@ public class GameController {
             return;
         }
 
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
+            renderer.UpdateRoot(state);
+
         int deltaTime = (int) ((now - previousFrameTime) / 1_000_000);
         previousFrameTime = now;
         int[] clearedRows = board.GetClearedRows();
@@ -192,6 +196,9 @@ public class GameController {
         if (stopped) {
             return;
         }
+        SceneRenderState state = new SceneRenderState(board.GetBoard(), null, score.GetGameScore(),
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
+            renderer.UpdateRoot(state);
         GameResult result = new GameResult(
             score.GetGameScore(), gameSettings.difficulty(), gameSettings.gameMode());
 
