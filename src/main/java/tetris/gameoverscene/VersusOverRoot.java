@@ -77,7 +77,14 @@ public class VersusOverRoot {
         clientScore.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
 
         // 3. 시작화면 버튼 추가 (Button)
-        startMenuButton = new Button("시작화면");
+        switch (result.LocalWinLose()) {
+            case 0:
+                startMenuButton = new Button("시작화면");
+                break;
+            default:
+                startMenuButton = new Button("로비화면");
+                break;
+        }
         startMenuButton.setPrefSize(180, 50); // 시작 화면에서 쓰셨던 버튼 크기와 통일
         startMenuButton.setStyle("-fx-background-color: #dcdcdc; -fx-text-fill: black; -fx-font-size: 16px;");
     }
