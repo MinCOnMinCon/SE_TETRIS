@@ -19,8 +19,9 @@ public final class OnlineLobbyServer implements AutoCloseable {
     private final OnlineLobbyScreen lobby;
     private final int requestedPort;
     private ServerSocket serverSocket;
-    private Socket clientSocket;
+    private volatile Socket clientSocket;
     private PrintWriter clientWriter;
+    private volatile ConnectionHeartbeat clientHeartbeat;
     private volatile boolean running;
     private final Object writeLock = new Object();
 
@@ -56,6 +57,10 @@ public final class OnlineLobbyServer implements AutoCloseable {
     @Override
     public void close() {
         running = false;
+        if (clientHeartbeat != null) {
+            clientHeartbeat.close();
+            clientHeartbeat = null;
+        }
         closeQuietly(clientSocket);
         closeQuietly(serverSocket);
         synchronized (writeLock) {
@@ -73,9 +78,15 @@ public final class OnlineLobbyServer implements AutoCloseable {
                     clientWriter = new PrintWriter(
                             new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
                 }
+                ConnectionHeartbeat heartbeat = new ConnectionHeartbeat(
+                        () -> sendHeartbeat(socket, "PING"),
+                        () -> sendHeartbeat(socket, "PONG"),
+                        () -> closeQuietly(socket));
+                clientHeartbeat = heartbeat;
+                heartbeat.start();
                 Platform.runLater(() -> lobby.setClientConnected(true));
                 sendMode(lobby.getMode());
-                readClient(socket);
+                readClient(socket, heartbeat);
             } catch (IOException exception) {
                 if (running) {
                     Platform.runLater(() -> lobby.setClientConnected(false));
@@ -84,12 +95,14 @@ public final class OnlineLobbyServer implements AutoCloseable {
         }
     }
 
-    private void readClient(Socket socket) throws IOException {
+    private void readClient(Socket socket, ConnectionHeartbeat heartbeat) throws IOException {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if ("READY".equals(line)) {
+                if (heartbeat.handleMessage(line)) {
+                    continue;
+                } else if ("READY".equals(line)) {
                     Platform.runLater(() -> lobby.setClientReady(true));
                 } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
@@ -97,16 +110,38 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 }
             }
         } finally {
-            synchronized (writeLock) {
-                clientWriter = null;
+            heartbeat.close();
+            if (clientHeartbeat == heartbeat) {
+                clientHeartbeat = null;
             }
-            Platform.runLater(() -> lobby.setClientConnected(false));
+            synchronized (writeLock) {
+                if (clientSocket == socket) {
+                    clientWriter = null;
+                    clientSocket = null;
+                }
+            }
+            if (running) {
+                Platform.runLater(() -> {
+                    lobby.setClientConnected(false);
+                    lobby.addAnnouncementMessage("클라이언트 연결이 끊어졌습니다.");
+                });
+            } else {
+                Platform.runLater(() -> lobby.setClientConnected(false));
+            }
         }
     }
 
     private void send(String line) {
         synchronized (writeLock) {
             if (clientWriter != null) {
+                clientWriter.println(line);
+            }
+        }
+    }
+
+    private void sendHeartbeat(Socket socket, String line) {
+        synchronized (writeLock) {
+            if (clientSocket == socket && clientWriter != null) {
                 clientWriter.println(line);
             }
         }

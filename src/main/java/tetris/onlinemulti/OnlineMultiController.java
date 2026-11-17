@@ -2,25 +2,24 @@ package tetris.onlinemulti;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import javafx.scene.Parent;
 import tetris.settings.SettingsStore;
 
 public final class OnlineMultiController implements AutoCloseable {
-    private final Stage stage;
-    private final Scene scene;
     private final SettingsStore settingsStore;
+    private final BiConsumer<String, Parent> onScreenChanged;
     private Runnable onBackToStart;
     private OnlineLobbyServer server;
     private OnlineLobbyClient client;
     private OnlineConnectScreen connectScreen;
 
-    public OnlineMultiController(Stage stage, Scene scene, SettingsStore settingsStore) {
-        this.stage = Objects.requireNonNull(stage, "stage cannot be null");
-        this.scene = Objects.requireNonNull(scene, "scene cannot be null");
+    public OnlineMultiController(SettingsStore settingsStore,
+            BiConsumer<String, Parent> onScreenChanged) {
         this.settingsStore = Objects.requireNonNull(settingsStore, "settingsStore cannot be null");
+        this.onScreenChanged = Objects.requireNonNull(onScreenChanged, "onScreenChanged cannot be null");
     }
 
     public void show(Runnable onBackToStart) {
@@ -45,10 +44,7 @@ public final class OnlineMultiController implements AutoCloseable {
         OnlineRoleScreen roleScreen = new OnlineRoleScreen(
                 this::showServerLobby, this::showConnectScreen, this::returnToStart);
         roleScreen.showError(errorMessage);
-        scene.setOnKeyPressed(null);
-        stage.setTitle("Tetris - 온라인");
-        scene.setRoot(roleScreen.getRoot());
-        roleScreen.getRoot().requestFocus();
+        onScreenChanged.accept("Tetris - 온라인", roleScreen.getRoot());
     }
 
     private void showServerLobby() {
@@ -69,10 +65,7 @@ public final class OnlineMultiController implements AutoCloseable {
         close();
         connectScreen = new OnlineConnectScreen(
                 new RecentHostStore(), this::connectClient, () -> showRoleScreen(null));
-        scene.setOnKeyPressed(null);
-        stage.setTitle("Tetris - 온라인 접속");
-        scene.setRoot(connectScreen.getRoot());
-        connectScreen.getRoot().requestFocus();
+        onScreenChanged.accept("Tetris - 온라인 접속", connectScreen.getRoot());
     }
 
     private void connectClient(String host) {
@@ -121,9 +114,6 @@ public final class OnlineMultiController implements AutoCloseable {
     }
 
     private void showLobby(OnlineLobbyScreen lobby) {
-        scene.setOnKeyPressed(null);
-        stage.setTitle("Tetris - 대전 대기");
-        scene.setRoot(lobby.getRoot());
-        lobby.getRoot().requestFocus();
+        onScreenChanged.accept("Tetris - 대전 대기", lobby.getRoot());
     }
 }
