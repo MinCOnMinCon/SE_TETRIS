@@ -9,12 +9,18 @@ import tetris.gamescene.board.BoardElement;
 public class NetworkData implements Serializable {
     // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
     private static final long serialVersionUID = 1L;
+    private MessageType messageType;
     private BoardElement[][] board;
     private BlockData blockData;
     private BlockData[] nextBlocks;
     private BlockData blockHolding;
+    private long attackId;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
+    private boolean effectRuning;
+    private long effectId;
+    private int[] clearedRows;
     private int score;
+    private double remainingTimeMs;
     private boolean isPaused;
     private boolean isEnded;
     private int hostIP;
@@ -23,6 +29,10 @@ public class NetworkData implements Serializable {
 
     // 관리자가 매 프레임 빈 데이터를 만든 뒤 담당 객체들이 필요한 필드를 채운다.
     public NetworkData() {
+    }
+
+    public NetworkData(MessageType msgT) {
+        this.messageType = msgT;
     }
 
     public NetworkData(CurrentBlock currentBlock, int score, int hostIP, int clientIP, boolean isHost) {
