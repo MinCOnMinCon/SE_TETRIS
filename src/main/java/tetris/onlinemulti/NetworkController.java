@@ -27,27 +27,24 @@ public final class NetworkController {
 
     private final PayloadSender sender;
     private final BooleanSupplier connectionStatus;
-    // TODO: 데이터 처리 함수에서 dataHandler 정의 후 설정 필요 (핸들러 설정만 하면 데이터 송/수신은 send로 끝)
-    private volatile Consumer<NetworkData> dataHandler = data -> {
-        System.out.println("데이터 수신");
-    };
+    private volatile Consumer<NetworkData> dataHandler;
 
     public NetworkController(OnlineLobbyServer server, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(server, "server cannot be null");
         sender = server::sendNetworkPayload;
         connectionStatus = server::isConnected;
-        server.setNetworkPayloadHandler(this::handlePayload);
         setOnDataReceived(handler);
-        endNetwork = onBack;
+        endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
+        server.setNetworkPayloadHandler(this::handlePayload);
     }
 
     public NetworkController(OnlineLobbyClient client, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(client, "client cannot be null");
         sender = client::sendNetworkPayload;
         connectionStatus = client::isConnected;
-        client.setNetworkPayloadHandler(this::handlePayload);
         setOnDataReceived(handler);
-        endNetwork = onBack;
+        endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
+        client.setNetworkPayloadHandler(this::handlePayload);
     }
 
     public boolean isConnected() {

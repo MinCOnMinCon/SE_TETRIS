@@ -66,7 +66,17 @@ public class GameController {
         // 입력을 관리자가 갖고 있는 루트만 받아야 한다.
     }   
 
-    // 앱 컨트롤러에서 사용하는 생성자 함수
+    // 온라인 관리자가 입력을 연결하고 일시정지와 종료를 받아 처리하는 게임을 구성한다.
+    public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
+            GameSettings settings, PlayMode playMode) {
+        this(Objects.requireNonNull(onPauseRequested, "onPauseRequested cannot be null"),
+                Objects.requireNonNull(onGameEnded, "onGameEnded cannot be null"),
+                Objects.requireNonNull(settings, "settings cannot be null"), 0,
+                Boolean.getBoolean("tetris.profile") ? new FrameProfiler() : null, false,
+                Objects.requireNonNull(playMode, "playMode cannot be null"));
+    }
+
+    // 솔로모드용에서 사용하는 생성자 함수
     public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings){
         this(onPauseRequested, onGameEnded, settings, 0);
@@ -83,19 +93,13 @@ public class GameController {
     // FramePerformanceTest 전용: 테스트가 측정기를 주입한다. 일반 생성자의 프로파일링 설정은 유지한다.
     GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings, int initialClearedLineCount, FrameProfiler profiler){
-        this(onPauseRequested, onGameEnded, settings, initialClearedLineCount, profiler, true);
+        this(onPauseRequested, onGameEnded, settings, initialClearedLineCount, profiler, true, PlayMode.SOLO);
     }
-    // 기본
-    private GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
-            GameSettings settings, int initialClearedLineCount, FrameProfiler profiler,
-            boolean registerKeyInput) {
-        this(onPauseRequested, onGameEnded, settings, initialClearedLineCount, profiler,
-                registerKeyInput, PlayMode.SOLO);
-    }
+    
 
     private GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings, int initialClearedLineCount, FrameProfiler profiler,
-            boolean registerKeyInput, PlayMode playMode) {
+            boolean registerKeyInput, PlayMode playMode) { // registerkeyInput이 트루면 게임 컨트롤러에서 입력을 처리하고 아니면 다른 클래스에서 처리한다.
         this.profiler = profiler;
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onGameEnded = Objects.requireNonNull(onGameEnded);
@@ -124,15 +128,16 @@ public class GameController {
 		
         //대전모드면 퍼즈 게임 콜백
         gameRoot = renderer.CreateRoot(GetRenderState());
-        if (registerKeyInput) {
+        if (registerKeyInput) { 
             playerInput = new PlayerInput(gameSettings.keyBindings(), blockController, this::PauseGame);
             gameRoot.setOnKeyPressed(event -> playerInput.HandleKeyCode(event.getCode()));
         }
         else{
-            playerInput = new PlayerInput(gameSettings.keyBindings(), blockController, () -> {});
+            playerInput = new PlayerInput(gameSettings.keyBindings(), blockController, onPauseRequested);
         }
         // 싱글모드라 레지스터 키 인풋이 참이면 퍼즈 게임을 전달하고 루트에 입력을 연결
-        // 대전 모드일 때는 루트에 입력을 연결하지 않고, 퍼즈게임을 전달하지 않는다.
+        // 대전 모드에서는 관리자가 입력을 연결하고 전달받은 콜백으로 일시정지를 처리한다.
+        // TODO: 온라인 대전모드면 registerKeyInput이 참이고, 그때는 퍼즈를 온라인 버서스 매니저에게 알려야 함. 퍼즈 게임을 고치던가 여기서 고치던가 해야해.
         playerInput.SetInputEnabled(false);
     }
 
