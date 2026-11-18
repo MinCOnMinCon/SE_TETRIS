@@ -172,7 +172,7 @@ class OnlineLobbyScreenTest {
             screens[0] = new OnlineLobbyScreen(Role.SERVER, GameMode.NORMAL, () -> {});
             screens[1] = new OnlineLobbyScreen(Role.CLIENT, GameMode.NORMAL, () -> {});
             servers[0] = new OnlineLobbyServer(screens[0], 0);
-            controllers[0] = new NetworkController(servers[0]);
+            controllers[0] = new NetworkController(servers[0], data -> {}, () -> {});
             try {
                 servers[0].start();
             } catch (Exception exception) {
@@ -181,7 +181,7 @@ class OnlineLobbyScreenTest {
         });
 
         OnlineLobbyClient client = new OnlineLobbyClient("127.0.0.1", servers[0].getPort(), screens[1]);
-        controllers[1] = new NetworkController(client);
+        controllers[1] = new NetworkController(client, data -> {}, () -> {});
         CountDownLatch serverReceived = new CountDownLatch(1);
         CountDownLatch clientReceived = new CountDownLatch(1);
         NetworkData[] received = new NetworkData[2];
