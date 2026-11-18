@@ -23,9 +23,10 @@ public final class OnlineLobbyClient implements AutoCloseable {
     private volatile Socket socket;
     private PrintWriter writer;
     private volatile ConnectionHeartbeat heartbeat;
-    private volatile boolean intentionallyClosed;
+    private volatile boolean intentionallyClosed; // TODO: 초기값 설정
     private final Object writeLock = new Object();
     private volatile Consumer<String> networkPayloadHandler = payload -> {};
+    private volatile boolean connected;
 
     public OnlineLobbyClient(String hostText, OnlineLobbyScreen lobby) {
         HostAddress address = HostAddress.parse(hostText);
@@ -59,6 +60,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
             writer = new PrintWriter(
                     new OutputStreamWriter(connected.getOutputStream(), StandardCharsets.UTF_8), true);
         }
+        this.connected = true;
         ConnectionHeartbeat connectionHeartbeat = new ConnectionHeartbeat(
                 () -> sendHeartbeat(connected, "PING"),
                 () -> sendHeartbeat(connected, "PONG"),
@@ -101,8 +103,17 @@ public final class OnlineLobbyClient implements AutoCloseable {
         }
     }
 
+    public boolean isClosed() {
+        return intentionallyClosed;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
     @Override
     public void close() {
+        this.connected = false;
         intentionallyClosed = true;
         if (heartbeat != null) {
             heartbeat.close();
@@ -139,6 +150,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
         } catch (IOException | IllegalArgumentException exception) {
             // 호스트가 닫히면 읽기를 끝낸다.
         } finally {
+            this.connected = false;
             connectionHeartbeat.close();
             if (heartbeat == connectionHeartbeat) {
                 heartbeat = null;
