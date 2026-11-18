@@ -15,7 +15,7 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     public record MatchResult(long matchId, MatchOutcome outcome, int hostScore, int clientScore) {}
 
     // 경기 실행과 화면 구성에 필요한 객체를 보관한다.
-    private NetworkManager networkManager;
+    private NetworkController networkManager;
     private GameController localController;
     private NetworkDataExtractor dataExtractor;
     private RemotePlayerView remoteView;
@@ -42,7 +42,7 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     private long sendIntervalNanos;
 
     // 네트워크 참조와 경기 설정 및 콜백을 받아 자기 게임과 화면을 구성한다.
-    public OnlineVersusManager(NetworkManager networkManager, GameSettings settings,
+    public OnlineVersusManager(NetworkController networkManager, GameSettings settings,
             boolean isHost, Runnable onReturnToLobby,
             Consumer<String> onConnectionLost) {
     }

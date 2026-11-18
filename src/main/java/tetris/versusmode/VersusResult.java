@@ -1,4 +1,4 @@
-package tetris.gameoverscene;
+package tetris.versusmode;
 
 public record VersusResult(
     String hostName,

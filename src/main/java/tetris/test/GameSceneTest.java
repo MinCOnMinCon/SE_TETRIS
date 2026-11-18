@@ -7,12 +7,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import tetris.gameoverscene.GameOverRoot;
 import tetris.gameoverscene.VersusOverRoot;
-import tetris.gameoverscene.VersusResult;
 import tetris.gamescene.GameController;
 import tetris.pausescene.PauseScene;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
+import tetris.versusmode.VersusResult;
 import tetris.settings.SettingsStore;
 import tetris.settings.GameSettings.ColorBlindMode;
 

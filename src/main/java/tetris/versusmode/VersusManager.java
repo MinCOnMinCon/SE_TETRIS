@@ -17,7 +17,6 @@ public class VersusManager {
     public enum MatchState { READY, RUNNING, PAUSED, ENDED }
     public enum MatchOutcome { PLAYER1_WIN, PLAYER2_WIN, DRAW }
 
-    public record MatchResult(MatchOutcome outcome, int player1Score, int player2Score) {}
 
     private final GameController player1;
     private final GameController player2;
@@ -25,10 +24,10 @@ public class VersusManager {
     private final VersusRenderer renderer;
     private final VersusTimer timer;
     private final Runnable onPauseRequested;
-    private final Consumer<MatchResult> onMatchEnded;
+    private final Consumer<VersusResult> onMatchEnded;
     private long previousFrameTime;
     private MatchState state = MatchState.READY;
-    private MatchResult result;
+    private VersusResult result;
 
     private final AnimationTimer updateLoop = new AnimationTimer() {
         @Override
@@ -57,7 +56,7 @@ public class VersusManager {
     };
 
 
-    public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<MatchResult> onMatchEnded) {
+    public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<VersusResult> onMatchEnded) {
         Objects.requireNonNull(settings);
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onMatchEnded = Objects.requireNonNull(onMatchEnded);
@@ -138,7 +137,7 @@ public class VersusManager {
     private void EndMatch(MatchOutcome outcome) { // HandlePlayerDefeat, HandleTimeExpired 함수로 호출됨. 게임을 정리하는 역할
         if (state == MatchState.ENDED) return;
         state = MatchState.ENDED;
-        this.result = new MatchResult(outcome, player1.GetScore(), player2.GetScore());
+        this.result = new VersusResult( player1.GetScore(), player2.GetScore());// TODO: 나중에 outcome 추가할 것
         input.SetInputEnabled(false);
         updateLoop.stop();
         GetRoot().setOnKeyPressed(null);
@@ -153,5 +152,5 @@ public class VersusManager {
 
     public Parent GetRoot() { return renderer.GetRoot(); }
     public MatchState GetState() { return state; }
-    public MatchResult GetResult() { return result; }
+    public VersusResult GetResult() { return result; }
 }
