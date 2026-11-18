@@ -27,6 +27,11 @@ public abstract class IngameServerFunc {
     // 공통 관리자의 정지 상태를 반영해 타이머를 갱신하고 남은 시간을 양쪽에 전달한다.
     public abstract void Update(double deltaTimeMs, boolean paused);
 
+    // 호스트가 송신할 서버 기준의 남은 경기 시간을 반환한다.
+    public double GetRemainingTimeMs() {
+        return timer.GetRemainingTimeMs();
+    }
+
     // 현재 경기에서 패배한 참가자와 최종 점수를 기록하고 양쪽 최종 점수 수집으로 연결한다.
     public abstract void HandleDefeat(long matchId, boolean isHost, int finalScore);
 

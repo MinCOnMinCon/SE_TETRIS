@@ -1,11 +1,14 @@
 package tetris.onlinemulti;
 
+import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.Parent;
 import tetris.gamescene.GameController;
 import tetris.settings.GameSettings;
+import tetris.settings.GameSettings.GameMode;
 import tetris.versusmode.VersusRenderer;
 
 public abstract class OnlineVersusManager implements AutoCloseable {
@@ -40,6 +43,7 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     private long previousFrameTime;
     private long lastSendTime;
     private long sendIntervalNanos;
+    private GameMode gameMode;
 
     // 네트워크 참조와 경기 설정 및 콜백을 받아 자기 게임과 화면을 구성한다.
     public OnlineVersusManager(NetworkController networkManager, GameSettings settings,
@@ -53,13 +57,42 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     // 상대 화면을 갱신하고 전송 시점을 확인하며 서버에서는 서버 기능의 갱신도 호출한다.
     protected abstract void UpdateFrame(long now);
 
-    // 매 호출마다 전송 데이터를 생성하고 추출기로 자기 화면 상태와 새 공격을 채운다.
-    protected void SendGameData() {
-        NetworkData data = new NetworkData();
-        dataExtractor.ExtractInto(data);
+    // 공통 경기 정보와 메시지별 데이터를 채우고, 제한시간 모드의 호스트는 남은 시간도 보낸다.
+    protected void SendGameData(MessageType messageType) {
+        Objects.requireNonNull(messageType, "messageType cannot be null");
 
-        // TODO: 관리자 담당 경기 정보와 서버 기능의 공유 정보를 설정한다.
-        // TODO: 네트워크 관리자의 송신 함수가 구현되면 완성된 data를 전달한다.
+        NetworkData data = new NetworkData();
+        data.SetMessageType(messageType);
+        data.SetMatchId(matchId);
+        data.SetIsEnded(state == MatchState.ENDED);
+        data.SetIsHost(isHost);
+        data.SetIsPaused(state == MatchState.PAUSED);
+
+        switch (messageType) {
+            case DATA -> dataExtractor.ExtractInto(data);
+            case PAUSE -> {
+                // 일시정지와 재개는 공통 필드의 isPaused로 전달한다.
+                // 그래서 여기는 암것도 안함.
+            }
+            case END -> {
+                data.SetFinalScore(localController.GetScore());
+                if (isHost && result != null) {
+                    data.SetOutcome(result.outcome());
+                    data.SetHostScore(result.hostScore());
+                    data.SetClientScore(result.clientScore());
+                }
+            }
+        }
+
+        if (gameMode == GameMode.TIMELIMIT && isHost) {
+            data.SetRemainingTimeMs(serverFunc.GetRemainingTimeMs());
+        }
+
+        try {
+            networkManager.send(data);
+        } catch (IOException exception) {
+            HandleConnectionLost("게임 데이터 전송에 실패했습니다.");
+        }
     }
 
     // 경기 번호를 확인하고 수신 상태는 상대 화면에, 미처리 공격은 자기 게임에 적용한다.

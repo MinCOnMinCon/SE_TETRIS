@@ -62,14 +62,15 @@ class NetworkDataExtractorTests {
                 assertEquals(originalNextX, data.GetNextBlocks()[0].GetX());
                 assertNull(data.GetBlockHolding());
                 assertEquals(controller.GetScore(), data.GetVersusScore());
+                assertTrue(data.GetVersusBoards().isEmpty());
             } finally {
                 controller.CleanGame();
             }
         });
     }
 
-    // 입력: 한 번만 반환되는 공격 줄과 같은 NetworkData에 대한 두 번의 추출 호출.
-    // 출력: 첫 호출은 공격 복사본, 두 번째는 null. 목적: 공격을 호출당 한 번 소비하고 이전 공격을 재사용하지 않는지 검증한다.
+    // 입력: 새 공격, 공격 없는 상태, 다음 새 공격에 대한 연속 추출 호출.
+    // 출력: 공격이 있을 때만 증가하는 ID와 공격 복사본. 목적: 공격을 한 번만 소비하고 빈 추출에서 재사용하지 않는지 검증한다.
     @Test
     void consumesAttackOncePerExtractionAndClearsMissingAttack() throws Exception {
         runOnFxThread(() -> {
@@ -82,12 +83,83 @@ class NetworkDataExtractorTests {
                 extractor.ExtractInto(data);
                 assertEquals(1, controller.attackReads);
                 assertNull(controller.attack);
+                long firstAttackId = data.GetAttackId();
+                assertTrue(firstAttackId > 0);
                 attack[0][0].setElementColorType(ColorType.BlockZ);
                 assertEquals(ColorType.BlockJ, data.GetVersusBoard()[0][0].getElementColorType());
 
                 extractor.ExtractInto(data);
                 assertEquals(2, controller.attackReads);
                 assertNull(data.GetVersusBoard());
+                assertEquals(firstAttackId, data.GetAttackId());
+
+                controller.attack = attack;
+                extractor.ExtractInto(data);
+                assertEquals(3, controller.attackReads);
+                assertEquals(firstAttackId + 1, data.GetAttackId());
+                assertNotNull(data.GetVersusBoard());
+            } finally {
+                controller.CleanGame();
+            }
+        });
+    }
+
+    // 입력: 표시용 공격 대기열 한 건과 별도로 발생한 새 공격 한 건.
+    // 출력: 서로 분리된 복사본. 목적: 원본 셀 변경과 대기열 소비가 전송 데이터에 영향을 주지 않는지 검증한다.
+    @Test
+    void copiesDisplayedAttackQueueSeparatelyFromNewAttack() throws Exception {
+        runOnFxThread(() -> {
+            AttackController controller = new AttackController();
+            try {
+                BoardElement[][] pending = {{new BoardElement(ColorType.BlockJ, true, 0)}};
+                BoardElement[][] outgoing = {{new BoardElement(ColorType.BlockZ, true, 0)}};
+                controller.AddVersusBoards(pending);
+                controller.attack = outgoing;
+                NetworkData data = new NetworkData();
+                new NetworkDataExtractor(controller).ExtractInto(data);
+
+                pending[0][0].setElementColorType(ColorType.BlockL);
+                outgoing[0][0].setElementColorType(ColorType.BlockL);
+                controller.GetRenderState().versusBoards().clear();
+
+                assertEquals(1, data.GetVersusBoards().size());
+                assertEquals(ColorType.BlockJ, data.GetVersusBoards().get(0)[0][0].getElementColorType());
+                assertEquals(ColorType.BlockZ, data.GetVersusBoard()[0][0].getElementColorType());
+                assertEquals(1, controller.attackReads);
+            } finally {
+                controller.CleanGame();
+            }
+        });
+    }
+
+    // 입력: ID 7의 실행 중 이펙트와 삭제 행 배열, 이후 같은 ID의 종료 상태.
+    // 출력: 복사된 행 배열과 실행 여부, 유지된 ID. 목적: 같은 추출 시점의 정보와 이펙트 종료 후 ID 유지를 검증한다.
+    @Test
+    void copiesEffectSnapshotAndKeepsIdAfterEffectEnds() throws Exception {
+        runOnFxThread(() -> {
+            AttackController controller = new AttackController();
+            try {
+                controller.effectRunning = true;
+                controller.effectId = 7;
+                controller.clearedRows = new int[] {18, 19};
+                NetworkData data = new NetworkData();
+                data.SetMatchId(42);
+                data.SetRemainingTimeMs(5000);
+                NetworkDataExtractor extractor = new NetworkDataExtractor(controller);
+                extractor.ExtractInto(data);
+
+                controller.clearedRows[0] = -1;
+                assertTrue(data.GetEffectRunning());
+                assertEquals(7, data.GetEffectId());
+                assertArrayEquals(new int[] {18, 19}, data.GetClearedRows());
+                assertEquals(42, data.GetMatchId());
+                assertEquals(5000, data.GetRemainingTimeMs());
+
+                controller.effectRunning = false;
+                extractor.ExtractInto(data);
+                assertFalse(data.GetEffectRunning());
+                assertEquals(7, data.GetEffectId());
+                assertArrayEquals(new int[] {-1, 19}, data.GetClearedRows());
             } finally {
                 controller.CleanGame();
             }
@@ -97,6 +169,9 @@ class NetworkDataExtractorTests {
     private static final class AttackController extends GameController {
         private BoardElement[][] attack;
         private int attackReads;
+        private boolean effectRunning;
+        private long effectId;
+        private int[] clearedRows = new int[0];
 
         AttackController() {
             super(() -> {}, new GameSettings("1280x720", 1280, 720, 0, Map.of(),
@@ -109,6 +184,21 @@ class NetworkDataExtractorTests {
             BoardElement[][] result = attack;
             attack = null;
             return result;
+        }
+
+        @Override
+        public boolean GetLineClearEffectRunning() {
+            return effectRunning;
+        }
+
+        @Override
+        public long GetEffectId() {
+            return effectId;
+        }
+
+        @Override
+        public int[] GetClearedRows() {
+            return clearedRows;
         }
     }
 

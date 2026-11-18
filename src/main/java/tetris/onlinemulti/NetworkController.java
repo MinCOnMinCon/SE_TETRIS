@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -115,11 +116,12 @@ public final class NetworkController {
             return true;
         }
         if (type.isArray()) {
-            return isAllowedSerializedClass(type.getComponentType());
+            return type == Object[].class || isAllowedSerializedClass(type.getComponentType());
         }
         return type == NetworkData.class
                 || type == BlockData.class
                 || type == BoardElement.class
+                || type == ArrayList.class
                 || type == Enum.class
                 || type.isEnum();
     }
