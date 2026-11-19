@@ -40,16 +40,24 @@ public class AppController {
     private GameController gameController;
     private VersusManager versusManager;
     private PauseScene pauseScene;
+    private boolean onlineMatchActive;
 
     public AppController(Stage stage, Scene scene, SettingsStore settingsStore) {
         this.stage = Objects.requireNonNull(stage, "stage cannot be null");
         this.scene = Objects.requireNonNull(scene, "scene cannot be null");
         this.settingsStore = Objects.requireNonNull(settingsStore, "settingsStore cannot be null");
         this.onlineMultiController = new OnlineMultiController(
-                settingsStore, this::showOnlineScreen);
+                settingsStore, this::showOnlineScreen, this::startOnlineMatch);
     }
 
     public void ShowStartScreen() {
+        onlineMatchActive = false;
+        onlineMultiController.clearIncomingChatHandler();
+        if (gameController != null) {
+            gameController.CleanGame();
+            gameController = null;
+        }
+        pauseScene = null;
         onlineMultiController.close();
         StartScreen startScreen = new StartScreen(stage, scene);
         startScreen.makeStartScreen(
@@ -101,6 +109,7 @@ public class AppController {
       
     }
 
+
     public void ShowSettings() {
         SettingsScreen settingsScreen = new SettingsScreen();
         settingsScreen.makeSS(stage, scene, this::ShowStartScreen, settingsStore);
@@ -123,12 +132,24 @@ public class AppController {
     }
 
     public void ShowPauseScreen() {
-        
+        scene.setOnKeyPressed(null);
+        if (onlineMatchActive && onlineMultiController.hasActiveLobby()) {
+            pauseScene = new PauseScene(
+                    this::ResumeGame,
+                    this::exitOnlineMatchFromPause,
+                    onlineMultiController.chatDisplayName(),
+                    onlineMultiController::sendChat);
+            onlineMultiController.setIncomingChatHandler(pauseScene::addIncomingMessage);
+            Parent pauseSceneRoot = pauseScene.GetRoot();
+            scene.setRoot(pauseSceneRoot);
+            pauseScene.focusChatInput();
+            return;
+        }
+
         if (pauseScene == null) {
             pauseScene = new PauseScene(this::ResumeGame, Platform::exit); // 일시정지 화면에서 종료시 바로 종료해버림
         }
 
-        scene.setOnKeyPressed(null);
         Parent pauseSceneRoot = pauseScene.GetRoot();
         scene.setRoot(pauseSceneRoot);
         pauseSceneRoot.requestFocus();
@@ -136,18 +157,29 @@ public class AppController {
 
     public void ResumeGame() {
         scene.setOnKeyPressed(null);
+        onlineMultiController.clearIncomingChatHandler();
         if (versusManager != null && versusManager.GetState() == VersusManager.MatchState.PAUSED) {
             Parent gameSceneRoot = versusManager.GetRoot();
             scene.setRoot(gameSceneRoot);
             gameSceneRoot.requestFocus();
             versusManager.ResumeGame();
         } else if (gameController != null){
-            
             Parent gameSceneRoot = gameController.GetRoot();
             scene.setRoot(gameSceneRoot);
             gameSceneRoot.requestFocus();
             gameController.ResumeGame();
         }
+    }
+
+    private void exitOnlineMatchFromPause() {
+        onlineMultiController.clearIncomingChatHandler();
+        if (gameController != null) {
+            gameController.CleanGame();
+            gameController = null;
+        }
+        pauseScene = null;
+        onlineMatchActive = false;
+        ShowStartScreen();
     }
 
     public void ShowSoloEndGame(GameResult result) {

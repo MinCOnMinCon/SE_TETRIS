@@ -27,6 +27,8 @@ public final class OnlineLobbyClient implements AutoCloseable {
     private final Object writeLock = new Object();
     private volatile Consumer<String> networkPayloadHandler = payload -> {};
     private volatile boolean connected;
+    private volatile Consumer<String> incomingChatHandler;
+    private volatile Runnable onMatchStart = () -> {};
 
     public OnlineLobbyClient(String hostText, OnlineLobbyScreen lobby) {
         HostAddress address = HostAddress.parse(hostText);
@@ -67,12 +69,27 @@ public final class OnlineLobbyClient implements AutoCloseable {
                 () -> closeQuietly(connected));
         heartbeat = connectionHeartbeat;
         connectionHeartbeat.start();
-        lobby.setOnChat(text -> sendLine("CHAT " + text));
+        lobby.setOnChat(this::sendChat);
         Platform.runLater(() -> lobby.showServerAddress(host));
         Thread readerThread = new Thread(
                 () -> readHost(connected, connectionHeartbeat), "online-lobby-client");
         readerThread.setDaemon(true);
         readerThread.start();
+    }
+
+    public void setOnMatchStart(Runnable onMatchStart) {
+        this.onMatchStart = Objects.requireNonNull(onMatchStart, "onMatchStart cannot be null");
+    }
+
+    public void setIncomingChatHandler(Consumer<String> handler) {
+        incomingChatHandler = handler;
+    }
+
+    public void sendChat(String message) {
+        if (message == null || message.isBlank()) {
+            return;
+        }
+        sendLine("CHAT " + message);
     }
 
     public void sendReady() {
@@ -140,9 +157,12 @@ public final class OnlineLobbyClient implements AutoCloseable {
                     });
                 } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
-                    Platform.runLater(() -> lobby.addIncomingMessage(message));
+                    Platform.runLater(() -> deliverIncomingChat(message));
                 } else if ("START".equals(line)) {
-                    Platform.runLater(lobby::clearMessages);
+                    Platform.runLater(() -> {
+                        lobby.clearMessages();
+                        onMatchStart.run();
+                    });
                 } else if (line.startsWith("DATA ")) {
                     networkPayloadHandler.accept(line.substring("DATA ".length()));
                 }
@@ -161,6 +181,15 @@ public final class OnlineLobbyClient implements AutoCloseable {
                     lobby.addAnnouncementMessage("서버 연결이 끊어졌습니다.");
                 });
             }
+        }
+    }
+
+    private void deliverIncomingChat(String message) {
+        Consumer<String> handler = incomingChatHandler;
+        if (handler != null) {
+            handler.accept(message);
+        } else {
+            lobby.addIncomingMessage(message);
         }
     }
 
