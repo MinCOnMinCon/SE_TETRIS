@@ -36,6 +36,16 @@ public class NetworkData implements Serializable {
     }
 
     public NetworkData(MessageType msgT) {
+        switch (msgT) {
+            case PAUSE:
+                this.isPaused = true;
+                break;
+            case END:
+                this.isEnded = true;
+                break;
+            default:
+                break;
+        }
         this.messageType = msgT;
     }
 
@@ -45,8 +55,18 @@ public class NetworkData implements Serializable {
         this.nextBlocks = currentBlock.GetBlockQueue().GetBlocksInQueueOrder();
         this.blockHolding = currentBlock.GetBlockHolding();
         this.deletedBoard = currentBlock.GetDelBoard();
+        this.clearedRows = currentBlock.GetGameBoard().GetClearedRows();
         this.score = score;
         this.isHost = isHost;
+    }
+    public NetworkData(CurrentBlock currentBlock, int score) {
+        this.board = currentBlock.GetBoard();
+        this.blockData = currentBlock.GetCurrentBlock();
+        this.nextBlocks = currentBlock.GetBlockQueue().GetBlocksInQueueOrder();
+        this.blockHolding = currentBlock.GetBlockHolding();
+        this.deletedBoard = currentBlock.GetDelBoard();
+        this.clearedRows = currentBlock.GetGameBoard().GetClearedRows();
+        this.score = score;
     }
 
     public void SetMessageType(MessageType messageType) {
@@ -85,6 +105,11 @@ public class NetworkData implements Serializable {
     // 이번에 소비한 새 공격 줄을 설정하며 공격이 없으면 null로 설정한다.
     public void SetDeletedBoard(BoardElement[][] deletedBoard) {
         this.deletedBoard = deletedBoard;
+    }
+
+    public void SetClearEffect(long ID, boolean Running) {
+        this.effectId = ID;
+        this.effectRunning = Running;
     }
 
     // 자기 게임의 현재 점수를 설정한다.

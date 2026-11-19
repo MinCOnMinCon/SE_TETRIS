@@ -184,7 +184,7 @@ class GameControllerTest {
     @Test
     void requiresPauseCallback() {
         assertThrows(NullPointerException.class,
-                () -> new GameController(null, new GameSettings(
+                () -> new GameController((Runnable) null, new GameSettings(
                         "1280x720", 1280, 720, 0,
                         new KeyBindingSettings().getAllBindings(),
                         GameSettings.Difficulty.NORMAL, GameMode.NORMAL), 0));
