@@ -5,6 +5,7 @@ import java.io.Serializable;
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.board.GameBoard;
 
 public class NetworkData implements Serializable {
     // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
@@ -16,7 +17,7 @@ public class NetworkData implements Serializable {
     private BlockData blockHolding;
     private long attackId;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
-    private boolean effectRuning;
+    private boolean effectRunning;
     private long effectId;
     private int[] clearedRows;
     private int score;
@@ -32,6 +33,16 @@ public class NetworkData implements Serializable {
     }
 
     public NetworkData(MessageType msgT) {
+        switch (msgT) {
+            case PAUSE:
+                this.isPaused = true;
+                break;
+            case END:
+                this.isEnded = true;
+                break;
+            default:
+                break;
+        }
         this.messageType = msgT;
     }
 
@@ -41,10 +52,20 @@ public class NetworkData implements Serializable {
         this.nextBlocks = currentBlock.GetBlockQueue().GetBlocksInQueueOrder();
         this.blockHolding = currentBlock.GetBlockHolding();
         this.deletedBoard = currentBlock.GetDelBoard();
+        this.clearedRows = currentBlock.GetGameBoard().GetClearedRows();
         this.score = score;
         this.hostIP = hostIP;
         this.clientIP = clientIP;
         this.isHost = isHost;
+    }
+    public NetworkData(CurrentBlock currentBlock, int score) {
+        this.board = currentBlock.GetBoard();
+        this.blockData = currentBlock.GetCurrentBlock();
+        this.nextBlocks = currentBlock.GetBlockQueue().GetBlocksInQueueOrder();
+        this.blockHolding = currentBlock.GetBlockHolding();
+        this.deletedBoard = currentBlock.GetDelBoard();
+        this.clearedRows = currentBlock.GetGameBoard().GetClearedRows();
+        this.score = score;
     }
 
     // 추출기가 복사한 고정 보드를 설정한다.
@@ -67,9 +88,17 @@ public class NetworkData implements Serializable {
         this.blockHolding = blockHolding;
     }
 
+    public void SetAttackId(long ID) {
+        this.attackId = ID;
+    }
     // 이번에 소비한 새 공격 줄을 설정하며 공격이 없으면 null로 설정한다.
     public void SetDeletedBoard(BoardElement[][] deletedBoard) {
         this.deletedBoard = deletedBoard;
+    }
+
+    public void SetClearEffect(long ID, boolean Running) {
+        this.effectId = ID;
+        this.effectRunning = Running;
     }
 
     // 자기 게임의 현재 점수를 설정한다.
@@ -77,6 +106,14 @@ public class NetworkData implements Serializable {
         this.score = score;
     }
 
+    public void SetRemainingTime(double ms) {
+        this.remainingTimeMs = ms;
+    }
+    
+
+    public MessageType GetMsgType() {
+        return messageType;
+    }
     public BoardElement[][] GetBoard() {
         return board;
     }
@@ -89,11 +126,26 @@ public class NetworkData implements Serializable {
     public BlockData GetBlockHolding() {
         return blockHolding;
     }
+    public long GetAttackId() {
+        return attackId;
+    }
     public BoardElement[][] GetVersusBoard() {
         return deletedBoard;
     }
+    public long GetEffectId() {
+        return effectId;
+    }
+    public boolean GetIsEffect() {
+        return effectRunning;
+    }
+    public int[] GetClearedRows() {
+        return clearedRows;
+    }
     public int GetVersusScore() {
         return score;
+    }
+    public double GetRemainingTime() {
+        return remainingTimeMs;
     }
     public int GetHostIP() {
         return hostIP;
