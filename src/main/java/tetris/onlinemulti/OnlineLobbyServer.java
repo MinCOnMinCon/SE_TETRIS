@@ -27,6 +27,8 @@ public final class OnlineLobbyServer implements AutoCloseable {
     private volatile boolean running;
     private final Object writeLock = new Object();
     private volatile Consumer<String> networkPayloadHandler = payload -> {};
+    private volatile Consumer<String> incomingChatHandler;
+    private volatile Runnable onMatchStart = () -> {};
 
     public OnlineLobbyServer(OnlineLobbyScreen lobby) {
         this(lobby, DEFAULT_PORT);
@@ -42,11 +44,29 @@ public final class OnlineLobbyServer implements AutoCloseable {
         running = true;
         lobby.showServerAddress(OnlineLobbyScreen.currentIpv4());
         lobby.setOnModeChanged(this::sendMode);
-        lobby.setOnChat(text -> send("CHAT " + text));
-        lobby.setOnStart(() -> send("START"));
+        lobby.setOnChat(this::sendChat);
+        lobby.setOnStart(() -> {
+            send("START");
+            onMatchStart.run();
+        });
         Thread acceptThread = new Thread(this::acceptLoop, "online-lobby-server");
         acceptThread.setDaemon(true);
         acceptThread.start();
+    }
+
+    public void setOnMatchStart(Runnable onMatchStart) {
+        this.onMatchStart = Objects.requireNonNull(onMatchStart, "onMatchStart cannot be null");
+    }
+
+    public void setIncomingChatHandler(Consumer<String> handler) {
+        incomingChatHandler = handler;
+    }
+
+    public void sendChat(String message) {
+        if (message == null || message.isBlank()) {
+            return;
+        }
+        send("CHAT " + message);
     }
 
     public int getPort() {
@@ -124,7 +144,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
                     Platform.runLater(() -> lobby.setClientReady(true));
                 } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
-                    Platform.runLater(() -> lobby.addIncomingMessage(message));
+                    Platform.runLater(() -> deliverIncomingChat(message));
                 } else if (line.startsWith("DATA ")) {
                     networkPayloadHandler.accept(line.substring("DATA ".length()));
                 }
@@ -148,6 +168,15 @@ public final class OnlineLobbyServer implements AutoCloseable {
             } else {
                 Platform.runLater(() -> lobby.setClientConnected(false));
             }
+        }
+    }
+
+    private void deliverIncomingChat(String message) {
+        Consumer<String> handler = incomingChatHandler;
+        if (handler != null) {
+            handler.accept(message);
+        } else {
+            lobby.addIncomingMessage(message);
         }
     }
 
