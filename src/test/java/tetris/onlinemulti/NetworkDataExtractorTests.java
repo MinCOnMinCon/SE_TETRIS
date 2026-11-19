@@ -143,7 +143,6 @@ class NetworkDataExtractorTests {
                 controller.effectId = 7;
                 controller.clearedRows = new int[] {18, 19};
                 NetworkData data = new NetworkData();
-                data.SetMatchId(42);
                 data.SetRemainingTimeMs(5000);
                 NetworkDataExtractor extractor = new NetworkDataExtractor(controller);
                 extractor.ExtractInto(data);
@@ -152,7 +151,6 @@ class NetworkDataExtractorTests {
                 assertTrue(data.GetEffectRunning());
                 assertEquals(7, data.GetEffectId());
                 assertArrayEquals(new int[] {18, 19}, data.GetClearedRows());
-                assertEquals(42, data.GetMatchId());
                 assertEquals(5000, data.GetRemainingTimeMs());
 
                 controller.effectRunning = false;

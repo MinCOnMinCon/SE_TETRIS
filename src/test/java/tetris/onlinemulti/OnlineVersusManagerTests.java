@@ -11,7 +11,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import javafx.application.Platform;
 import tetris.settings.GameSettings;
@@ -34,21 +35,23 @@ class OnlineVersusManagerTests {
         assertTrue(ready.await(10, TimeUnit.SECONDS));
     }
 
-    // 입력: 실제 로비 연결과 서버용·클라이언트용 매니저, 양방향 DATA·PAUSE·END 메시지.
-    // 출력: 역할이 올바른 DATA와 종류별 콜백 호출. 목적: FX 스레드 메시지 분기와 END의 long 최종 점수 전달을 검증한다.
-    @Test
-    void constructsControllersAndRoutesMessagesFromBothLobbyConnections() throws Exception {
+    // 입력: 일반·제한시간 모드의 실제 로비 연결과 양방향 DATA·PAUSE·END 메시지.
+    // 출력: 역할이 올바른 DATA와 종류별 콜백 호출. 목적: 메시지 분기, 최종 점수, 호스트의 초기 제한시간 전송을 검증한다.
+    @ParameterizedTest
+    @EnumSource(value = GameMode.class, names = {"NORMAL", "TIMELIMIT"})
+    void constructsControllersAndRoutesMessagesFromBothLobbyConnections(GameMode gameMode) throws Exception {
+        Objects.requireNonNull(gameMode);
         OnlineLobbyServer[] server = new OnlineLobbyServer[1];
         OnlineLobbyClient[] client = new OnlineLobbyClient[1];
         ManagerStub[] managers = new ManagerStub[2];
         GameSettings settings = new GameSettings("1280x720", 1280, 720, 0, Map.of(),
-                Difficulty.NORMAL, GameMode.NORMAL);
+                Difficulty.NORMAL, gameMode);
         try {
             runOnFxThread(() -> {
                 OnlineLobbyScreen serverLobby = new OnlineLobbyScreen(
-                        OnlineLobbyScreen.Role.SERVER, GameMode.NORMAL, () -> {});
+                        OnlineLobbyScreen.Role.SERVER, gameMode, () -> {});
                 OnlineLobbyScreen clientLobby = new OnlineLobbyScreen(
-                        OnlineLobbyScreen.Role.CLIENT, GameMode.NORMAL, () -> {});
+                        OnlineLobbyScreen.Role.CLIENT, gameMode, () -> {});
                 server[0] = new OnlineLobbyServer(serverLobby, 0);
                 server[0].start();
                 client[0] = new OnlineLobbyClient("127.0.0.1", server[0].getPort(), clientLobby);
@@ -87,6 +90,9 @@ class OnlineVersusManagerTests {
                 assertTrue(managers[1].gameData.GetIsHost());
                 assertNotNull(managers[0].gameData.GetBoard());
                 assertNotNull(managers[1].gameData.GetVersusBoards());
+                assertEquals(0.0, managers[0].gameData.GetRemainingTimeMs());
+                assertEquals(gameMode == GameMode.TIMELIMIT ? 180_000.0 : 0.0,
+                        managers[1].gameData.GetRemainingTimeMs());
             });
         } finally {
             if (client[0] != null) client[0].close();
@@ -104,11 +110,11 @@ class OnlineVersusManagerTests {
         private long endFinalScore;
 
         ManagerStub(OnlineLobbyServer server, GameSettings settings) {
-            super(server, settings, () -> {}, reason -> {});
+            super(server, settings, () -> {}, () -> {}, reason -> {});
         }
 
         ManagerStub(OnlineLobbyClient client, GameSettings settings) {
-            super(client, settings, () -> {}, reason -> {});
+            super(client, settings, () -> {}, () -> {}, reason -> {});
         }
 
         void sendMessages() {
@@ -134,7 +140,7 @@ class OnlineVersusManagerTests {
         }
 
         @Override
-        public void HandlePauseState(long matchId, boolean paused) {
+        public void HandlePauseState(boolean paused) {
             this.paused = paused;
             receivedTypes.add(MessageType.PAUSE);
             receivedOnFxThread &= Platform.isFxApplicationThread();
@@ -142,19 +148,18 @@ class OnlineVersusManagerTests {
         }
 
         @Override
-        public void HandleRemoteDefeat(long matchId, long finalScore) {
+        public void HandleRemoteDefeat(long finalScore) {
             endFinalScore = finalScore;
             receivedTypes.add(MessageType.END);
             receivedOnFxThread &= Platform.isFxApplicationThread();
             received.countDown();
         }
 
-        @Override public void GameStart(long matchId) {}
+        @Override public void GameStart() {}
         @Override protected void UpdateFrame(long now) {}
-        @Override public void HandleRemainingTime(long matchId, double remainingTimeMs) {}
         @Override protected void HandleLocalDefeat(long finalScore) {}
         @Override protected void ReportFinalScore(int finalScore) {}
-        @Override public void HandleFinalScoreRequest(long matchId) {}
+        @Override public void HandleFinalScoreRequest() {}
         @Override public void RequestPause(boolean paused) {}
         @Override public void ApplyMatchResult(MatchResult result) { Objects.requireNonNull(result); }
         @Override public void ReturnToLobby() {}

@@ -12,7 +12,6 @@ public class NetworkData implements Serializable {
     // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
     private static final long serialVersionUID = 1L;
     private MessageType messageType;
-    private long matchId;
     private BoardElement[][] board;
     private BlockData blockData;
     private BlockData[] nextBlocks;
@@ -52,10 +51,6 @@ public class NetworkData implements Serializable {
 
     public void SetMessageType(MessageType messageType) {
         this.messageType = messageType;
-    }
-
-    public void SetMatchId(long matchId) {
-        this.matchId = matchId;
     }
 
     // 추출기가 복사한 고정 보드를 설정한다.
@@ -145,9 +140,6 @@ public class NetworkData implements Serializable {
 
     public MessageType GetMessageType() {
         return messageType;
-    }
-    public long GetMatchId() {
-        return matchId;
     }
     public BoardElement[][] GetBoard() {
         return board;

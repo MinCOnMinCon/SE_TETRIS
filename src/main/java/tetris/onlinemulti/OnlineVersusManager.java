@@ -17,12 +17,13 @@ import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.GameMode;
 import tetris.settings.GameSettings.PlayMode;
 import tetris.versusmode.VersusRenderer;
+import tetris.versusmode.VersusTimer;
 
 public abstract class OnlineVersusManager implements AutoCloseable {
     public enum MatchState { READY, RUNNING, PAUSED, ENDED }
     public enum MatchOutcome { HOST_WIN, CLIENT_WIN, DRAW }
 
-    public record MatchResult(long matchId, MatchOutcome outcome, int hostScore, int clientScore) {}
+    public record MatchResult(MatchOutcome outcome, int hostScore, int clientScore) {}
 
     // 경기 실행과 화면 구성에 필요한 객체를 보관한다.
     private NetworkController networkController;
@@ -32,16 +33,18 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     private VersusRenderer versusRenderer;
     private GameSettings settings;
 
-    // 서버에서만 보유하며 경기 시작과 시간 및 결과 결정을 위임한다.
-    private IngameServerFunc serverFunc;
+    // 호스트가 제한시간 모드의 남은 시간을 관리한다.
+    private final VersusTimer timer;
+
+    // 일시정지 요청을 상위 온라인 흐름에 알리는 콜백이다.
+    protected final Runnable onPauseRequested;
 
     // 경기 종료 후 방 복귀와 연결 이상을 상위 온라인 흐름에 전달한다.
     private Runnable onReturnToLobby;
     private Consumer<String> onConnectionLost;
 
-    // 서버 여부와 현재 경기의 식별 정보 및 결과를 보관한다.
+    // 서버 여부와 현재 경기의 상태 및 결과를 보관한다.
     private boolean isHost;
-    private long matchId;
     private MatchState state;
     private MatchResult result;
     private long lastReceivedAttackId = -1;
@@ -49,14 +52,14 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     // 프레임 갱신과 상태 전송 주기를 관리한다.
     private AnimationTimer updateLoop;
     private long previousFrameTime;
-    private long lastSendTime;
-    private long sendIntervalNanos;
+    //private long lastSendTime;
+    //private long sendIntervalNanos; 이후 매 프레임마다 데이터 전송을 안하고 따로 할 때 필요함.
     private GameMode gameMode;
 
     // 호스트의 게임과 화면을 먼저 구성한 뒤 로비 서버의 연결에 수신 함수를 연결한다.
     public OnlineVersusManager(OnlineLobbyServer server, GameSettings settings,
-            Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
-        this(settings, true, onReturnToLobby, onConnectionLost);
+            Runnable onPauseRequested, Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
+        this(settings, true, onPauseRequested, onReturnToLobby, onConnectionLost);
         Objects.requireNonNull(server, "server cannot be null");
         networkController = new NetworkController(server, this::HandleGameData,
                 () -> Platform.runLater(() -> HandleConnectionLost("상대와의 연결이 끊어졌습니다.")));
@@ -64,22 +67,24 @@ public abstract class OnlineVersusManager implements AutoCloseable {
 
     // 클라이언트의 게임과 화면을 먼저 구성한 뒤 로비 클라이언트의 연결에 수신 함수를 연결한다.
     public OnlineVersusManager(OnlineLobbyClient client, GameSettings settings,
-            Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
-        this(settings, false, onReturnToLobby, onConnectionLost);
+            Runnable onPauseRequested, Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
+        this(settings, false, onPauseRequested, onReturnToLobby, onConnectionLost);
         Objects.requireNonNull(client, "client cannot be null");
         networkController = new NetworkController(client, this::HandleGameData,
                 () -> Platform.runLater(() -> HandleConnectionLost("서버와의 연결이 끊어졌습니다.")));
     }
 
     // 양쪽 생성자가 공유하는 경기 설정과 화면 및 아직 시작하지 않은 갱신 루프를 준비한다.
-    private OnlineVersusManager(GameSettings settings, boolean isHost, Runnable onReturnToLobby,
-            Consumer<String> onConnectionLost) {
+    private OnlineVersusManager(GameSettings settings, boolean isHost, Runnable onPauseRequested,
+            Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
         this.settings = Objects.requireNonNull(settings, "settings cannot be null");
         this.isHost = isHost;
+        this.onPauseRequested = Objects.requireNonNull(onPauseRequested, "onPauseRequested cannot be null");
         this.onReturnToLobby = Objects.requireNonNull(onReturnToLobby, "onReturnToLobby cannot be null");
         this.onConnectionLost = Objects.requireNonNull(onConnectionLost, "onConnectionLost cannot be null");
         gameMode = settings.gameMode();
         state = MatchState.READY;
+        timer = isHost ? new VersusTimer(this::HandleFinalScoreRequest) : null;
 
         localController = new GameController(() -> RequestPause(true),
                 gameResult -> HandleLocalDefeat(gameResult.score()), settings, PlayMode.ONLINE);
@@ -99,11 +104,31 @@ public abstract class OnlineVersusManager implements AutoCloseable {
         };
     }
 
-    // 서버가 확정한 경기 번호를 받아 자기 게임과 관리자 갱신 루프를 시작한다.
-    public abstract void GameStart(long matchId);
+    // 자기 게임과 관리자 갱신 루프를 시작한다.
+    public abstract void GameStart();
 
-    // 상대 화면을 갱신하고 전송 시점을 확인하며 서버에서는 서버 기능의 갱신도 호출한다.
-    protected abstract void UpdateFrame(long now);
+    // 진행 중인 경기의 상대 화면을 갱신하고 매 프레임 자기 상태를 전송한다.
+    protected void UpdateFrame(long now) {
+        if (state != MatchState.RUNNING) {
+            return;
+        }
+
+        double deltaTimeMs = previousFrameTime == 0
+                ? 0.0
+                : (now - previousFrameTime) / 1_000_000.0;
+        previousFrameTime = now;
+
+        if (timer != null && gameMode == GameMode.TIMELIMIT) {
+            timer.Update(deltaTimeMs);
+            if (state != MatchState.RUNNING) {
+                return;
+            }
+            versusRenderer.RenderTime(timer.GetRemainingTimeMs()); // 서버는 타이머를 업데이트하고 화면에 표시
+        }
+
+        remoteView.Update(deltaTimeMs);
+        SendGameData(MessageType.DATA);
+    }
 
     // 공통 경기 정보와 메시지별 데이터를 채우고, 제한시간 모드의 호스트는 남은 시간도 보낸다.
     protected void SendGameData(MessageType messageType) {
@@ -111,7 +136,6 @@ public abstract class OnlineVersusManager implements AutoCloseable {
 
         NetworkData data = new NetworkData();
         data.SetMessageType(messageType);
-        data.SetMatchId(matchId);
         data.SetIsEnded(state == MatchState.ENDED);
         data.SetIsHost(isHost);
         data.SetIsPaused(state == MatchState.PAUSED);
@@ -132,8 +156,8 @@ public abstract class OnlineVersusManager implements AutoCloseable {
             }
         }
 
-        if (gameMode == GameMode.TIMELIMIT && isHost) {
-            data.SetRemainingTimeMs(serverFunc.GetRemainingTimeMs());
+        if (timer != null && gameMode == GameMode.TIMELIMIT) {
+            data.SetRemainingTimeMs(timer.GetRemainingTimeMs());
         }
 
         try {
@@ -150,10 +174,6 @@ public abstract class OnlineVersusManager implements AutoCloseable {
             Platform.runLater(() -> HandleGameData(data));
             return;
         }
-        if (matchId != data.GetMatchId()) {
-            return;
-        }
-
         switch (Objects.requireNonNull(data.GetMessageType(), "messageType cannot be null")) {
             case DATA -> {
                 if (state == MatchState.ENDED) {
@@ -171,35 +191,32 @@ public abstract class OnlineVersusManager implements AutoCloseable {
                         data.GetNextBlocks(), data.GetBlockHolding(), data.GetVersusBoards());
                 remoteView.ApplyState(remoteState, data.GetEffectId(),
                         data.GetEffectRunning(), data.GetClearedRows());
+                if (gameMode == GameMode.TIMELIMIT && !isHost) {
+                    versusRenderer.RenderTime(data.GetRemainingTimeMs()); //클라이언트는 데이터로 남은 시간을 전송받아 표시한다.
+                }
             }
-            case PAUSE -> HandlePauseState(data.GetMatchId(), data.GetIsPaused());
-            case END -> HandleRemoteDefeat(data.GetMatchId(), data.GetFinalScore()); 
-        }
-        if (gameMode == GameMode.TIMELIMIT && !isHost && data.GetIsHost()) {
-            HandleRemainingTime(data.GetMatchId(), data.GetRemainingTimeMs());
+            case PAUSE -> HandlePauseState(data.GetIsPaused());
+            case END -> HandleRemoteDefeat(data.GetFinalScore());
         }
     }
 
-    // 서버 기능이 전달하거나 서버 메시지로 수신한 현재 경기의 남은 시간을 표시한다.
-    public abstract void HandleRemainingTime(long matchId, double remainingTimeMs);
-
-    // 자기 게임을 정지하고 패배 사실을 상대에게 알린 뒤 서버 기능에 패배와 최종 점수를 보고한다.
+    // 자기 게임을 정지하고 패배 사실과 최종 점수를 상대에게 알린다.
     protected abstract void HandleLocalDefeat(long finalScore);
 
-    // 상대 패배 통보로 자기 게임을 정지하고 자기 최종 점수를 보고하며 서버에서는 상대 패배도 전달한다.
-    public abstract void HandleRemoteDefeat(long matchId, long finalScore);
+    // 상대 패배 통보로 자기 게임을 정지하고 자기 최종 점수를 보고한다.
+    public abstract void HandleRemoteDefeat(long finalScore);
 
-    // 서버에서는 서버 기능에 직접 전달하고 클라이언트에서는 메시지로 자기 최종 점수를 보고한다.
+    // 자기 최종 점수를 보고한다.
     protected abstract void ReportFinalScore(int finalScore);
 
-    // 서버 기능의 종료 요청이나 서버 메시지를 받아 자기 게임을 정지하고 최종 점수를 보고한다.
-    public abstract void HandleFinalScoreRequest(long matchId);
+    // 타이머 만료 또는 상대의 요청 시 자기 게임을 정지하고 최종 점수를 보고한다.
+    public abstract void HandleFinalScoreRequest();
 
     // 자신의 일시정지 또는 재개 요청을 상대에게 전달하고 공통 정지 상태 처리로 연결한다.
     public abstract void RequestPause(boolean paused);
 
     // 자신의 요청이나 상대의 메시지에 따른 정지 상태를 게임과 입력 및 이펙트에 적용한다.
-    public abstract void HandlePauseState(long matchId, boolean paused);
+    public abstract void HandlePauseState(boolean paused);
 
     // 현재 경기의 확정 결과를 저장하고 자기 게임과 갱신 루프를 정지한 뒤 결과를 표시한다.
     public abstract void ApplyMatchResult(MatchResult result);
