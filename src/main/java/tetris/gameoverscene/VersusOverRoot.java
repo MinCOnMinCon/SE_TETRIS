@@ -48,25 +48,25 @@ public class VersusOverRoot {
         titleLabel = new Label();
         titleLabel.setStyle("-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: red;");
         switch (result.localWinLose()) {
-            case VersusResult.LocalWinLose.LOCALWIN:
+            case LOCALWIN:
                 titleLabel.setText("GAME OVER");
                 hostLocalWinLabel = new Label("WIN");
                 hostLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: yellow;");
                 clientLocalWinLabel = new Label("LOSE");
                 clientLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: red;");
                 break;
-            case VersusResult.LocalWinLose.LOCALLOSE:
+            case LOCALLOSE:
                 titleLabel.setText("GAME OVER");
                 hostLocalWinLabel = new Label("LOSE");
                 hostLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: red;");
                 clientLocalWinLabel = new Label("WIN");
                 clientLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: yellow;");
                 break;
-            case VersusResult.LocalWinLose.WIN:
+            case WIN:
                 titleLabel.setText("WIN");
                 titleLabel.setStyle("-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: yellow;");
                 break;
-            case VersusResult.LocalWinLose.LOSE:
+            case LOSE:
                 titleLabel.setText("LOSE");
                 break;
             default:
