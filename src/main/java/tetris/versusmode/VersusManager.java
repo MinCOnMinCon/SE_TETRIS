@@ -58,11 +58,18 @@ public class VersusManager {
 
 
     public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<MatchResult> onMatchEnded) {
+        this(settings, onPauseRequested, onMatchEnded, 0);
+    }
+
+    public VersusManager(GameSettings settings, Runnable onPauseRequested,
+            Consumer<MatchResult> onMatchEnded, int initialClearedLineCount) {
         Objects.requireNonNull(settings);
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onMatchEnded = Objects.requireNonNull(onMatchEnded);
-        player1 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER1), settings);
-        player2 = new GameController(ignored -> HandlePlayerDefeat(Player.PLAYER2), settings);
+        player1 = new GameController(
+                ignored -> HandlePlayerDefeat(Player.PLAYER1), settings, initialClearedLineCount);
+        player2 = new GameController(
+                ignored -> HandlePlayerDefeat(Player.PLAYER2), settings, initialClearedLineCount);
         input = new VersusInput(this::PauseGame, player1.playerInput, player2.playerInput,
                 settings.playerKeyBindings());
         input.SetInputEnabled(false);

@@ -66,6 +66,14 @@ public class GameController {
         // 입력을 관리자가 갖고 있는 루트만 받아야 한다.
     }   
 
+    // 대전 테스트에서 각 플레이어의 누적 삭제 줄 수를 지정한다.
+    public GameController(Consumer<GameResult> onGameEnded, GameSettings settings,
+            int initialClearedLineCount) {
+        this(() -> {}, onGameEnded, settings, initialClearedLineCount,
+                Boolean.getBoolean("tetris.profile") ? new FrameProfiler() : null,
+                false, PlayMode.LOCAL);
+    }
+
     // 앱 컨트롤러에서 사용하는 생성자 함수
     public GameController(Runnable onPauseRequested, Consumer<GameResult> onGameEnded,
             GameSettings settings){
@@ -163,15 +171,12 @@ public class GameController {
             return;
         }
 
-        SceneRenderState state = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
-                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
-            renderer.UpdateRoot(state);
-
         int deltaTime = (int) ((now - previousFrameTime) / 1_000_000);
         previousFrameTime = now;
         int[] clearedRows = board.GetClearedRows();
 
         if (lineClearEffectRunning) {
+            renderer.UpdateRoot(GetRenderState());
             renderer.DrawLineClearEffect(clearedRows, lineClearEffectTime);
             lineClearEffectTime += deltaTime;
 
@@ -180,6 +185,7 @@ public class GameController {
                 Arrays.fill(clearedRows, -1);
                 lineClearEffectRunning = false;
                 playerInput.SetInputEnabled(!stopped && !paused);
+                renderer.UpdateRoot(GetRenderState());
             }
         } else {
             blockController.TimeUpdate(deltaTime); // automove 호출
