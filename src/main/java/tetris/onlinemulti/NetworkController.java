@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import tetris.block.data.BlockData;
@@ -16,6 +18,7 @@ import tetris.gamescene.board.BoardElement;
 public final class NetworkController {
     private static final System.Logger LOGGER = System.getLogger(NetworkController.class.getName());
     private static final int MAX_PAYLOAD_LENGTH = 1_398_104;
+    private Runnable endNetwork;
 
     @FunctionalInterface
     private interface PayloadSender {
@@ -23,21 +26,29 @@ public final class NetworkController {
     }
 
     private final PayloadSender sender;
-    // TODO: 데이터 처리 함수에서 dataHandler 정의 후 설정 필요 (핸들러 설정만 하면 데이터 송/수신은 send로 끝)
-    private volatile Consumer<NetworkData> dataHandler = data -> {
-        System.out.println("데이터 수신");
-    };
+    private final BooleanSupplier connectionStatus;
+    private volatile Consumer<NetworkData> dataHandler;
 
-    public NetworkController(OnlineLobbyServer server) {
+    public NetworkController(OnlineLobbyServer server, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(server, "server cannot be null");
         sender = server::sendNetworkPayload;
+        connectionStatus = server::isConnected;
+        setOnDataReceived(handler);
+        endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         server.setNetworkPayloadHandler(this::handlePayload);
     }
 
-    public NetworkController(OnlineLobbyClient client) {
+    public NetworkController(OnlineLobbyClient client, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(client, "client cannot be null");
         sender = client::sendNetworkPayload;
+        connectionStatus = client::isConnected;
+        setOnDataReceived(handler);
+        endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         client.setNetworkPayloadHandler(this::handlePayload);
+    }
+
+    public boolean isConnected() {
+        return connectionStatus.getAsBoolean();
     }
 
     public void setOnDataReceived(Consumer<NetworkData> handler) {
@@ -45,6 +56,10 @@ public final class NetworkController {
     }
 
     public void send(NetworkData data) throws IOException {
+        if (!connectionStatus.getAsBoolean()) {
+            endNetwork.run();
+            return;
+        }
         Objects.requireNonNull(data, "data cannot be null");
         sender.send(encode(data));
     }
@@ -98,11 +113,12 @@ public final class NetworkController {
             return true;
         }
         if (type.isArray()) {
-            return isAllowedSerializedClass(type.getComponentType());
+            return type == Object[].class || isAllowedSerializedClass(type.getComponentType());
         }
         return type == NetworkData.class
                 || type == BlockData.class
                 || type == BoardElement.class
+                || type == ArrayList.class
                 || type == Enum.class
                 || type.isEnum();
     }

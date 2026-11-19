@@ -1,13 +1,18 @@
 package tetris.onlinemulti;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import tetris.block.data.BlockData;
 import tetris.gamescene.GameController;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.scenerender.SceneRenderState;
 
-// 게임 갱신과 같은 JavaFX 스레드에서 자기 상태를 복사해 전송 데이터에 채운다.
+// 경기마다 생성하고 게임 갱신과 같은 JavaFX 스레드에서 자기 상태를 복사한다.
 public class NetworkDataExtractor {
     private final GameController controller;
+    private long lastAttackId; // 마지막으로 한 공격의 ID를 기록하고 갱신한다. 
 
     // 매 프레임 상태를 조회할 자기 게임 컨트롤러를 보관한다.
     public NetworkDataExtractor(GameController controller) {
@@ -16,6 +21,7 @@ public class NetworkDataExtractor {
 
     // 현재 화면 정보와 소비한 새 공격을 복사해 받은 데이터에 넣고 관리자 담당 필드는 유지한다.
     public void ExtractInto(NetworkData data) {
+        Objects.requireNonNull(data, "NetworkDataExtractor - ExtractInto - NetworkData parameter is null");
         SceneRenderState state = controller.GetRenderState();
         data.SetBoard(CopyBoard(state.board()));
         data.SetBlock(CopyBlock(state.currentBlock()));
@@ -26,13 +32,24 @@ public class NetworkDataExtractor {
         }
         data.SetNextBlocks(nextBlocks);
         data.SetBlockHolding(CopyBlock(state.blockHolding()));
-        data.SetScore(controller.GetScore());
-        data.SetDeletedBoard(CopyBoard(controller.GetDelBoard()));
+        data.SetScore(state.score());
+        BoardElement[][] attack = CopyBoard(controller.GetDelBoard());
+        if (attack != null) {
+            lastAttackId++;
+        }
+        data.SetAttackId(lastAttackId);
+        data.SetDeletedBoard(attack);
 
-        // TODO: NetworkData에 표시용 공격 대기열 필드가 생기면 state.versusBoards()를 복사해 설정한다.
-        // TODO: NetworkData에 이펙트 실행 여부 필드가 생기면 controller.GetLineClearEffectRunning()을 설정한다.
-        // TODO: NetworkData에 이펙트 ID 필드가 생기면 controller.GetEffectId()를 설정한다.
-        // TODO: NetworkData에 삭제 행 위치 필드가 생기면 controller.GetClearedRows()를 복사해 설정한다.
+        List<BoardElement[][]> versusBoards = new ArrayList<>();
+        if (state.versusBoards() != null) {
+            for (BoardElement[][] versusBoard : state.versusBoards()) {
+                versusBoards.add(CopyBoard(versusBoard));
+            }
+        }
+        data.SetVersusBoards(versusBoards);
+        data.SetEffectRunning(controller.GetLineClearEffectRunning());
+        data.SetEffectId(controller.GetEffectId());
+        data.SetClearedRows(controller.GetClearedRows().clone());
     }
 
     // 고정 보드와 새 공격에 공용으로 사용하며 각 셀까지 복사하고 없는 공격은 null로 반환한다.

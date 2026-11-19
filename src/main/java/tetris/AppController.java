@@ -14,6 +14,7 @@ import javafx.scene.Parent;
 import javafx.scene.layout.VBox;
 
 import tetris.gameoverscene.GameOverRoot;
+import tetris.gameoverscene.VersusOverRoot;
 import tetris.gamescene.GameController;
 import tetris.gamescene.GameResult;
 import tetris.onlinemulti.OnlineMultiController;
@@ -25,7 +26,7 @@ import tetris.settings.GameSettings.PlayMode;
 import tetris.scoreboard.ScoreBoardScreen;
 import tetris.settings.SettingsScreen;
 import tetris.versusmode.VersusManager;
-import tetris.versusmode.VersusManager.MatchResult;
+import tetris.versusmode.VersusResult;
 
 /**
  * Scene과 Stage를 가진 시작 화면 루트를 받아, 하나의 창에서 화면을 전환한다.
@@ -39,7 +40,6 @@ public class AppController {
     private GameController gameController;
     private VersusManager versusManager;
     private PauseScene pauseScene;
-    private GameOverRoot gameOverRoot;
     private boolean onlineMatchActive;
 
     public AppController(Stage stage, Scene scene, SettingsStore settingsStore) {
@@ -91,7 +91,7 @@ public class AppController {
         onlineMultiController.close();
     }
 
-    private void startGame(PlayMode playMode, GameSettings gameSettings) {
+    private void StartGame(PlayMode playMode, GameSettings gameSettings) {
         scene.setOnKeyPressed(null);// 게임 시작 시 키 이벤트 초기화
         if(playMode == PlayMode.SOLO) {
             gameController = new GameController(
@@ -106,29 +106,9 @@ public class AppController {
             versusManager.GetRoot().requestFocus();
             versusManager.GameStart();
         }
-        else if (playMode == PlayMode.ONLINE) {
-            startOnlineMatch();
-        }
+      
     }
 
-    // 로비 START 수신 시 온라인 대전을 시작하고, 연결은 채팅용으로 유지한다.
-    private void startOnlineMatch() {
-        if (onlineMultiController.getLobby() != null) {
-            settingsStore.saveGameMode(onlineMultiController.getLobby().getMode());
-        }
-        GameSettings gameSettings = settingsStore.gameSettingsFor(PlayMode.ONLINE);
-        onlineMatchActive = true;
-        pauseScene = null;
-        versusManager = null;
-        onlineMultiController.clearIncomingChatHandler();
-        scene.setOnKeyPressed(null);
-        gameController = new GameController(
-                this::ShowPauseScreen, this::ShowOnlineEndGame, gameSettings);
-        stage.setTitle("Tetris - 온라인 대전");
-        scene.setRoot(gameController.GetRoot());
-        gameController.GetRoot().requestFocus();
-        gameController.GameStart();
-    }
 
     public void ShowSettings() {
         SettingsScreen settingsScreen = new SettingsScreen();
@@ -204,31 +184,20 @@ public class AppController {
 
     public void ShowSoloEndGame(GameResult result) {
         scene.setOnKeyPressed(null);
-        gameOverRoot = new GameOverRoot(result, this::ShowStartScreen);
+        GameOverRoot gameOverRoot = new GameOverRoot(result, this::ShowStartScreen);
         scene.setRoot(gameOverRoot);
         gameOverRoot.requestFocus();
         gameController = null;
         pauseScene = null;
     }
 
-    private void ShowOnlineEndGame(GameResult result) {
-        onlineMultiController.clearIncomingChatHandler();
-        onlineMatchActive = false;
+    public void ShowMultiEndGame(VersusResult result) {
+        scene.setOnKeyPressed(null);
+        VersusOverRoot versusOverRoot = new VersusOverRoot(result, this::ShowStartScreen);
+        scene.setRoot(versusOverRoot.getRoot());
+        versusOverRoot.focusBackButton();
+        versusManager = null;
         pauseScene = null;
-        gameController = null;
-        if (onlineMultiController.hasActiveLobby()) {
-            onlineMultiController.showCurrentLobby();
-        } else {
-            ShowStartScreen();
-        }
-    }
-
-    public void ShowMultiEndGame(GameResult result) {
-        //TODO: 멀티플레이 종료 화면 구현
-    }
-
-    public void ShowMultiEndGame(MatchResult result) {
-        //TODO: 대전 결과를 받는 멀티플레이 종료 화면 구현
     }
 
     // 게임 모드 선택 화면을 표시하고, 선택된 모드에 따라 게임 설정을 저장
@@ -334,7 +303,7 @@ public class AppController {
             GameMode selectedMode = availableModes[i];
             modebuttons[i].setOnAction(event -> {
                 settingsStore.saveGameMode(selectedMode);
-                startGame(playMode, settingsStore.gameSettingsFor(playMode));
+                StartGame(playMode, settingsStore.gameSettingsFor(playMode));
             });
         }
     }

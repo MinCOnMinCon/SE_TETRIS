@@ -27,6 +27,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
     private volatile boolean running;
     private final Object writeLock = new Object();
     private volatile Consumer<String> networkPayloadHandler = payload -> {};
+    private volatile boolean connected;
     private volatile Consumer<String> incomingChatHandler;
     private volatile Runnable onMatchStart = () -> {};
 
@@ -92,8 +93,13 @@ public final class OnlineLobbyServer implements AutoCloseable {
         }
     }
 
+    public boolean isConnected() {
+        return connected;
+    }
+
     @Override
     public void close() {
+        connected = false;
         running = false;
         if (clientHeartbeat != null) {
             clientHeartbeat.close();
@@ -116,6 +122,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
                     clientWriter = new PrintWriter(
                             new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
                 }
+                connected = true;
                 ConnectionHeartbeat heartbeat = new ConnectionHeartbeat(
                         () -> sendHeartbeat(socket, "PING"),
                         () -> sendHeartbeat(socket, "PONG"),
@@ -126,6 +133,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 sendMode(lobby.getMode());
                 readClient(socket, heartbeat);
             } catch (IOException exception) {
+                connected = false;
                 if (running) {
                     Platform.runLater(() -> lobby.setClientConnected(false));
                 }
@@ -150,6 +158,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 }
             }
         } finally {
+            connected = false;
             heartbeat.close();
             if (clientHeartbeat == heartbeat) {
                 clientHeartbeat = null;
