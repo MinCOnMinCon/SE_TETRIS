@@ -9,8 +9,10 @@ public record VersusResult(
         public enum LocalWinLose {
         LOCALWIN,
         LOCALLOSE,
+        LOCALDRAW,
         WIN,
-        LOSE
+        LOSE,
+        DRAW
     }
         public VersusResult(int hostScore, int clientScore, LocalWinLose localWinLose) {
             this((localWinLose == LocalWinLose.LOCALWIN || localWinLose == LocalWinLose.LOCALLOSE) ? 
