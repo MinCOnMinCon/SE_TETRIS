@@ -58,13 +58,13 @@ public class GameSceneTest {
                 scene.setRoot(pauseScene.GetRoot());
                 pauseScene.GetRoot().requestFocus();
             }, result -> {
-                GameOverRoot gameOverRoot = new GameOverRoot(result, Platform::exit);
-                scene.setRoot(gameOverRoot);
-                gameOverRoot.requestFocus();
-                // VersusResult VResult = new VersusResult(123,234, 0);
-                // VersusOverRoot versusOverRoot = new VersusOverRoot(VResult, Platform::exit);
-                // scene.setRoot(versusOverRoot.getRoot());
-                // versusOverRoot.getRoot().requestFocus();
+                // GameOverRoot gameOverRoot = new GameOverRoot(result, Platform::exit);
+                // scene.setRoot(gameOverRoot);
+                // gameOverRoot.requestFocus();
+                VersusResult VResult = new VersusResult(123,234, VersusResult.LocalWinLose.LOCALWIN);
+                VersusOverRoot versusOverRoot = new VersusOverRoot(VResult, Platform::exit);
+                scene.setRoot(versusOverRoot.getRoot());
+                versusOverRoot.getRoot().requestFocus();
             }, testSettings, INITIAL_CLEARED_LINE_COUNT);
             scene.setRoot(gameController.GetRoot());
             stage.setTitle("GameSceneTest");

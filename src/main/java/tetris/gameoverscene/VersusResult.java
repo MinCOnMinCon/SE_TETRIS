@@ -5,12 +5,18 @@ public record VersusResult(
     int hostScore,
     String clientName,
     int clientScore,
-    // 0: Local, 1: Win, 2: Lose
-    int LocalWinLose) {
-        public VersusResult(int hostScore, int clientScore, int LocalWinLose){
-            this("호스트", hostScore, "클라이언트", clientScore, LocalWinLose);
-        }
-        public VersusResult(int hostScore, int clientScore){
-            this("플레이어1", hostScore, "플레이어2", clientScore, 0);
+    LocalWinLose localWinLose) {
+        public enum LocalWinLose {
+        LOCALWIN,
+        LOCALLOSE,
+        WIN,
+        LOSE
+    }
+        public VersusResult(int hostScore, int clientScore, LocalWinLose localWinLose) {
+            this((localWinLose == LocalWinLose.LOCALWIN || localWinLose == LocalWinLose.LOCALLOSE) ? 
+                "플레이어1" : "호스트", hostScore,
+                (localWinLose == LocalWinLose.LOCALWIN || localWinLose == LocalWinLose.LOCALLOSE) ? 
+                "플레이어2" : "클라이언트", clientScore, 
+                localWinLose);
         }
 }

@@ -16,9 +16,11 @@ public class VersusOverRoot {
     // score
     private HBox scoreBox;
     private VBox hostScoreBox;
+    private Label hostLocalWinLabel;
     private Label hostName;
     private Label hostScore;
     private VBox clientScoreBox;
+    private Label clientLocalWinLabel;
     private Label clientName;
     private Label clientScore;
 
@@ -45,15 +47,26 @@ public class VersusOverRoot {
         // 1. 텍스트 추가 (Label)
         titleLabel = new Label();
         titleLabel.setStyle("-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: red;");
-        switch (result.LocalWinLose()) {
-            case 0:
+        switch (result.localWinLose()) {
+            case VersusResult.LocalWinLose.LOCALWIN:
                 titleLabel.setText("GAME OVER");
+                hostLocalWinLabel = new Label("WIN");
+                hostLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: yellow;");
+                clientLocalWinLabel = new Label("LOSE");
+                clientLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: red;");
                 break;
-            case 1:
+            case VersusResult.LocalWinLose.LOCALLOSE:
+                titleLabel.setText("GAME OVER");
+                hostLocalWinLabel = new Label("LOSE");
+                hostLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: red;");
+                clientLocalWinLabel = new Label("WIN");
+                clientLocalWinLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: yellow;");
+                break;
+            case VersusResult.LocalWinLose.WIN:
                 titleLabel.setText("WIN");
                 titleLabel.setStyle("-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: yellow;");
                 break;
-            case 2:
+            case VersusResult.LocalWinLose.LOSE:
                 titleLabel.setText("LOSE");
                 break;
             default:
@@ -77,8 +90,9 @@ public class VersusOverRoot {
         clientScore.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
 
         // 3. 시작화면 버튼 추가 (Button)
-        switch (result.LocalWinLose()) {
-            case 0:
+        switch (result.localWinLose()) {
+            case VersusResult.LocalWinLose.LOCALWIN:
+            case VersusResult.LocalWinLose.LOCALLOSE:
                 startMenuButton = new Button("시작화면");
                 break;
             default:
@@ -102,8 +116,14 @@ public class VersusOverRoot {
         baseVbox.getChildren().add(titleLabel);
 
         // 2. 점수 추가 (HBox, VBox)
+        if (hostLocalWinLabel != null)
+            hostScoreBox.getChildren().add(hostLocalWinLabel);
         hostScoreBox.getChildren().addAll(hostName, hostScore);
+
+        if (clientLocalWinLabel != null)
+            clientScoreBox.getChildren().add(clientLocalWinLabel);
         clientScoreBox.getChildren().addAll(clientName, clientScore);
+        
         hostScoreBox.setAlignment(Pos.CENTER);
         clientScoreBox.setAlignment(Pos.CENTER);
 
