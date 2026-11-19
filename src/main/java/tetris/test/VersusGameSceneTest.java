@@ -3,6 +3,7 @@ package tetris.test;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import tetris.gameoverscene.VersusOverRoot;
@@ -17,6 +18,7 @@ import tetris.settings.GameSettings.ColorBlindMode;
 import tetris.versusmode.VersusManager;
 import tetris.versusmode.VersusManager.MatchOutcome;
 import tetris.versusmode.VersusManager.MatchResult;
+import tetris.versusmode.VersusManager.Player;
 
 // 로컬 2인 대전 모드를 직접 생성해 아이템 블록과 대전 동작을 확인한다.
 public class VersusGameSceneTest {
@@ -70,6 +72,17 @@ public class VersusGameSceneTest {
                 scene.setRoot(versusOverRoot.getRoot());
                 versusOverRoot.getRoot().requestFocus();
             }, INITIAL_CLEARED_LINE_COUNT);
+            scene.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.DIGIT1) {
+                    versusManager.AddTestAttack(Player.PLAYER2, 10);
+                } else if (event.getCode() == KeyCode.DIGIT2) {
+                    versusManager.AddTestAttack(Player.PLAYER2, 20);
+                } else if (event.getCode() == KeyCode.DIGIT3) {
+                    versusManager.AddTestAttack(Player.PLAYER1, 10);
+                } else if (event.getCode() == KeyCode.DIGIT4) {
+                    versusManager.AddTestAttack(Player.PLAYER1, 20);
+                }
+            });
             scene.setRoot(versusManager.GetRoot());
             stage.setTitle("VersusGameSceneTest");
             stage.setScene(scene);

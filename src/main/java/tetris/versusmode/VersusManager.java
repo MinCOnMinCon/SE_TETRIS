@@ -7,8 +7,9 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.scene.Parent;
 import javafx.util.Duration;
-import tetris.gamescene.GameController;
+import tetris.block.data.ColorType;
 import tetris.gamescene.board.BoardElement;
+import tetris.gamescene.GameController;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.GameMode;
 
@@ -140,6 +141,29 @@ public class VersusManager {
         if (attack != null) {
             target.AddVersusBoards(attack);
         }
+    }
+
+    // 테스트용 임의 공격을 지정한 플레이어의 대기열에 추가한다.
+    public void AddTestAttack(Player target, int lineCount) {
+        Objects.requireNonNull(target);
+        if (lineCount != 10 && lineCount != 20) {
+            throw new IllegalArgumentException("테스트 공격 줄 수는 10 또는 20이어야 합니다.");
+        }
+
+        BoardElement[][] attack = new BoardElement[lineCount][10];
+        for (int row = 0; row < attack.length; row++) {
+            for (int col = 0; col < attack[row].length; col++) {
+                attack[row][col] = new BoardElement(
+                        col == (row % attack[row].length) ? ColorType.NONE : ColorType.GRAY,
+                        col != (row % attack[row].length),
+                        0);
+            }
+        }
+
+        GameController targetController =
+                target == Player.PLAYER1 ? player1 : player2;
+        targetController.AddVersusBoards(attack);
+        System.out.println(target + "에게 " + lineCount + "줄 테스트 공격을 추가했습니다.");
     }
 
     private void EndMatch(MatchOutcome outcome) { // HandlePlayerDefeat, HandleTimeExpired 함수로 호출됨. 게임을 정리하는 역할
