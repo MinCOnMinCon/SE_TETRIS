@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.match;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,6 +15,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import javafx.application.Platform;
+import tetris.onlinemulti.lobby.OnlineLobbyClient;
+import tetris.onlinemulti.lobby.OnlineLobbyScreen;
+import tetris.onlinemulti.lobby.OnlineLobbyServer;
+import tetris.onlinemulti.network.MessageType;
+import tetris.onlinemulti.network.NetworkData;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;

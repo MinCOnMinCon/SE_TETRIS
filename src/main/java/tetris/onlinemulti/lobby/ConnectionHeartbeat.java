@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.lobby;
 
 import java.util.Objects;
 import java.util.concurrent.Executors;

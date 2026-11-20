@@ -57,12 +57,12 @@ public class VersusManager {
     };
 
 
-    public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<MatchResult> onMatchEnded) {
+    public VersusManager(GameSettings settings, Runnable onPauseRequested, Consumer<VersusResult> onMatchEnded) {
         this(settings, onPauseRequested, onMatchEnded, 0);
     }
 
     public VersusManager(GameSettings settings, Runnable onPauseRequested,
-            Consumer<MatchResult> onMatchEnded, int initialClearedLineCount) {
+            Consumer<VersusResult> onMatchEnded, int initialClearedLineCount) {
         Objects.requireNonNull(settings);
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested);
         this.onMatchEnded = Objects.requireNonNull(onMatchEnded);
@@ -168,7 +168,8 @@ public class VersusManager {
     private void EndMatch(MatchOutcome outcome) { // HandlePlayerDefeat, HandleTimeExpired 함수로 호출됨. 게임을 정리하는 역할
         if (state == MatchState.ENDED) return;
         state = MatchState.ENDED;
-        this.result = new VersusResult( player1.GetScore(), player2.GetScore());// TODO: 나중에 outcome 추가할 것
+        this.result = new VersusResult(
+                player1.GetScore(), player2.GetScore(), toLocalWinLose(outcome));
         input.SetInputEnabled(false);
         updateLoop.stop();
         GetRoot().setOnKeyPressed(null);
@@ -179,6 +180,14 @@ public class VersusManager {
         PauseTransition finishDelay = new PauseTransition(Duration.seconds(3));
         finishDelay.setOnFinished(event -> onMatchEnded.accept(this.result));
         finishDelay.play();
+    }
+
+    private VersusResult.LocalWinLose toLocalWinLose(MatchOutcome outcome) {
+        return switch (outcome) {
+            case PLAYER1_WIN -> VersusResult.LocalWinLose.LOCALWIN;
+            case PLAYER2_WIN -> VersusResult.LocalWinLose.LOCALLOSE;
+            case DRAW -> VersusResult.LocalWinLose.LOCALDRAW;
+        };
     }
 
     public Parent GetRoot() { return renderer.GetRoot(); }

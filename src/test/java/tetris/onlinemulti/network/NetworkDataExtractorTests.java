@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.network;
 
 import static org.junit.jupiter.api.Assertions.*;
 

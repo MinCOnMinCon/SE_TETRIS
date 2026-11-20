@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.match;
 
 import java.util.Objects;
 

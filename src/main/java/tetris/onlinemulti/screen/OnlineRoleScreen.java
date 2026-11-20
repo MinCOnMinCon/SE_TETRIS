@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.screen;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

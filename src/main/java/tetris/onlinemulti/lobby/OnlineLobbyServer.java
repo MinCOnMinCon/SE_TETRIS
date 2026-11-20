@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.lobby;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,16 +19,13 @@ public final class OnlineLobbyServer implements AutoCloseable {
     public static final int DEFAULT_PORT = 7777;
 
     private final OnlineLobbyScreen lobby;
+    private final LobbyLineChannel channel;
     private final int requestedPort;
     private ServerSocket serverSocket;
     private volatile Socket clientSocket;
-    private PrintWriter clientWriter;
     private volatile ConnectionHeartbeat clientHeartbeat;
     private volatile boolean running;
-    private final Object writeLock = new Object();
-    private volatile Consumer<String> networkPayloadHandler = payload -> {};
     private volatile boolean connected;
-    private volatile Consumer<String> incomingChatHandler;
     private volatile Runnable onMatchStart = () -> {};
 
     public OnlineLobbyServer(OnlineLobbyScreen lobby) {
@@ -37,6 +34,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
 
     public OnlineLobbyServer(OnlineLobbyScreen lobby, int port) {
         this.lobby = lobby;
+        this.channel = new LobbyLineChannel(lobby);
         this.requestedPort = port;
     }
 
@@ -45,9 +43,9 @@ public final class OnlineLobbyServer implements AutoCloseable {
         running = true;
         lobby.showServerAddress(OnlineLobbyScreen.currentIpv4());
         lobby.setOnModeChanged(this::sendMode);
-        lobby.setOnChat(this::sendChat);
+        lobby.setOnChat(channel::sendChat);
         lobby.setOnStart(() -> {
-            send("START");
+            channel.sendLine("START");
             onMatchStart.run();
         });
         Thread acceptThread = new Thread(this::acceptLoop, "online-lobby-server");
@@ -60,14 +58,11 @@ public final class OnlineLobbyServer implements AutoCloseable {
     }
 
     public void setIncomingChatHandler(Consumer<String> handler) {
-        incomingChatHandler = handler;
+        channel.setIncomingChatHandler(handler);
     }
 
     public void sendChat(String message) {
-        if (message == null || message.isBlank()) {
-            return;
-        }
-        send("CHAT " + message);
+        channel.sendChat(message);
     }
 
     public int getPort() {
@@ -75,22 +70,15 @@ public final class OnlineLobbyServer implements AutoCloseable {
     }
 
     public void sendMode(GameMode mode) {
-        send("MODE " + (mode == null ? GameMode.NORMAL.name() : mode.name()));
+        channel.sendLine("MODE " + (mode == null ? GameMode.NORMAL.name() : mode.name()));
     }
 
-    void setNetworkPayloadHandler(Consumer<String> handler) {
-        Objects.requireNonNull(handler, "handler cannot be null");
-        networkPayloadHandler = handler;
+    public void setNetworkPayloadHandler(Consumer<String> handler) {
+        channel.setNetworkPayloadHandler(handler);
     }
 
-    void sendNetworkPayload(String payload) throws IOException {
-        synchronized (writeLock) {
-            Objects.requireNonNull(clientWriter, "Lobby client is not connected.");
-            clientWriter.println("DATA " + payload);
-            if (clientWriter.checkError()) {
-                throw new IOException("Failed to send network data.");
-            }
-        }
+    public void sendNetworkPayload(String payload) throws IOException {
+        channel.sendNetworkPayload(payload);
     }
 
     public boolean isConnected() {
@@ -107,9 +95,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
         }
         closeQuietly(clientSocket);
         closeQuietly(serverSocket);
-        synchronized (writeLock) {
-            clientWriter = null;
-        }
+        channel.clearWriter();
     }
 
     private void acceptLoop() {
@@ -118,14 +104,12 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 Socket socket = serverSocket.accept();
                 closeQuietly(clientSocket);
                 clientSocket = socket;
-                synchronized (writeLock) {
-                    clientWriter = new PrintWriter(
-                            new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
-                }
+                channel.setWriter(new PrintWriter(
+                        new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true));
                 connected = true;
                 ConnectionHeartbeat heartbeat = new ConnectionHeartbeat(
-                        () -> sendHeartbeat(socket, "PING"),
-                        () -> sendHeartbeat(socket, "PONG"),
+                        () -> channel.sendLineIf(() -> clientSocket == socket, "PING"),
+                        () -> channel.sendLineIf(() -> clientSocket == socket, "PONG"),
                         () -> closeQuietly(socket));
                 clientHeartbeat = heartbeat;
                 heartbeat.start();
@@ -148,13 +132,14 @@ public final class OnlineLobbyServer implements AutoCloseable {
             while ((line = reader.readLine()) != null) {
                 if (heartbeat.handleMessage(line)) {
                     continue;
-                } else if ("READY".equals(line)) {
+                }
+                if ("READY".equals(line)) {
                     Platform.runLater(() -> lobby.setClientReady(true));
                 } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
-                    Platform.runLater(() -> deliverIncomingChat(message));
+                    Platform.runLater(() -> channel.deliverIncomingChat(message));
                 } else if (line.startsWith("DATA ")) {
-                    networkPayloadHandler.accept(line.substring("DATA ".length()));
+                    channel.dispatchNetworkPayload(line.substring("DATA ".length()));
                 }
             }
         } finally {
@@ -163,45 +148,16 @@ public final class OnlineLobbyServer implements AutoCloseable {
             if (clientHeartbeat == heartbeat) {
                 clientHeartbeat = null;
             }
-            synchronized (writeLock) {
-                if (clientSocket == socket) {
-                    clientWriter = null;
-                    clientSocket = null;
-                }
+            if (clientSocket == socket) {
+                channel.clearWriter();
+                clientSocket = null;
             }
-            if (running) {
-                Platform.runLater(() -> {
-                    lobby.setClientConnected(false);
+            Platform.runLater(() -> {
+                lobby.setClientConnected(false);
+                if (running) {
                     lobby.addAnnouncementMessage("클라이언트 연결이 끊어졌습니다.");
-                });
-            } else {
-                Platform.runLater(() -> lobby.setClientConnected(false));
-            }
-        }
-    }
-
-    private void deliverIncomingChat(String message) {
-        Consumer<String> handler = incomingChatHandler;
-        if (handler != null) {
-            handler.accept(message);
-        } else {
-            lobby.addIncomingMessage(message);
-        }
-    }
-
-    private void send(String line) {
-        synchronized (writeLock) {
-            if (clientWriter != null) {
-                clientWriter.println(line);
-            }
-        }
-    }
-
-    private void sendHeartbeat(Socket socket, String line) {
-        synchronized (writeLock) {
-            if (clientSocket == socket && clientWriter != null) {
-                clientWriter.println(line);
-            }
+                }
+            });
         }
     }
 

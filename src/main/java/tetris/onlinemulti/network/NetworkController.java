@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.BoardElement;
+import tetris.onlinemulti.lobby.OnlineLobbyClient;
+import tetris.onlinemulti.lobby.OnlineLobbyServer;
 
 public final class NetworkController {
     private static final System.Logger LOGGER = System.getLogger(NetworkController.class.getName());

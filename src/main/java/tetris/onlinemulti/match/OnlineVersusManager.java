@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.match;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -13,6 +13,12 @@ import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.scenerender.RenderConfig;
 import tetris.gamescene.scenerender.SceneRenderState;
+import tetris.onlinemulti.lobby.OnlineLobbyClient;
+import tetris.onlinemulti.lobby.OnlineLobbyServer;
+import tetris.onlinemulti.network.MessageType;
+import tetris.onlinemulti.network.NetworkController;
+import tetris.onlinemulti.network.NetworkData;
+import tetris.onlinemulti.network.NetworkDataExtractor;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.GameMode;
 import tetris.settings.GameSettings.PlayMode;
