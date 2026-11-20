@@ -106,9 +106,26 @@ public class AppController {
             versusManager.GetRoot().requestFocus();
             versusManager.GameStart();
         }
-      
     }
 
+    // 로비 START 수신 시 온라인 대전을 시작하고, 연결은 채팅용으로 유지한다.
+    private void startOnlineMatch() {
+        if (onlineMultiController.getLobby() != null) {
+            settingsStore.saveGameMode(onlineMultiController.getLobby().getMode());
+        }
+        GameSettings gameSettings = settingsStore.gameSettingsFor(PlayMode.ONLINE);
+        onlineMatchActive = true;
+        pauseScene = null;
+        versusManager = null;
+        onlineMultiController.clearIncomingChatHandler();
+        scene.setOnKeyPressed(null);
+        gameController = new GameController(
+                this::ShowPauseScreen, this::ShowOnlineEndGame, gameSettings);
+        stage.setTitle("Tetris - 온라인 대전");
+        scene.setRoot(gameController.GetRoot());
+        gameController.GetRoot().requestFocus();
+        gameController.GameStart();
+    }
 
     public void ShowSettings() {
         SettingsScreen settingsScreen = new SettingsScreen();
@@ -198,6 +215,18 @@ public class AppController {
         versusOverRoot.focusBackButton();
         versusManager = null;
         pauseScene = null;
+    }
+
+    private void ShowOnlineEndGame(GameResult result) {
+        onlineMultiController.clearIncomingChatHandler();
+        onlineMatchActive = false;
+        pauseScene = null;
+        gameController = null;
+        if (onlineMultiController.hasActiveLobby()) {
+            onlineMultiController.showCurrentLobby();
+        } else {
+            ShowStartScreen();
+        }
     }
 
     // 게임 모드 선택 화면을 표시하고, 선택된 모드에 따라 게임 설정을 저장

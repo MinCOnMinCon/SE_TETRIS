@@ -6,13 +6,21 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javafx.scene.Parent;
+import tetris.onlinemulti.lobby.OnlineLobbyController;
+import tetris.onlinemulti.lobby.OnlineLobbyScreen;
+import tetris.onlinemulti.screen.OnlineConnectScreen;
+import tetris.onlinemulti.screen.OnlineRoleScreen;
+import tetris.onlinemulti.screen.RecentHostStore;
 import tetris.settings.SettingsStore;
 
 // 온라인 멀티 관련 화면을 전환하고, scene 교체는 AppController에 요청한다.
 public final class OnlineMultiController implements AutoCloseable {
+    private static final String TITLE_ROLE = "Tetris - 온라인";
+    private static final String TITLE_LOBBY = "Tetris - 대전 대기";
+    private static final String TITLE_CONNECT = "Tetris - 온라인 접속";
+
     private final SettingsStore settingsStore;
     private final BiConsumer<String, Parent> onScreenChanged;
-    private final Runnable onMatchStart;
     private final OnlineLobbyController lobbyController = new OnlineLobbyController();
     private Runnable onBackToStart;
     private OnlineConnectScreen connectScreen;
@@ -22,8 +30,8 @@ public final class OnlineMultiController implements AutoCloseable {
             Runnable onMatchStart) {
         this.settingsStore = Objects.requireNonNull(settingsStore, "settingsStore cannot be null");
         this.onScreenChanged = Objects.requireNonNull(onScreenChanged, "onScreenChanged cannot be null");
-        this.onMatchStart = Objects.requireNonNull(onMatchStart, "onMatchStart cannot be null");
-        lobbyController.setOnMatchStart(this.onMatchStart);
+        lobbyController.setOnMatchStart(
+                Objects.requireNonNull(onMatchStart, "onMatchStart cannot be null"));
     }
 
     public void show(Runnable onBackToStart) {
@@ -36,7 +44,7 @@ public final class OnlineMultiController implements AutoCloseable {
     }
 
     public boolean hasActiveLobby() {
-        return lobbyController.getLobby() != null;
+        return getLobby() != null;
     }
 
     public String chatDisplayName() {
@@ -52,16 +60,16 @@ public final class OnlineMultiController implements AutoCloseable {
     }
 
     public void clearIncomingChatHandler() {
-        lobbyController.clearIncomingChatHandler();
+        setIncomingChatHandler(null);
     }
 
     public void showCurrentLobby() {
-        OnlineLobbyScreen lobby = lobbyController.getLobby();
+        OnlineLobbyScreen lobby = getLobby();
         if (lobby == null) {
             showRoleScreen(null);
             return;
         }
-        requestScreen("Tetris - 대전 대기", lobby.getRoot());
+        requestScreen(TITLE_LOBBY, lobby.getRoot());
     }
 
     @Override
@@ -75,7 +83,7 @@ public final class OnlineMultiController implements AutoCloseable {
         OnlineRoleScreen roleScreen = new OnlineRoleScreen(
                 this::showServerLobby, this::showConnectScreen, this::returnToStart);
         roleScreen.showError(errorMessage);
-        requestScreen("Tetris - 온라인", roleScreen.getRoot());
+        requestScreen(TITLE_ROLE, roleScreen.getRoot());
     }
 
     private void showServerLobby() {
@@ -83,7 +91,7 @@ public final class OnlineMultiController implements AutoCloseable {
         try {
             OnlineLobbyScreen lobby = lobbyController.startServer(
                     settingsStore.getGameMode(), () -> showRoleScreen(null));
-            requestScreen("Tetris - 대전 대기", lobby.getRoot());
+            requestScreen(TITLE_LOBBY, lobby.getRoot());
         } catch (IOException exception) {
             showRoleScreen("서버 포트를 열 수 없습니다.");
         }
@@ -93,7 +101,7 @@ public final class OnlineMultiController implements AutoCloseable {
         close();
         connectScreen = new OnlineConnectScreen(
                 new RecentHostStore(), this::connectClient, () -> showRoleScreen(null));
-        requestScreen("Tetris - 온라인 접속", connectScreen.getRoot());
+        requestScreen(TITLE_CONNECT, connectScreen.getRoot());
     }
 
     private void connectClient(String host) {
@@ -102,7 +110,7 @@ public final class OnlineMultiController implements AutoCloseable {
                 host,
                 settingsStore.getGameMode(),
                 () -> showRoleScreen(null),
-                lobby -> requestScreen("Tetris - 대전 대기", lobby.getRoot()),
+                lobby -> requestScreen(TITLE_LOBBY, lobby.getRoot()),
                 error -> {
                     if (connectScreen == currentConnectScreen) {
                         currentConnectScreen.showError(error);

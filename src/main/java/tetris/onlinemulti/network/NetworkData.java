@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.network;
 
 import java.io.Serializable;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
-import tetris.onlinemulti.OnlineVersusManager.MatchOutcome;
+import tetris.onlinemulti.match.OnlineVersusManager.MatchOutcome;
 
 public class NetworkData implements Serializable {
     // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.

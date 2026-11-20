@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.screen;
 
 import java.io.IOException;
 import java.nio.file.Files;

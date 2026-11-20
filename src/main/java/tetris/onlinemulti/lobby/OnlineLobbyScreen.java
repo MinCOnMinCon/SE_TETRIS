@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.lobby;
 
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
@@ -74,6 +74,10 @@ public final class OnlineLobbyScreen {
 
     public Role getRole() {
         return role;
+    }
+
+    public String chatDisplayName() {
+        return role == Role.SERVER ? "Server" : "Client";
     }
 
     public GameMode getMode() {
@@ -241,7 +245,7 @@ public final class OnlineLobbyScreen {
         if (text.isEmpty()) {
             return;
         }
-        String line = (role == Role.SERVER ? "Server" : "Client") + ": " + text;
+        String line = chatDisplayName() + ": " + text;
         addIncomingMessage(line);
         if (onChat != null) {
             onChat.accept(line);

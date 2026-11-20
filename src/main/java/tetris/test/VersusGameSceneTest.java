@@ -7,7 +7,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import tetris.gameoverscene.VersusOverRoot;
-import tetris.gameoverscene.VersusResult;
 import tetris.pausescene.PauseScene;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.Difficulty;
@@ -16,9 +15,8 @@ import tetris.settings.GameSettings.PlayMode;
 import tetris.settings.SettingsStore;
 import tetris.settings.GameSettings.ColorBlindMode;
 import tetris.versusmode.VersusManager;
-import tetris.versusmode.VersusManager.MatchOutcome;
-import tetris.versusmode.VersusManager.MatchResult;
 import tetris.versusmode.VersusManager.Player;
+import tetris.versusmode.VersusResult;
 
 // 로컬 2인 대전 모드를 직접 생성해 아이템 블록과 대전 동작을 확인한다.
 public class VersusGameSceneTest {
@@ -64,11 +62,8 @@ public class VersusGameSceneTest {
                 scene.setRoot(pauseScene.GetRoot());
                 pauseScene.GetRoot().requestFocus();
             }, result -> {
-                VersusResult.LocalWinLose localWinLose = toLocalWinLose(result);
-                VersusResult versusResult = new VersusResult(
-                        result.player1Score(), result.player2Score(), localWinLose);
                 VersusOverRoot versusOverRoot =
-                        new VersusOverRoot(versusResult, Platform::exit);
+                        new VersusOverRoot(result, Platform::exit);
                 scene.setRoot(versusOverRoot.getRoot());
                 versusOverRoot.getRoot().requestFocus();
             }, INITIAL_CLEARED_LINE_COUNT);
@@ -89,18 +84,6 @@ public class VersusGameSceneTest {
             stage.show();
             versusManager.GetRoot().requestFocus();
             versusManager.GameStart();
-        }
-
-        private VersusResult.LocalWinLose toLocalWinLose(MatchResult result) {
-            if (result.outcome() == MatchOutcome.PLAYER1_WIN) {
-                return VersusResult.LocalWinLose.LOCALWIN;
-            }
-            if (result.outcome() == MatchOutcome.PLAYER2_WIN) {
-                return VersusResult.LocalWinLose.LOCALLOSE;
-            }
-            return result.player1Score() >= result.player2Score()
-                    ? VersusResult.LocalWinLose.LOCALWIN
-                    : VersusResult.LocalWinLose.LOCALLOSE;
         }
     }
 }

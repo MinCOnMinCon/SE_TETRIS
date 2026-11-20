@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.network;
 
 public enum MessageType {
     DATA,

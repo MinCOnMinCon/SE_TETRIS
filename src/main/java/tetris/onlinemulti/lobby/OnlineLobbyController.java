@@ -1,10 +1,11 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.lobby;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
+import tetris.onlinemulti.screen.RecentHostStore;
 import tetris.settings.GameSettings.GameMode;
 
 // 온라인 대기실 화면과 서버·클라이언트 연결을 제어한다.
@@ -92,10 +93,7 @@ public final class OnlineLobbyController implements AutoCloseable {
     }
 
     public String chatDisplayName() {
-        if (lobby == null) {
-            return "Player";
-        }
-        return lobby.getRole() == OnlineLobbyScreen.Role.SERVER ? "Server" : "Client";
+        return lobby == null ? "Player" : lobby.chatDisplayName();
     }
 
     public void sendChat(String message) {

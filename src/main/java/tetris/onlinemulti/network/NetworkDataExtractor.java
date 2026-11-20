@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.network;
 
 import java.util.ArrayList;
 import java.util.List;

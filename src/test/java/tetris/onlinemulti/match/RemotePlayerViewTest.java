@@ -1,4 +1,4 @@
-package tetris.onlinemulti;
+package tetris.onlinemulti.match;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
