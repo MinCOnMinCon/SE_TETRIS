@@ -10,8 +10,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+
+import tetris.onlinemulti.network.PingLatency;
 
 class ConnectionHeartbeatTest {
     @Test
@@ -39,6 +42,23 @@ class ConnectionHeartbeatTest {
             heartbeat.start();
             assertTrue(timedOut.await(1, TimeUnit.SECONDS));
             assertTrue(pingsSent.get() > 0);
+        } finally {
+            heartbeat.close();
+        }
+    }
+
+    @Test
+    void measuresLatencyWhenPongArrives() throws InterruptedException {
+        PingLatency pingLatency = new PingLatency();
+        AtomicReference<String> latencyText = new AtomicReference<>();
+        ConnectionHeartbeat heartbeat = new ConnectionHeartbeat(
+                () -> {}, () -> {}, () -> {}, 20, 200, pingLatency, latencyText::set);
+        try {
+            heartbeat.start();
+            Thread.sleep(40);
+            assertTrue(heartbeat.handleMessage("PONG"));
+            assertTrue(pingLatency.getLatencyMs() >= 0);
+            assertEquals(pingLatency.formatLatency(), latencyText.get());
         } finally {
             heartbeat.close();
         }

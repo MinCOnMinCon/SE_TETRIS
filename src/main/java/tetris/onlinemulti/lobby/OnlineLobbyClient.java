@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
+import tetris.onlinemulti.network.PingLatency;
 import tetris.settings.GameSettings.GameMode;
 
 // 대기실 클라이언트. 호스트의 모드를 받고 준비 상태를 보낸다.
@@ -21,11 +22,13 @@ public final class OnlineLobbyClient implements AutoCloseable {
     private final int port;
     private final OnlineLobbyScreen lobby;
     private final LobbyLineChannel channel;
+    private final PingLatency pingLatency = new PingLatency();
     private volatile Socket socket;
     private volatile ConnectionHeartbeat heartbeat;
     private volatile boolean intentionallyClosed;
     private volatile boolean connected;
     private volatile Runnable onMatchStart = () -> {};
+    private volatile Consumer<String> pingListener = text -> {};
 
     public OnlineLobbyClient(String hostText, OnlineLobbyScreen lobby) {
         HostAddress address = HostAddress.parse(hostText);
@@ -60,18 +63,34 @@ public final class OnlineLobbyClient implements AutoCloseable {
         channel.setWriter(new PrintWriter(
                 new OutputStreamWriter(connectedSocket.getOutputStream(), StandardCharsets.UTF_8), true));
         connected = true;
+        pingLatency.reset();
         ConnectionHeartbeat connectionHeartbeat = new ConnectionHeartbeat(
                 () -> channel.sendLineIf(() -> socket == connectedSocket, "PING"),
                 () -> channel.sendLineIf(() -> socket == connectedSocket, "PONG"),
-                () -> closeQuietly(connectedSocket));
+                () -> closeQuietly(connectedSocket),
+                pingLatency,
+                this::publishPing);
         heartbeat = connectionHeartbeat;
         connectionHeartbeat.start();
         lobby.setOnChat(channel::sendChat);
-        Platform.runLater(() -> lobby.showServerAddress(host));
+        Platform.runLater(() -> {
+            lobby.showServerAddress(host);
+            lobby.updatePingDisplay(pingLatency.formatLatency());
+            lobby.setClientConnected(true);
+            lobby.addAnnouncementMessage("서버 접속에 성공했습니다. (" + host + ":" + port + ")");
+        });
         Thread readerThread = new Thread(
                 () -> readHost(connectedSocket, connectionHeartbeat), "online-lobby-client");
         readerThread.setDaemon(true);
         readerThread.start();
+    }
+
+    public void setPingListener(Consumer<String> listener) {
+        pingListener = listener == null ? text -> {} : listener;
+    }
+
+    public PingLatency getPingLatency() {
+        return pingLatency;
     }
 
     public void setOnMatchStart(Runnable onMatchStart) {
@@ -88,7 +107,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
 
     public void sendReady() {
         channel.sendLine("READY");
-        lobby.addAnnouncementMessage("Client가 준비를 완료했습니다.");
+        lobby.addAnnouncementMessage("준비를 완료했습니다.");
     }
 
     public void setNetworkPayloadHandler(Consumer<String> handler) {
@@ -152,10 +171,24 @@ public final class OnlineLobbyClient implements AutoCloseable {
             if (!intentionallyClosed) {
                 Platform.runLater(() -> {
                     lobby.setClientConnected(false);
+                    resetPingDisplay();
                     lobby.addAnnouncementMessage("서버 연결이 끊어졌습니다.");
                 });
             }
         }
+    }
+
+    private void publishPing(String text) {
+        Platform.runLater(() -> {
+            lobby.updatePingDisplay(text);
+            pingListener.accept(text);
+        });
+    }
+
+    private void resetPingDisplay() {
+        pingLatency.reset();
+        lobby.updatePingDisplay(pingLatency.formatLatency());
+        pingListener.accept(pingLatency.formatLatency());
     }
 
     private void closeQuietly(Socket connectedSocket) {

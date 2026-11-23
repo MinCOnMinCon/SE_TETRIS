@@ -115,11 +115,11 @@ class OnlineVersusManagerTests {
         private long endFinalScore;
 
         ManagerStub(OnlineLobbyServer server, GameSettings settings) {
-            super(server, settings, () -> {}, () -> {}, reason -> {});
+            super(server, settings, () -> {}, root -> {}, result -> {}, () -> {});
         }
 
         ManagerStub(OnlineLobbyClient client, GameSettings settings) {
-            super(client, settings, () -> {}, () -> {}, reason -> {});
+            super(client, settings, () -> {}, root -> {}, result -> {}, () -> {});
         }
 
         void sendMessages() {

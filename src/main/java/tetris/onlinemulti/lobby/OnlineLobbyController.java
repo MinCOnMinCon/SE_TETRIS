@@ -92,6 +92,14 @@ public final class OnlineLobbyController implements AutoCloseable {
         return lobby;
     }
 
+    public OnlineLobbyServer getServer() {
+        return server;
+    }
+
+    public OnlineLobbyClient getClient() {
+        return client;
+    }
+
     public String chatDisplayName() {
         return lobby == null ? "Player" : lobby.chatDisplayName();
     }

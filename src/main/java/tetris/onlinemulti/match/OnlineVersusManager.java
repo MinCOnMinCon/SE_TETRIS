@@ -6,7 +6,11 @@ import java.util.function.Consumer;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
 import tetris.block.data.BlockData;
 import tetris.gamescene.GameController;
 import tetris.gamescene.board.BoardElement;
@@ -23,9 +27,10 @@ import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.GameMode;
 import tetris.settings.GameSettings.PlayMode;
 import tetris.versusmode.VersusRenderer;
+import tetris.versusmode.VersusResult;
 import tetris.versusmode.VersusTimer;
 
-public abstract class OnlineVersusManager implements AutoCloseable {
+public class OnlineVersusManager implements AutoCloseable {
     public enum MatchState { READY, RUNNING, PAUSED, ENDED }
     public enum MatchOutcome { HOST_WIN, CLIENT_WIN, DRAW }
 
@@ -37,17 +42,19 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     private NetworkDataExtractor dataExtractor;
     private RemotePlayerView remoteView;
     private VersusRenderer versusRenderer;
+    private final Label pingLabel = new Label("-- ms");
+    private StackPane matchRoot;
+    private Runnable clearPingListener = () -> {};
     private GameSettings settings;
 
     // 호스트가 제한시간 모드의 남은 시간을 관리한다.
     private final VersusTimer timer;
 
-    // 일시정지 요청을 상위 온라인 흐름에 알리는 콜백이다.
+    // 일시정지·재개·종료·로비 복귀를 상위 온라인 흐름에 알리는 콜백이다.
     protected final Runnable onPauseRequested;
-
-    // 경기 종료 후 방 복귀와 연결 이상을 상위 온라인 흐름에 전달한다.
-    private Runnable onReturnToLobby;
-    private Consumer<String> onConnectionLost;
+    protected final Consumer<Parent> onResumeRequested;
+    protected final Consumer<VersusResult> onMatchEnded;
+    protected final Runnable onReturnToLobby;
 
     // 서버 여부와 현재 경기의 상태 및 결과를 보관한다.
     private boolean isHost;
@@ -64,30 +71,40 @@ public abstract class OnlineVersusManager implements AutoCloseable {
 
     // 호스트의 게임과 화면을 먼저 구성한 뒤 로비 서버의 연결에 수신 함수를 연결한다.
     public OnlineVersusManager(OnlineLobbyServer server, GameSettings settings,
-            Runnable onPauseRequested, Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
-        this(settings, true, onPauseRequested, onReturnToLobby, onConnectionLost);
+            Runnable onPauseRequested, Consumer<Parent> onResumeRequested,
+            Consumer<VersusResult> onMatchEnded, Runnable onReturnToLobby) {
+        this(settings, true, onPauseRequested, onResumeRequested, onMatchEnded, onReturnToLobby);
         Objects.requireNonNull(server, "server cannot be null");
         networkController = new NetworkController(server, this::HandleGameData,
                 () -> Platform.runLater(() -> HandleConnectionLost("상대와의 연결이 끊어졌습니다.")));
+        server.setPingListener(this::updatePingDisplay);
+        clearPingListener = () -> server.setPingListener(null);
+        updatePingDisplay(server.getPingLatency().formatLatency());
     }
 
     // 클라이언트의 게임과 화면을 먼저 구성한 뒤 로비 클라이언트의 연결에 수신 함수를 연결한다.
     public OnlineVersusManager(OnlineLobbyClient client, GameSettings settings,
-            Runnable onPauseRequested, Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
-        this(settings, false, onPauseRequested, onReturnToLobby, onConnectionLost);
+            Runnable onPauseRequested, Consumer<Parent> onResumeRequested,
+            Consumer<VersusResult> onMatchEnded, Runnable onReturnToLobby) {
+        this(settings, false, onPauseRequested, onResumeRequested, onMatchEnded, onReturnToLobby);
         Objects.requireNonNull(client, "client cannot be null");
         networkController = new NetworkController(client, this::HandleGameData,
                 () -> Platform.runLater(() -> HandleConnectionLost("서버와의 연결이 끊어졌습니다.")));
+        client.setPingListener(this::updatePingDisplay);
+        clearPingListener = () -> client.setPingListener(null);
+        updatePingDisplay(client.getPingLatency().formatLatency());
     }
 
     // 양쪽 생성자가 공유하는 경기 설정과 화면 및 아직 시작하지 않은 갱신 루프를 준비한다.
-    private OnlineVersusManager(GameSettings settings, boolean isHost, Runnable onPauseRequested,
-            Runnable onReturnToLobby, Consumer<String> onConnectionLost) {
+    private OnlineVersusManager(GameSettings settings, boolean isHost,
+            Runnable onPauseRequested, Consumer<Parent> onResumeRequested,
+            Consumer<VersusResult> onMatchEnded, Runnable onReturnToLobby) {
         this.settings = Objects.requireNonNull(settings, "settings cannot be null");
         this.isHost = isHost;
         this.onPauseRequested = Objects.requireNonNull(onPauseRequested, "onPauseRequested cannot be null");
+        this.onResumeRequested = Objects.requireNonNull(onResumeRequested, "onResumeRequested cannot be null");
+        this.onMatchEnded = Objects.requireNonNull(onMatchEnded, "onMatchEnded cannot be null");
         this.onReturnToLobby = Objects.requireNonNull(onReturnToLobby, "onReturnToLobby cannot be null");
-        this.onConnectionLost = Objects.requireNonNull(onConnectionLost, "onConnectionLost cannot be null");
         gameMode = settings.gameMode();
         state = MatchState.READY;
         timer = isHost ? new VersusTimer(this::HandleFinalScoreRequest) : null;
@@ -100,7 +117,13 @@ public abstract class OnlineVersusManager implements AutoCloseable {
                 new GameBoard(settings.colorMode()).GetBoard(), null, 0, new BlockData[0], null);
         remoteView = new RemotePlayerView(new RenderConfig(settings, queueSize), initialRemoteState);
         versusRenderer = new VersusRenderer(localController.GetRoot(), remoteView.GetRoot(), settings);
-        versusRenderer.GetRoot().setOnKeyPressed(
+        pingLabel.setStyle("-fx-text-fill: #9eef9e; -fx-font-size: 14px; -fx-font-weight: bold;");
+        StackPane.setAlignment(pingLabel, Pos.TOP_RIGHT);
+        StackPane.setMargin(pingLabel, new Insets(12, 16, 0, 0));
+        matchRoot = new StackPane(versusRenderer.GetRoot(), pingLabel);
+        matchRoot.setStyle("-fx-background-color: black;");
+        matchRoot.setFocusTraversable(true);
+        matchRoot.setOnKeyPressed(
                 event -> localController.playerInput.HandleKeyCode(event.getCode()));
         updateLoop = new AnimationTimer() {
             @Override
@@ -110,8 +133,30 @@ public abstract class OnlineVersusManager implements AutoCloseable {
         };
     }
 
+    public void updatePingDisplay(String text) {
+        String display = text == null || text.isBlank() ? "-- ms" : text;
+        if (Platform.isFxApplicationThread()) {
+            pingLabel.setText(display);
+            return;
+        }
+        Platform.runLater(() -> pingLabel.setText(display));
+    }
+
+    public MatchState GetState() {
+        return state;
+    }
+
     // 자기 게임과 관리자 갱신 루프를 시작한다.
-    public abstract void GameStart();
+    public void GameStart() {
+        if (state != MatchState.READY) {
+            return;
+        }
+        state = MatchState.RUNNING;
+        previousFrameTime = 0;
+        localController.GameStart();
+        updateLoop.start();
+        GetRoot().requestFocus();
+    }
 
     // 진행 중인 경기의 상대 화면을 갱신하고 매 프레임 자기 상태를 전송한다.
     protected void UpdateFrame(long now) {
@@ -207,38 +252,138 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     }
 
     // 자기 게임을 정지하고 패배 사실과 최종 점수를 상대에게 알린다.
-    protected abstract void HandleLocalDefeat(long finalScore);
+    protected void HandleLocalDefeat(long finalScore) {
+        if (state == MatchState.ENDED) {
+            return;
+        }
+        MatchOutcome outcome = isHost ? MatchOutcome.CLIENT_WIN : MatchOutcome.HOST_WIN;
+        result = new MatchResult(outcome, isHost ? (int) finalScore : 0, isHost ? 0 : (int) finalScore);
+        SendGameData(MessageType.END);
+        ApplyMatchResult(result);
+    }
 
     // 상대 패배 통보로 자기 게임을 정지하고 자기 최종 점수를 보고한다.
-    public abstract void HandleRemoteDefeat(long finalScore);
+    public void HandleRemoteDefeat(long finalScore) {
+        if (state == MatchState.ENDED) {
+            return;
+        }
+        int localScore = localController.GetScore();
+        MatchOutcome outcome = isHost ? MatchOutcome.HOST_WIN : MatchOutcome.CLIENT_WIN;
+        result = isHost
+                ? new MatchResult(outcome, localScore, (int) finalScore)
+                : new MatchResult(outcome, (int) finalScore, localScore);
+        ReportFinalScore(localScore);
+        ApplyMatchResult(result);
+    }
 
     // 자기 최종 점수를 보고한다.
-    protected abstract void ReportFinalScore(int finalScore);
+    protected void ReportFinalScore(int finalScore) {
+        SendGameData(MessageType.END);
+    }
 
     // 타이머 만료 또는 상대의 요청 시 자기 게임을 정지하고 최종 점수를 보고한다.
-    public abstract void HandleFinalScoreRequest();
+    public void HandleFinalScoreRequest() {
+        if (state != MatchState.RUNNING) {
+            return;
+        }
+        ReportFinalScore(localController.GetScore());
+        int hostScore = isHost ? localController.GetScore() : 0;
+        int clientScore = isHost ? 0 : localController.GetScore();
+        // 호스트가 타이머 만료 시 점수로 승패를 확정한다. 상대 점수는 END 교환으로 보완한다.
+        MatchOutcome outcome = MatchOutcome.DRAW;
+        result = new MatchResult(outcome, hostScore, clientScore);
+        ApplyMatchResult(result);
+    }
 
     // 자신의 일시정지 또는 재개 요청을 상대에게 전달하고 공통 정지 상태 처리로 연결한다.
-    public abstract void RequestPause(boolean paused);
+    public void RequestPause(boolean paused) {
+        HandlePauseState(paused);
+        SendGameData(MessageType.PAUSE);
+        if (paused) {
+            onPauseRequested.run();
+        } else {
+            onResumeRequested.accept(GetRoot());
+        }
+    }
 
     // 자신의 요청이나 상대의 메시지에 따른 정지 상태를 게임과 입력 및 이펙트에 적용한다.
-    public abstract void HandlePauseState(boolean paused);
+    public void HandlePauseState(boolean paused) {
+        if (paused) {
+            if (state != MatchState.RUNNING) {
+                return;
+            }
+            state = MatchState.PAUSED;
+            updateLoop.stop();
+            localController.PauseGame();
+            return;
+        }
+        if (state != MatchState.PAUSED) {
+            return;
+        }
+        state = MatchState.RUNNING;
+        previousFrameTime = 0;
+        localController.ResumeGame();
+        updateLoop.start();
+    }
 
     // 현재 경기의 확정 결과를 저장하고 자기 게임과 갱신 루프를 정지한 뒤 결과를 표시한다.
-    public abstract void ApplyMatchResult(MatchResult result);
+    public void ApplyMatchResult(MatchResult result) {
+        Objects.requireNonNull(result, "result cannot be null");
+        this.result = result;
+        state = MatchState.ENDED;
+        updateLoop.stop();
+        localController.CleanGame();
+        if (matchRoot != null) {
+            matchRoot.setOnKeyPressed(null);
+        }
+        VersusResult.LocalWinLose localWinLose = toLocalWinLose(result.outcome());
+        onMatchEnded.accept(new VersusResult(result.hostScore(), result.clientScore(), localWinLose));
+    }
 
     // 경기 자원을 정리하고 연결을 유지한 채 방 복귀 콜백을 호출한다.
-    public abstract void ReturnToLobby();
+    public void ReturnToLobby() {
+        close();
+        onReturnToLobby.run();
+    }
 
     // 연결 이상으로 경기를 중단하고 상위 온라인 흐름에 원인을 전달한다.
-    public abstract void HandleConnectionLost(String reason);
+    public void HandleConnectionLost(String reason) {
+        if (state == MatchState.ENDED) {
+            ReturnToLobby();
+            return;
+        }
+        state = MatchState.ENDED;
+        updateLoop.stop();
+        localController.CleanGame();
+        ReturnToLobby();
+    }
 
     // 연결을 유지하면서 입력과 자기 게임 및 관리자 갱신 루프의 자원을 정리한다.
     @Override
-    public abstract void close();
+    public void close() {
+        if (updateLoop != null) {
+            updateLoop.stop();
+        }
+        if (localController != null) {
+            localController.CleanGame();
+        }
+        if (matchRoot != null) {
+            matchRoot.setOnKeyPressed(null);
+        }
+        clearPingListener.run();
+        clearPingListener = () -> {};
+    }
 
     // 자기 화면과 상대 화면 및 공통 UI를 합친 대전 화면 루트를 반환한다.
     public Parent GetRoot() {
-        return versusRenderer.GetRoot();
+        return matchRoot;
+    }
+
+    private VersusResult.LocalWinLose toLocalWinLose(MatchOutcome outcome) {
+        return switch (outcome) {
+            case HOST_WIN -> isHost ? VersusResult.LocalWinLose.WIN : VersusResult.LocalWinLose.LOSE;
+            case CLIENT_WIN -> isHost ? VersusResult.LocalWinLose.LOSE : VersusResult.LocalWinLose.WIN;
+            case DRAW -> VersusResult.LocalWinLose.DRAW;
+        };
     }
 }
