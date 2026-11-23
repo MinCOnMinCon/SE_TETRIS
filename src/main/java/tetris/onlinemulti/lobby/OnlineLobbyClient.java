@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
+import tetris.onlinemulti.network.ConnectionMonitor;
 import tetris.settings.GameSettings.GameMode;
 
 // 대기실 클라이언트. 호스트의 모드를 받고 준비 상태를 보낸다.
@@ -26,6 +27,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
     private volatile boolean intentionallyClosed;
     private volatile boolean connected;
     private volatile Runnable onMatchStart = () -> {};
+    private volatile ConnectionMonitor connectionMonitor;
 
     public OnlineLobbyClient(String hostText, OnlineLobbyScreen lobby) {
         HostAddress address = HostAddress.parse(hostText);
@@ -61,7 +63,13 @@ public final class OnlineLobbyClient implements AutoCloseable {
                 new OutputStreamWriter(connectedSocket.getOutputStream(), StandardCharsets.UTF_8), true));
         connected = true;
         ConnectionHeartbeat connectionHeartbeat = new ConnectionHeartbeat(
-                () -> channel.sendLineIf(() -> socket == connectedSocket, "PING"),
+                () -> {
+                    ConnectionMonitor monitor = connectionMonitor;
+                    if (monitor != null) {
+                        monitor.recordPingSent();
+                    }
+                    channel.sendLineIf(() -> socket == connectedSocket, "PING");
+                },
                 () -> channel.sendLineIf(() -> socket == connectedSocket, "PONG"),
                 () -> closeQuietly(connectedSocket));
         heartbeat = connectionHeartbeat;
@@ -99,6 +107,11 @@ public final class OnlineLobbyClient implements AutoCloseable {
         channel.sendNetworkPayload(payload);
     }
 
+    public void setConnectionMonitor(ConnectionMonitor connectionMonitor) {
+        this.connectionMonitor = Objects.requireNonNull(connectionMonitor,
+                "connectionMonitor cannot be null");
+    }
+
     public boolean isConnected() {
         return connected;
     }
@@ -120,10 +133,21 @@ public final class OnlineLobbyClient implements AutoCloseable {
                 new InputStreamReader(connectedSocket.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                if ("PONG".equals(line)) {
+                    ConnectionMonitor monitor = connectionMonitor;
+                    if (monitor != null) {
+                        monitor.recordPingPong();
+                    }
+                }
                 if (connectionHeartbeat.handleMessage(line)) {
                     continue;
                 }
-                if (line.startsWith("MODE ")) {
+                if ("ACK".equals(line)) {
+                    ConnectionMonitor monitor = connectionMonitor;
+                    if (monitor != null) {
+                        monitor.recordPeerAcknowledgement();
+                    }
+                } else if (line.startsWith("MODE ")) {
                     GameMode mode = GameMode.valueOf(line.substring("MODE ".length()).trim());
                     Platform.runLater(() -> {
                         lobby.showMode(mode);
@@ -139,6 +163,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
                     });
                 } else if (line.startsWith("DATA ")) {
                     channel.dispatchNetworkPayload(line.substring("DATA ".length()));
+                    channel.sendLineIf(() -> socket == connectedSocket, "ACK");
                 }
             }
         } catch (IOException | IllegalArgumentException exception) {

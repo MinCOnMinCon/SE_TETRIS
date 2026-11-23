@@ -17,6 +17,8 @@ import tetris.gamescene.board.BoardElement;
 import tetris.onlinemulti.lobby.OnlineLobbyClient;
 import tetris.onlinemulti.lobby.OnlineLobbyServer;
 
+// GetPingTime으로 최근 RTT ms 반환
+
 public final class NetworkController {
     private static final System.Logger LOGGER = System.getLogger(NetworkController.class.getName());
     private static final int MAX_PAYLOAD_LENGTH = 1_398_104;
@@ -28,13 +30,16 @@ public final class NetworkController {
     }
 
     private final PayloadSender sender;
-    private final BooleanSupplier connectionStatus;
+    private final BooleanSupplier connectionBool;
+    private final ConnectionMonitor connectionMonitor = new ConnectionMonitor();
     private volatile Consumer<NetworkData> dataHandler;
+    private ConnectionStatus lastPrintedStatus;
 
     public NetworkController(OnlineLobbyServer server, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(server, "server cannot be null");
         sender = server::sendNetworkPayload;
-        connectionStatus = server::isConnected;
+        connectionBool = server::isConnected;
+        server.setConnectionMonitor(connectionMonitor);
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         server.setNetworkPayloadHandler(this::handlePayload);
@@ -43,14 +48,20 @@ public final class NetworkController {
     public NetworkController(OnlineLobbyClient client, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(client, "client cannot be null");
         sender = client::sendNetworkPayload;
-        connectionStatus = client::isConnected;
+        connectionBool = client::isConnected;
+        client.setConnectionMonitor(connectionMonitor);
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         client.setNetworkPayloadHandler(this::handlePayload);
     }
 
     public boolean isConnected() {
-        return connectionStatus.getAsBoolean();
+        return connectionBool.getAsBoolean();
+    }
+
+    // 외부 게임 관리자가 현재 통신 상태를 조회할 수 있게 한다.
+    public ConnectionStatus getConnectionStatus() {
+        return connectionMonitor.evaluateNow();
     }
 
     public void setOnDataReceived(Consumer<NetworkData> handler) {
@@ -58,12 +69,27 @@ public final class NetworkController {
     }
 
     public void send(NetworkData data) throws IOException {
-        if (!connectionStatus.getAsBoolean()) {
+        if (!connectionBool.getAsBoolean()) {
             endNetwork.run();
             return;
         }
         Objects.requireNonNull(data, "data cannot be null");
         sender.send(encode(data));
+        connectionMonitor.recordDataSent();
+        printConnectionStatus();
+    }
+
+    // RTT time 반환
+    public long GetPingTime() {
+        return connectionMonitor.GetPingTime();
+    }
+
+    private void printConnectionStatus() {
+        ConnectionStatus status = connectionMonitor.evaluateNow();
+        if (status != lastPrintedStatus) {
+            System.out.println("통신 상태: " + status);
+            lastPrintedStatus = status;
+        }
     }
 
     private void handlePayload(String payload) {

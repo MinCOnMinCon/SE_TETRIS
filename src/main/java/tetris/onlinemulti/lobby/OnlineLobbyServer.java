@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
+import tetris.onlinemulti.network.ConnectionMonitor;
 import tetris.settings.GameSettings.GameMode;
 
 // 대기실 서버. 클라이언트 한 명의 준비 상태와 모드를 주고받는다.
@@ -27,6 +28,7 @@ public final class OnlineLobbyServer implements AutoCloseable {
     private volatile boolean running;
     private volatile boolean connected;
     private volatile Runnable onMatchStart = () -> {};
+    private volatile ConnectionMonitor connectionMonitor;
 
     public OnlineLobbyServer(OnlineLobbyScreen lobby) {
         this(lobby, DEFAULT_PORT);
@@ -81,6 +83,11 @@ public final class OnlineLobbyServer implements AutoCloseable {
         channel.sendNetworkPayload(payload);
     }
 
+    public void setConnectionMonitor(ConnectionMonitor connectionMonitor) {
+        this.connectionMonitor = Objects.requireNonNull(connectionMonitor,
+                "connectionMonitor cannot be null");
+    }
+
     public boolean isConnected() {
         return connected;
     }
@@ -108,7 +115,13 @@ public final class OnlineLobbyServer implements AutoCloseable {
                         new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true));
                 connected = true;
                 ConnectionHeartbeat heartbeat = new ConnectionHeartbeat(
-                        () -> channel.sendLineIf(() -> clientSocket == socket, "PING"),
+                        () -> {
+                            ConnectionMonitor monitor = connectionMonitor;
+                            if (monitor != null) {
+                                monitor.recordPingSent();
+                            }
+                            channel.sendLineIf(() -> clientSocket == socket, "PING");
+                        },
                         () -> channel.sendLineIf(() -> clientSocket == socket, "PONG"),
                         () -> closeQuietly(socket));
                 clientHeartbeat = heartbeat;
@@ -130,16 +143,28 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                if ("PONG".equals(line)) {
+                    ConnectionMonitor monitor = connectionMonitor;
+                    if (monitor != null) {
+                        monitor.recordPingPong();
+                    }
+                }
                 if (heartbeat.handleMessage(line)) {
                     continue;
                 }
-                if ("READY".equals(line)) {
+                if ("ACK".equals(line)) {
+                    ConnectionMonitor monitor = connectionMonitor;
+                    if (monitor != null) {
+                        monitor.recordPeerAcknowledgement();
+                    }
+                } else if ("READY".equals(line)) {
                     Platform.runLater(() -> lobby.setClientReady(true));
                 } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
                     Platform.runLater(() -> channel.deliverIncomingChat(message));
                 } else if (line.startsWith("DATA ")) {
                     channel.dispatchNetworkPayload(line.substring("DATA ".length()));
+                    channel.sendLineIf(() -> clientSocket == socket, "ACK");
                 }
             }
         } finally {
