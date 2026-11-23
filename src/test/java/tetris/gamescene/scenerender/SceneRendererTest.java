@@ -24,7 +24,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
 
-import tetris.block.blocks.BlockO;
+import tetris.block.blocks.Block;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorType;
 import tetris.gamescene.board.BoardElement;
@@ -59,13 +59,13 @@ class SceneRendererTest {
             RenderConfig config = new RenderConfig(settings, 3);
             GameBoard board = new GameBoard(0);
             BlockData[] queue = {
-                new BlockO(0).GetBlockData(),
-                new BlockO(0).GetBlockData(),
-                new BlockO(0).GetBlockData()
+                new Block().GetBlockO(0),
+                new Block().GetBlockO(0),
+                new Block().GetBlockO(0)
             };
             SceneRenderState state = new SceneRenderState(
-                    board.GetBoard(), new BlockO(0).GetBlockData(),
-                    100, queue, new BlockO(0).GetBlockData());
+                    board.GetBoard(), new Block().GetBlockO(0),
+                    100, queue, new Block().GetBlockO(0));
 
             BorderPane root = assertInstanceOf(
                     BorderPane.class, new SceneRenderer(config).CreateRoot(state));

@@ -178,7 +178,7 @@ public class CurrentBlock {
     private void SaveHold() {
         this.blockData.SetX(3);
         this.blockData.SetY(0);
-        if (blockData.GetShape() == new ShapePalette().GetShape_dot())
+        if (blockData.GetShape() == new ShapePalette().GetShapeDotBlock())
             this.blockData.SetX(4);
         this.blockHolding = this.blockData;
     }

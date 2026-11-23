@@ -14,7 +14,7 @@ class BlockDataTest {
     void tracksShapePositionColorAndItemProperties() {
         boolean[][] shape = {{true, false}};
         BlockData data = new BlockData(
-                shape, ColorType.BlockI, 2, 4, 5, false, ItemType.NORMAL, null);
+                shape, ColorType.BlockI, 2, 4, 5, false, ItemType.NORMAL, null, PatternType.NONE);
 
         assertSame(shape, data.GetShape());
         assertEquals(ColorType.BlockI, data.GetColorType());

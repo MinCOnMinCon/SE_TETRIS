@@ -52,11 +52,11 @@ public class ShapePalette {
             {false, true, true}
         };
     }
-    public boolean[][] GetShape_dot() {
+    public boolean[][] GetShapeDotBlock() {
         return new boolean[][] { {true} };
     }
 
-    public boolean[][] GetShape_4VLines(){
+    public boolean[][] GetShapeWeightBlock(){
         return new boolean[][] 
         {{false, true, true, false},
         { true, true, true, true}        

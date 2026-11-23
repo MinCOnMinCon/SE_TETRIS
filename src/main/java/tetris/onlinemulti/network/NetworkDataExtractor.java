@@ -79,8 +79,7 @@ public class NetworkDataExtractor {
         int[] itemPos = source.GetItemPos();
         BlockData copy = new BlockData(shape, source.GetColorType(), source.GetColorMode(),
                 source.GetX(), source.GetY(), source.IsItem(), source.GetItemType(),
-                itemPos == null ? null : itemPos.clone());
-        copy.SetPatternType(source.GetPatternType());
+                itemPos == null ? null : itemPos.clone(), source.GetPatternType());
         return copy;
     }
 }

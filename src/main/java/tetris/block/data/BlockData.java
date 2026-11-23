@@ -29,10 +29,10 @@ public class BlockData implements Serializable {
     private boolean item;
     private ItemType itemType = ItemType.NORMAL;
     private int[] itemPos; //x, y
-    private PatternType patternType = PatternType.NONE;
+    private PatternType patternType;
     private int[][] currentShapeIndex;
 
-    public BlockData(boolean[][] shape, ColorType colorType, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos) {
+    public BlockData(boolean[][] shape, ColorType colorType, int colorMode, int x, int y, boolean item, ItemType itemType, int[] itemPos, PatternType patternType) {
         this.shape = shape;
         this.colorType = colorType;
         this.colorMode = colorMode;
@@ -42,12 +42,16 @@ public class BlockData implements Serializable {
         this.itemType = itemType;
         this.itemPos = itemPos;
         this.currentShapeIndex = currentShapeIndex(shape);
+        this.patternType = patternType;
+    }
+    public BlockData(boolean[][] shape, ColorType colorType, int colorMode, PatternType patternType) {
+        this(shape, colorType, colorMode, 3, 0, false, ItemType.NORMAL, null, patternType); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
     }
     public BlockData(boolean[][] shape, ColorType colorType, int colorMode) {
-        this(shape, colorType, colorMode, 3, 0, false, ItemType.NORMAL, null); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
+        this(shape, colorType, colorMode, 3, 0, false, ItemType.NORMAL, null, PatternType.NONE); // 보드 상단 중앙 부근에서 생성되도록 초기 위치 설정 (보드가 10칸이므로)
     }
     public BlockData(boolean[][] shape, int x, int y) {
-        this(shape, ColorType.GRAY, 0, x, y, false, ItemType.NORMAL, null);
+        this(shape, ColorType.GRAY, 0, x, y, false, ItemType.NORMAL, null, PatternType.NONE);
     }
 
 
