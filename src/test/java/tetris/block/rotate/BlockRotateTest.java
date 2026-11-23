@@ -4,8 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
+import tetris.block.move.BlockController;
+import tetris.gamescene.GameProgress;
 import tetris.gamescene.board.GameBoard;
+import tetris.gamescene.score.GameScore;
 import org.junit.jupiter.api.Test;
+import tetris.settings.GameSettings.Difficulty;
 
 class BlockRotateTest {
     @Test
@@ -18,12 +22,14 @@ class BlockRotateTest {
         GameBoard gameBoard = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
-        BlockRotate rotation = new BlockRotate(current);
+        GameProgress progress = new GameProgress();
+        BlockController controller = new BlockController(
+                current, new GameScore(progress), progress, Difficulty.NORMAL);
 
-        rotation.Rotate(true);
+        controller.RotateClock();
         assertArrayEquals(new boolean[][] {{true, true}, {true, false}, {true, false}},
                 data.GetShape());
-        rotation.Rotate(false);
+        controller.RotateCounterClock();
         assertArrayEquals(original, data.GetShape());
     }
 
@@ -38,9 +44,11 @@ class BlockRotateTest {
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
         gameBoard.GetBoard()[4][3].setBlock(true);
-        BlockRotate rotation = new BlockRotate(current);
+        GameProgress progress = new GameProgress();
+        BlockController controller = new BlockController(
+                current, new GameScore(progress), progress, Difficulty.NORMAL);
 
-        rotation.Rotate(true);
+        controller.RotateClock();
 
         assertArrayEquals(original, data.GetShape());
     }
@@ -55,9 +63,11 @@ class BlockRotateTest {
         GameBoard gameBoard = new GameBoard(0);
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, gameBoard, () -> {});
-        BlockRotate rotation = new BlockRotate(current);
+        GameProgress progress = new GameProgress();
+        BlockController controller = new BlockController(
+                current, new GameScore(progress), progress, Difficulty.NORMAL);
 
-        rotation.Rotate(true);
+        controller.RotateClock();
 
         assertArrayEquals(original, data.GetShape());
     }

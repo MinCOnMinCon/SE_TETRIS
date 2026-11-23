@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -60,17 +61,19 @@ class BlockMoveTest {
         current.AddVersusBoards(new BoardElement[][] {attack.GetBoard()[19]});
         AtomicInteger requests = new AtomicInteger();
         BlockController controller = new BlockController(current,
-                new AutoMove(current, Difficulty.NORMAL), new GameScore(progress), progress,
-                requests::incrementAndGet);
+                new GameScore(progress), progress, requests::incrementAndGet, Difficulty.NORMAL);
 
-        if (automatic) controller.TimeUpdate(1000);
+        if (automatic) {
+            controller.TimeUpdate(0);
+            controller.TimeUpdate(1000);
+        }
         else controller.MoveDown();
 
         assertEquals(1, requests.get());
         assertEquals(19, board.GetClearedRows()[0]);
         assertSame(data, current.GetCurrentBlock());
         assertEquals(1, current.GetVersusBoards().size());
-        assertFalse(board.GetBoard()[19][1].isBlock());
+        assertTrue(board.GetBoard()[19][1].isBlock());
 
         controller.FinishDeleteAfterEffect();
 
@@ -91,10 +94,10 @@ class BlockMoveTest {
                 data, null, null, true, false, board, () -> {});
         GameProgress progress = new GameProgress();
         GameScore score = new GameScore(progress);
-        BlockMove movement = new BlockMove(current, score, progress);
+        BlockController controller = new BlockController(current, score, progress, Difficulty.NORMAL);
 
-        movement.MoveRight();
-        movement.MoveDown();
+        controller.MoveRight();
+        controller.MoveDown();
 
         assertEquals(5, data.GetX());
         assertEquals(5, data.GetY());
@@ -126,9 +129,12 @@ class BlockMoveTest {
                 board,
                 () -> {});
         GameScore score = new GameScore(progress);
-        BlockMove movement = new BlockMove(current, score, progress);
+        BlockController controller = new BlockController(
+                current, score, progress, () -> {}, Difficulty.NORMAL);
 
-        movement.MoveDown();
+        controller.MoveDown();
+        assertSame(data, current.GetCurrentBlock());
+        controller.FinishDeleteAfterEffect();
 
         assertNotSame(data, current.GetCurrentBlock());
         BoardElement[][] deletedBoard = current.GetDelBoard();

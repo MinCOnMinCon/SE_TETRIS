@@ -14,7 +14,6 @@ import tetris.gamescene.scenerender.SceneRenderer;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
-import tetris.block.move.AutoMove;
 import tetris.block.move.BlockController;
 
 import tetris.settings.GameSettings;
@@ -123,11 +122,9 @@ public class GameController {
 		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty(), settings.gameMode());
 		
 		currentBlock = new CurrentBlock(blockQueue, board, this::StopGame);
- 
-		AutoMove autoMove = new AutoMove(currentBlock, gameSettings.difficulty()); 
 
-        blockController = new BlockController(currentBlock, autoMove, score, progress,
-                this::StartLineClearEffect);
+        blockController = new BlockController(currentBlock, score, progress,
+                this::StartLineClearEffect, gameSettings.difficulty());
 
 
 		

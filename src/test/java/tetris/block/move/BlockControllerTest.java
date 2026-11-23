@@ -10,7 +10,7 @@ import tetris.gamescene.score.GameScore;
 import org.junit.jupiter.api.Test;
 import tetris.settings.GameSettings.Difficulty;
 
-class AutoMoveTest {
+class BlockControllerTest {
     @Test
     void movesBlockAfterFallIntervalAndAwardsDropScore() {
         GameProgress progress = new GameProgress();
@@ -19,12 +19,12 @@ class AutoMoveTest {
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, board, () -> {});
         GameScore score = new GameScore(progress);
-        AutoMove autoMove = new AutoMove(current, Difficulty.NORMAL);
-        BlockMove movement = new BlockMove(current, score, progress);
+        BlockController controller = new BlockController(current, score, progress, Difficulty.NORMAL);
 
-        autoMove.TimeUpdate(999, score, progress, movement);
+        controller.TimeUpdate(0);
+        controller.TimeUpdate(999);
         assertEquals(0, data.GetY());
-        autoMove.TimeUpdate(1, score, progress, movement);
+        controller.TimeUpdate(1);
 
         assertEquals(1, data.GetY());
         assertEquals(10, score.GetGameScore());
