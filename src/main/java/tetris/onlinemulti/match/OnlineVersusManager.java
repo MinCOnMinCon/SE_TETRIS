@@ -6,11 +6,7 @@ import java.util.function.Consumer;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import tetris.block.data.BlockData;
 import tetris.gamescene.GameController;
 import tetris.gamescene.board.BoardElement;
@@ -30,7 +26,7 @@ import tetris.versusmode.VersusResult;
 import tetris.versusmode.VersusResult.LocalWinLose;
 import tetris.versusmode.VersusTimer;
 
-public abstract class OnlineVersusManager implements AutoCloseable {
+public class OnlineVersusManager {
     public enum MatchState { READY, RUNNING, PAUSED, ENDING, ENDED }
     public enum MatchEndReason { BOARD_FULL, TIMEOUT }
 
@@ -402,14 +398,10 @@ public abstract class OnlineVersusManager implements AutoCloseable {
 
     // 자기 화면과 상대 화면 및 공통 UI를 합친 대전 화면 루트를 반환한다.
     public Parent GetRoot() {
-        return matchRoot;
+        return versusRenderer.GetRoot();
     }
 
-    private VersusResult.LocalWinLose toLocalWinLose(MatchOutcome outcome) {
-        return switch (outcome) {
-            case HOST_WIN -> isHost ? VersusResult.LocalWinLose.WIN : VersusResult.LocalWinLose.LOSE;
-            case CLIENT_WIN -> isHost ? VersusResult.LocalWinLose.LOSE : VersusResult.LocalWinLose.WIN;
-            case DRAW -> VersusResult.LocalWinLose.DRAW;
-        };
+    public MatchState GetState() {
+        return state;
     }
 }

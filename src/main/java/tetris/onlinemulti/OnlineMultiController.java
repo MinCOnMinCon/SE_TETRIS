@@ -95,12 +95,14 @@ public final class OnlineMultiController implements AutoCloseable {
         versusManager.GameStart();
     }
 
+    
+
     private void showPauseScreen() {
         if (versusManager == null) {
             return;
         }
         pauseScene = new PauseScene(
-                () -> versusManager.RequestPause(false),
+                () -> resumeMatch(versusManager.GetRoot()),
                 this::exitMatchFromPause,
                 lobbyController.chatDisplayName(),
                 lobbyController::sendChat);
@@ -112,6 +114,7 @@ public final class OnlineMultiController implements AutoCloseable {
     private void resumeMatch(Parent matchRoot) {
         lobbyController.clearIncomingChatHandler();
         pauseScene = null;
+        versusManager.RequestResume();
         requestScreen(TITLE_MATCH, matchRoot);
     }
 
@@ -138,11 +141,12 @@ public final class OnlineMultiController implements AutoCloseable {
             return;
         }
         requestScreen(TITLE_LOBBY, lobby.getRoot());
+        //TODO: 파라미터에 정상 종료인지 확인하는 불리언 값, 정상 종료가 아니면 아니라고 대화창에 공지 띄우기
+        
     }
 
     private void endMatchResources() {
         if (versusManager != null) {
-            versusManager.close();
             versusManager = null;
         }
         pauseScene = null;

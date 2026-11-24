@@ -206,7 +206,6 @@ class OnlineVersusManagerTests {
         }
 
         @Override protected void UpdateFrame(long now) {}
-        @Override public void close() {}
     }
 
     @FunctionalInterface
