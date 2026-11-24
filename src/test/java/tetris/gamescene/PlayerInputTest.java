@@ -9,7 +9,6 @@ import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.Test;
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
-import tetris.block.move.AutoMove;
 import tetris.block.move.BlockController;
 import tetris.gamescene.board.GameBoard;
 import tetris.gamescene.score.GameScore;
@@ -26,7 +25,7 @@ class PlayerInputTest {
         GameProgress progress = new GameProgress();
         GameScore score = new GameScore(progress);
         BlockController controller = new BlockController(
-                current, new AutoMove(current, Difficulty.NORMAL), score, progress);
+                current, score, progress, Difficulty.NORMAL);
         int[] pauseCalls = {0};
         PlayerInput input = new PlayerInput(Map.of(
                 ActionType.MOVE_LEFT, List.of(KeyCode.A),
@@ -50,7 +49,7 @@ class PlayerInputTest {
         GameProgress progress = new GameProgress();
         GameScore score = new GameScore(progress);
         BlockController controller = new BlockController(
-                current, new AutoMove(current, Difficulty.NORMAL), score, progress);
+                current, score, progress, Difficulty.NORMAL);
         PlayerInput input = new PlayerInput(
                 Map.of(ActionType.MOVE_LEFT, List.of(KeyCode.A)),
                 controller, () -> {});

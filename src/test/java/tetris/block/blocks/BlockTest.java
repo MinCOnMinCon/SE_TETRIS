@@ -6,10 +6,11 @@ import org.junit.jupiter.api.Test;
 
 class BlockTest {
     @Test
-    void concreteBlockExposesItsBlockData() {
-        Block block = new BlockT(0);
+    void blockFactoryCreatesDataWithShape() {
+        Block block = new Block();
+        var data = block.GetBlockT(0);
 
-        assertNotNull(block.GetBlockData());
-        assertNotNull(block.GetBlockData().GetShape());
+        assertNotNull(data);
+        assertNotNull(data.GetShape());
     }
 }

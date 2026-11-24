@@ -3,15 +3,9 @@ package tetris.test;
 import java.util.Locale;
 import java.util.Random;
 
-import tetris.block.blocks.Block;
 import tetris.block.blocks.BlockGenerator;
-import tetris.block.blocks.BlockI;
-import tetris.block.blocks.BlockJ;
-import tetris.block.blocks.BlockL;
-import tetris.block.blocks.BlockO;
-import tetris.block.blocks.BlockS;
-import tetris.block.blocks.BlockT;
-import tetris.block.blocks.BlockZ;
+import tetris.block.data.BlockData;
+import tetris.block.data.ColorType;
 import tetris.settings.GameSettings.Difficulty;
 
 // 지정한 시행 횟수, 난이도, 시드로 블록 출현 분포를 확인한다.
@@ -31,7 +25,7 @@ public class BlockGenerationTest {
         int[] counts = new int[targetProbabilities.length];
 
         for (int i = 0; i < trials; i++) {
-            Block block = generator.GetBlock();
+            BlockData block = generator.GetBlockData();
             int index = FindBlockIndex(block);
             counts[index]++;
         }
@@ -49,15 +43,17 @@ public class BlockGenerationTest {
         }
     }
 
-    private static int FindBlockIndex(Block block) {
+    private static int FindBlockIndex(BlockData blockData) {
         // 제너레이터의 확률 배열과 같은 순서: I, J, L, O, S, T, Z
-        if (block instanceof BlockI) return 0;
-        if (block instanceof BlockJ) return 1;
-        if (block instanceof BlockL) return 2;
-        if (block instanceof BlockO) return 3;
-        if (block instanceof BlockS) return 4;
-        if (block instanceof BlockT) return 5;
-        if (block instanceof BlockZ) return 6;
-        throw new IllegalArgumentException("알 수 없는 블록 클래스입니다.");
+        switch (blockData.GetColorType()) {
+            case BlockI: return 0;
+            case BlockJ: return 1;
+            case BlockL: return 2;
+            case BlockO: return 3;
+            case BlockS: return 4;
+            case BlockT: return 5;
+            case BlockZ: return 6;
+            default: throw new IllegalArgumentException("알 수 없는 블록 데이터입니다.");
+        }
     }
 }

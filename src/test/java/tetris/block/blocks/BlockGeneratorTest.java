@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import tetris.block.data.BlockData;
+import tetris.block.data.ColorType;
 import tetris.block.data.ItemType;
 import tetris.settings.GameSettings.Difficulty;
 
@@ -88,14 +89,15 @@ class BlockGeneratorTest {
     @Test
     void seededGeneratorReturnsValidNonRepeatingConsecutiveBlocks() {
         BlockGenerator generator = new BlockGenerator(Difficulty.NORMAL, new Random(42), 0);
-        Class<? extends Block> previous = null;
+        ColorType previous = null;
 
         for (int i = 0; i < 100; i++) {
-            Block block = generator.GetBlock();
-            assertTrue(block instanceof BlockI || block instanceof BlockJ
-                    || block instanceof BlockL || block instanceof BlockO
-                    || block instanceof BlockS || block instanceof BlockT || block instanceof BlockZ);
-            Class<? extends Block> generated = block.getClass();
+            BlockData blockData = generator.GetBlockData();
+            ColorType generated = blockData.GetColorType();
+            assertTrue(generated == ColorType.BlockI || generated == ColorType.BlockJ
+                    || generated == ColorType.BlockL || generated == ColorType.BlockO
+                    || generated == ColorType.BlockS || generated == ColorType.BlockT
+                    || generated == ColorType.BlockZ);
             if (previous != null) {
                 assertNotEquals(previous, generated);
             }

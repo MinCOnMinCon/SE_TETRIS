@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class BlockSTest {
     @Test
     void createsFourCellSBlock() {
-        assertEquals(4, countOccupied(new BlockS(0).GetBlockData().GetShape()));
+        assertEquals(4, countOccupied(new Block().GetBlockS(0).GetShape()));
     }
 
     private static int countOccupied(boolean[][] shape) {

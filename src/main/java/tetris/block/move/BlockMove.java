@@ -39,29 +39,6 @@ public class BlockMove {
         this.progress = progress;
         this.onLineClear = onLineClear;
     }
-    public void BlockHolding() {
-        currentBlock.BlockHold();
-    }
-    public void MoveRight() {
-        if (currentBlock.GetCanMoveH() && IsNoBlock(1)) {
-            currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() + 1);
-        }
-    }
-    public void MoveLeft() {
-        if (currentBlock.GetCanMoveH() && IsNoBlock(-1)) {
-            currentBlock.GetCurrentBlock().SetX(currentBlock.GetCurrentBlock().GetX() - 1);
-        }
-    }
-    public void MoveDownMax() {
-        // 블럭이 맨 아래로 이동하고 AutoMove가 돌때까지 기다림
-        // 바로 다음 블럭 생성 필요 시 수정 필요
-        while (IsNoBlock(0)) {
-            MoveDown();
-            gameScore.AddGameScore(1); // 하드 드롭의 한 칸당 추가 점수
-        }
-        MoveDown();
-        //gameScore.AddGameScore(10); // 추가 점수 - 그냥 스페이스 계속 누르면 무조건 이 점수는 얻을 수 있어서 주석 처리
-    }
 
 
     // 실제로 한 칸 내려갔을 때만 기본 낙하 점수를 추가한다.

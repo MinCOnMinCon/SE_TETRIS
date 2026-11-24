@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class Block_dotTest {
     @Test
     void createsSingleCellItemBlockAtItsSpawnColumn() {
-        var data = new Block_dot(0).GetBlockData();
+        var data = new Block().GetDotBlock();
 
         assertEquals(4, data.GetX());
         assertEquals(0, data.GetY());

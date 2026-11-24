@@ -1,6 +1,5 @@
 package tetris.gamescene.scenerender;
 
-import java.util.List;
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.BoardElement;
 
@@ -15,9 +14,9 @@ public record SceneRenderState(
         long score,
         BlockData[] blockQueue,
         BlockData blockHolding,
-        List<BoardElement[][]> versusBoards) {
+        BoardElement[][] versusBoard) {
     public SceneRenderState(BoardElement[][] board, BlockData currentBlock, long score,
             BlockData[] blockQueue, BlockData blockHolding) {
-        this(board, currentBlock, score, blockQueue, blockHolding, List.of());
+        this(board, currentBlock, score, blockQueue, blockHolding, null);
     }
 }

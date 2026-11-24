@@ -21,7 +21,7 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
-import tetris.block.blocks.BlockI;
+import tetris.block.blocks.Block;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorType;
 import tetris.gamescene.board.BoardElement;
@@ -127,7 +127,7 @@ class FramePerformanceTest {
                     new KeyBindingSettings().getAllBindings(), GameSettings.Difficulty.NORMAL, GameSettings.GameMode.NORMAL);
             controller = new GameController(() -> fail(new IllegalStateException("Unexpected pause")),
                     result -> { if (!closing) fail(new IllegalStateException("Unexpected game over")); }, settings, 0, profiler);
-            controller.accessForFramePerformanceTest().currentBlock().SetCurrentBlock(new BlockI(0).GetBlockData());
+            controller.accessForFramePerformanceTest().currentBlock().SetCurrentBlock(new Block().GetBlockI(0));
             fixQueue();
             stage = new Stage();
             stage.setTitle("FramePerformanceTest - automated scenario");
@@ -187,7 +187,7 @@ class FramePerformanceTest {
         // 난수 큐를 고정해 매 실행에 I 블록 이동·회전·1~4줄 삭제를 반복한다.
         private void fixQueue() {
             var queue = controller.accessForFramePerformanceTest().currentBlock().GetBlockQueue();
-            for (int i = 0; i < queue.GetMaxQueueSize(); i++) queue.SetBlock(new BlockI(0).GetBlockData(), i);
+            for (int i = 0; i < queue.GetMaxQueueSize(); i++) queue.SetBlock(new Block().GetBlockI(0), i);
         }
 
         // 게임오버 없이 측정 시간을 확보하기 위한 인공 보드다. 실제 사용자 플레이 전체를 재현하지는 않는다.

@@ -156,19 +156,16 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                
                 if (heartbeat.handleMessage(line)) {
                     continue;
                 }
-                if ("READY".equals(line)) {
-                    Platform.runLater(() -> {
-                        lobby.setClientReady(true);
-                        lobby.addAnnouncementMessage("클라이언트가 준비를 완료했습니다.");
-                    });
-                } else if (line.startsWith("CHAT ")) {
+                if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
                     Platform.runLater(() -> channel.deliverIncomingChat(message));
                 } else if (line.startsWith("DATA ")) {
                     channel.dispatchNetworkPayload(line.substring("DATA ".length()));
+                   
                 }
             }
         } finally {

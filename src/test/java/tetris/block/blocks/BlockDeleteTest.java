@@ -10,6 +10,7 @@ import tetris.block.data.BlockData;
 import tetris.block.data.ColorType;
 import tetris.block.data.CurrentBlock;
 import tetris.block.data.ItemType;
+import tetris.block.data.PatternType;
 import tetris.block.move.BlockMove;
 import tetris.gamescene.GameProgress;
 import tetris.gamescene.blockqueue.BlockQueue;
@@ -149,6 +150,21 @@ class BlockDeleteTest {
     }
 
     @Test
+    void aroundEmptyDeletionUsesDotBlockColorForNewCells() {
+        BoardElement[][] board = new GameBoard(0).GetBoard();
+        board[10][4].setBlock(true);
+        board[10][4].setElementColorType(ColorType.BlockI);
+
+        BlockDelete.DeleteAroundEmpty(board, 4, 10);
+
+        assertTrue(board[9][3].isBlock());
+        assertEquals(ColorType.GRAY, board[9][3].getElementColorType());
+        assertTrue(board[10][3].isBlock());
+        assertEquals(ColorType.GRAY, board[10][3].getElementColorType());
+        assertEquals(ColorType.BlockI, board[10][4].getElementColorType());
+    }
+
+    @Test
     void fourVerticalLineBlockClearsFourCellsWhileFallingAndFixesAtFloor() {
         GameBoard gameBoard = new GameBoard(0);
         BoardElement[][] board = gameBoard.GetBoard();
@@ -159,7 +175,7 @@ class BlockDeleteTest {
         }
         board[y + 1][x + 1].setBlock(true);
 
-        BlockData itemData = new Block4VLines(0).GetBlockData();
+        BlockData itemData = new Block().GetWeightBlock();
         itemData.SetItem(true);
         itemData.SetItemType(ItemType.DEL_4VLINE);
         itemData.SetItemPos(new int[] {0, 0});
@@ -219,13 +235,9 @@ class BlockDeleteTest {
         BoardElement[][] board = gameBoard.GetBoard();
         BlockData itemData = new BlockData(
                 new boolean[][] {{true}},
-                ColorType.GRAY,
-                0,
-                x,
-                y,
-                true,
-                type,
-                new int[] {0, 0});
+                ColorType.GRAY, 0, x, y,
+                true, type,
+                new int[] {0, 0}, PatternType.NONE);
         BlockQueue nextBlocks = new BlockQueue(0, progress, Difficulty.NORMAL, GameMode.NORMAL);
         CurrentBlock currentBlock = new CurrentBlock(
                 itemData, nextBlocks, null, true, false, gameBoard, () -> {});

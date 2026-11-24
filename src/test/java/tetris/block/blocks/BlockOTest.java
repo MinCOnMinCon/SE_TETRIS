@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class BlockOTest {
     @Test
     void createsSquareFourCellOBlock() {
-        boolean[][] shape = new BlockO(0).GetBlockData().GetShape();
+        boolean[][] shape = new Block().GetBlockO(0).GetShape();
 
         assertEquals(2, shape.length);
         assertEquals(2, shape[0].length);

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class Block4VLinesTest {
     @Test
     void createsTheExpectedFourVShapeAtTheDefaultSpawnPosition() {
-        var data = new Block4VLines(0).GetBlockData();
+        var data = new Block().GetWeightBlock();
 
         assertArrayEquals(new boolean[] {false, true, true, false}, data.GetShape()[0]);
         assertArrayEquals(new boolean[] {true, true, true, true}, data.GetShape()[1]);
@@ -19,9 +19,7 @@ class Block4VLinesTest {
     }
 
     @Test
-    void usesGrayForEveryColorMode() {
-        for (int colorMode = 0; colorMode <= 2; colorMode++) {
-            assertSame(Color.GRAY, new Block4VLines(colorMode).GetBlockData().GetColor());
-        }
+    void usesGrayForWeightBlock() {
+        assertSame(Color.GRAY, new Block().GetWeightBlock().GetColor());
     }
 }
