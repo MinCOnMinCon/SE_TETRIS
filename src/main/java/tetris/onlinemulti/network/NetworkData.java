@@ -2,11 +2,12 @@ package tetris.onlinemulti.network;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.board.BoardElement;
-import tetris.onlinemulti.match.OnlineVersusManager.MatchOutcome;
+import tetris.onlinemulti.match.OnlineVersusManager.MatchEndReason;
 
 public class NetworkData implements Serializable {
     // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
@@ -26,9 +27,7 @@ public class NetworkData implements Serializable {
     private double remainingTimeMs;
     private boolean isPaused;
     private long finalScore;
-    private MatchOutcome outcome;
-    private long hostScore;
-    private long clientScore;
+    private MatchEndReason endReason;
     private boolean isEnded;
     private boolean isHost;
     // 관리자가 매 프레임 빈 데이터를 만든 뒤 담당 객체들이 필요한 필드를 채운다.
@@ -141,16 +140,8 @@ public class NetworkData implements Serializable {
         this.finalScore = finalScore;
     }
 
-    public void SetOutcome(MatchOutcome outcome) {
-        this.outcome = outcome;
-    }
-
-    public void SetHostScore(long hostScore) {
-        this.hostScore = hostScore;
-    }
-
-    public void SetClientScore(long clientScore) {
-        this.clientScore = clientScore;
+    public void SetEndReason(MatchEndReason endReason) {
+        this.endReason = Objects.requireNonNull(endReason, "endReason cannot be null");
     }
 
     public void SetIsEnded(boolean isEnded) {
@@ -205,14 +196,8 @@ public class NetworkData implements Serializable {
     public long GetFinalScore() {
         return finalScore;
     }
-    public MatchOutcome GetOutcome() {
-        return outcome;
-    }
-    public long GetHostScore() {
-        return hostScore;
-    }
-    public long GetClientScore() {
-        return clientScore;
+    public MatchEndReason GetEndReason() {
+        return endReason;
     }
     public boolean GetIsHost() {
         return isHost;

@@ -3,6 +3,8 @@ package tetris.versusmode;
 import java.util.Objects;
 
 import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -17,6 +19,8 @@ import tetris.settings.GameSettings;
 public class VersusRenderer {
     private final BorderPane root = new BorderPane(); // 두 플레이어의 게임 컨트롤러 화면이 들어갈 큰 화면
     private final Label timerLabel = new Label();
+    private final StackPane timerPane = new StackPane(timerLabel);
+    private final Label connectionStatusLabel = new Label();
 
     public VersusRenderer(Parent player1Root, Parent player2Root, GameSettings settings) {
         Objects.requireNonNull(player1Root);
@@ -45,11 +49,37 @@ public class VersusRenderer {
     private void CreateTimerPane(double width, double height) {
         timerLabel.setTextFill(Color.WHITE);
         timerLabel.setFont(Font.font(height * 0.35));
-        StackPane timerPane = new StackPane(timerLabel);
         timerPane.setMinSize(width, height);
         timerPane.setPrefSize(width, height);
         timerPane.setMaxSize(width, height);
         root.setTop(timerPane);
+    }
+
+    public void CreateConnectionStatusPane() {
+        if (connectionStatusLabel.getParent() != null) {
+            return;
+        }
+
+        double fontSize = timerPane.getPrefHeight() * 0.22;
+        Font font = Font.font(fontSize);
+        Label caption = new Label("연결 상태 :");
+        caption.setFont(font);
+        caption.setTextFill(Color.WHITE);
+        connectionStatusLabel.setFont(font);
+        connectionStatusLabel.setMinWidth(fontSize * 2.5);
+
+        HBox statusPane = new HBox(6, caption, connectionStatusLabel);
+        statusPane.setAlignment(Pos.CENTER_LEFT);
+        statusPane.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
+        StackPane.setAlignment(statusPane, Pos.CENTER_RIGHT);
+        StackPane.setMargin(statusPane, new Insets(0, fontSize, 0, 0));
+        timerPane.getChildren().add(statusPane);
+    }
+
+    public void RenderConnectionStatus(Boolean delayed) {
+        if(delayed != null) return;
+        connectionStatusLabel.setText(delayed ? "지연" : "쾌적");
+        connectionStatusLabel.setTextFill(delayed ? Color.RED : Color.LIMEGREEN);
     }
 
     public void RenderTime(double remainingTimeMs) {
