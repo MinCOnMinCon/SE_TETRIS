@@ -40,19 +40,15 @@ public class AppController {
     private GameController gameController;
     private VersusManager versusManager;
     private PauseScene pauseScene;
-    private boolean onlineMatchActive;
 
     public AppController(Stage stage, Scene scene, SettingsStore settingsStore) {
         this.stage = Objects.requireNonNull(stage, "stage cannot be null");
         this.scene = Objects.requireNonNull(scene, "scene cannot be null");
         this.settingsStore = Objects.requireNonNull(settingsStore, "settingsStore cannot be null");
-        this.onlineMultiController = new OnlineMultiController(
-                settingsStore, this::showOnlineScreen, this::startOnlineMatch);
+        this.onlineMultiController = new OnlineMultiController(settingsStore, this::showOnlineScreen);
     }
 
     public void ShowStartScreen() {
-        onlineMatchActive = false;
-        onlineMultiController.clearIncomingChatHandler();
         if (gameController != null) {
             gameController.CleanGame();
             gameController = null;
@@ -108,25 +104,6 @@ public class AppController {
         }
     }
 
-    // 로비 START 수신 시 온라인 대전을 시작하고, 연결은 채팅용으로 유지한다.
-    private void startOnlineMatch() {
-        if (onlineMultiController.getLobby() != null) {
-            settingsStore.saveGameMode(onlineMultiController.getLobby().getMode());
-        }
-        GameSettings gameSettings = settingsStore.gameSettingsFor(PlayMode.ONLINE);
-        onlineMatchActive = true;
-        pauseScene = null;
-        versusManager = null;
-        onlineMultiController.clearIncomingChatHandler();
-        scene.setOnKeyPressed(null);
-        gameController = new GameController(
-                this::ShowPauseScreen, this::ShowOnlineEndGame, gameSettings);
-        stage.setTitle("Tetris - 온라인 대전");
-        scene.setRoot(gameController.GetRoot());
-        gameController.GetRoot().requestFocus();
-        gameController.GameStart();
-    }
-
     public void ShowSettings() {
         SettingsScreen settingsScreen = new SettingsScreen();
         settingsScreen.makeSS(stage, scene, this::ShowStartScreen, settingsStore);
@@ -150,19 +127,6 @@ public class AppController {
 
     public void ShowPauseScreen() {
         scene.setOnKeyPressed(null);
-        if (onlineMatchActive && onlineMultiController.hasActiveLobby()) {
-            pauseScene = new PauseScene(
-                    this::ResumeGame,
-                    this::exitOnlineMatchFromPause,
-                    onlineMultiController.chatDisplayName(),
-                    onlineMultiController::sendChat);
-            onlineMultiController.setIncomingChatHandler(pauseScene::addIncomingMessage);
-            Parent pauseSceneRoot = pauseScene.GetRoot();
-            scene.setRoot(pauseSceneRoot);
-            pauseScene.focusChatInput();
-            return;
-        }
-
         if (pauseScene == null) {
             pauseScene = new PauseScene(this::ResumeGame, Platform::exit); // 일시정지 화면에서 종료시 바로 종료해버림
         }
@@ -174,7 +138,6 @@ public class AppController {
 
     public void ResumeGame() {
         scene.setOnKeyPressed(null);
-        onlineMultiController.clearIncomingChatHandler();
         if (versusManager != null && versusManager.GetState() == VersusManager.MatchState.PAUSED) {
             Parent gameSceneRoot = versusManager.GetRoot();
             scene.setRoot(gameSceneRoot);
@@ -186,17 +149,6 @@ public class AppController {
             gameSceneRoot.requestFocus();
             gameController.ResumeGame();
         }
-    }
-
-    private void exitOnlineMatchFromPause() {
-        onlineMultiController.clearIncomingChatHandler();
-        if (gameController != null) {
-            gameController.CleanGame();
-            gameController = null;
-        }
-        pauseScene = null;
-        onlineMatchActive = false;
-        ShowStartScreen();
     }
 
     public void ShowSoloEndGame(GameResult result) {
@@ -215,18 +167,6 @@ public class AppController {
         versusOverRoot.focusBackButton();
         versusManager = null;
         pauseScene = null;
-    }
-
-    private void ShowOnlineEndGame(GameResult result) {
-        onlineMultiController.clearIncomingChatHandler();
-        onlineMatchActive = false;
-        pauseScene = null;
-        gameController = null;
-        if (onlineMultiController.hasActiveLobby()) {
-            onlineMultiController.showCurrentLobby();
-        } else {
-            ShowStartScreen();
-        }
     }
 
     // 게임 모드 선택 화면을 표시하고, 선택된 모드에 따라 게임 설정을 저장

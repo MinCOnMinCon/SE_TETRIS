@@ -25,6 +25,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import tetris.settings.GameSettings.GameMode;
@@ -57,6 +58,7 @@ public final class OnlineLobbyScreen {
     private boolean applyingMode;
     private final VBox messageBox = new VBox(4);
     private final List<String> messages = new ArrayList<>();
+    private final Label pingLabel = new Label("-- ms");
     private final BorderPane root;
 
     public OnlineLobbyScreen(Role role, GameMode initialMode, Runnable onBack) {
@@ -129,6 +131,14 @@ public final class OnlineLobbyScreen {
         serverDetail.setText(address == null ? "" : address);
     }
 
+    public void updatePingDisplay(String text) {
+        pingLabel.setText(text == null || text.isBlank() ? "-- ms" : text);
+    }
+
+    public String getPingDisplayText() {
+        return pingLabel.getText();
+    }
+
     public void addIncomingMessage(String message) {
         addMessage(message, "-fx-text-fill: white; -fx-font-size: 14px;");
     }
@@ -196,6 +206,12 @@ public final class OnlineLobbyScreen {
         backButton.setStyle("-fx-background-color: #dcdcdc; -fx-text-fill: black; -fx-font-size: 14px;");
         backButton.setOnAction(event -> onBack.run());
 
+        pingLabel.setStyle("-fx-text-fill: #9eef9e; -fx-font-size: 14px; -fx-font-weight: bold;");
+        Region topSpacer = new Region();
+        HBox.setHgrow(topSpacer, Priority.ALWAYS);
+        HBox topBar = new HBox(12, backButton, topSpacer, pingLabel);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+
         VBox chat = createChatBox();
         Parent actions = createActionPane();
 
@@ -205,7 +221,7 @@ public final class OnlineLobbyScreen {
         BorderPane screen = new BorderPane();
         screen.setStyle("-fx-background-color: black;");
         screen.setPadding(new Insets(20));
-        screen.setTop(backButton);
+        screen.setTop(topBar);
         screen.setCenter(players);
         screen.setBottom(bottom);
         screen.addEventFilter(KeyEvent.KEY_PRESSED, event -> {

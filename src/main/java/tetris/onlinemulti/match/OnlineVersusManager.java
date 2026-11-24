@@ -26,7 +26,7 @@ import tetris.versusmode.VersusResult;
 import tetris.versusmode.VersusResult.LocalWinLose;
 import tetris.versusmode.VersusTimer;
 
-public abstract class OnlineVersusManager implements AutoCloseable {
+public class OnlineVersusManager {
     public enum MatchState { READY, RUNNING, PAUSED, ENDING, ENDED }
     public enum MatchEndReason { BOARD_FULL, TIMEOUT }
 
@@ -40,7 +40,7 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     // 호스트가 제한시간 모드의 남은 시간을 관리한다.
     private final VersusTimer timer;
 
-    // 일시정지 요청을 상위 온라인 흐름에 알리는 콜백이다.
+    // 일시정지·재개·종료·로비 복귀를 상위 온라인 흐름에 알리는 콜백이다.
     protected final Runnable onPauseRequested;
     private final Consumer<Parent> onResumeRequested;
     private final Consumer<VersusResult> onMatchEnded;
@@ -399,5 +399,9 @@ public abstract class OnlineVersusManager implements AutoCloseable {
     // 자기 화면과 상대 화면 및 공통 UI를 합친 대전 화면 루트를 반환한다.
     public Parent GetRoot() {
         return versusRenderer.GetRoot();
+    }
+
+    public MatchState GetState() {
+        return state;
     }
 }

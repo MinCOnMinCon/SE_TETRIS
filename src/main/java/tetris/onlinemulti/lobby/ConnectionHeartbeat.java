@@ -6,6 +6,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+
+import tetris.onlinemulti.network.PingLatency;
 
 final class ConnectionHeartbeat implements AutoCloseable {
     private static final String PING = "PING";
@@ -16,6 +19,8 @@ final class ConnectionHeartbeat implements AutoCloseable {
     private final Runnable sendPing;
     private final Runnable sendPong;
     private final Runnable onTimeout;
+    private final PingLatency pingLatency;
+    private final Consumer<String> onLatencyText;
     private final long intervalMillis;
     private final long timeoutNanos;
     private final AtomicLong lastPongNanos = new AtomicLong(System.nanoTime());
@@ -28,11 +33,23 @@ final class ConnectionHeartbeat implements AutoCloseable {
     });
 
     ConnectionHeartbeat(Runnable sendPing, Runnable sendPong, Runnable onTimeout) {
-        this(sendPing, sendPong, onTimeout, DEFAULT_INTERVAL_MILLIS, DEFAULT_TIMEOUT_MILLIS);
+        this(sendPing, sendPong, onTimeout, DEFAULT_INTERVAL_MILLIS, DEFAULT_TIMEOUT_MILLIS, null, null);
     }
 
     ConnectionHeartbeat(Runnable sendPing, Runnable sendPong, Runnable onTimeout,
             long intervalMillis, long timeoutMillis) {
+        this(sendPing, sendPong, onTimeout, intervalMillis, timeoutMillis, null, null);
+    }
+
+    ConnectionHeartbeat(Runnable sendPing, Runnable sendPong, Runnable onTimeout,
+            PingLatency pingLatency, Consumer<String> onLatencyText) {
+        this(sendPing, sendPong, onTimeout, DEFAULT_INTERVAL_MILLIS, DEFAULT_TIMEOUT_MILLIS,
+                pingLatency, onLatencyText);
+    }
+
+    ConnectionHeartbeat(Runnable sendPing, Runnable sendPong, Runnable onTimeout,
+            long intervalMillis, long timeoutMillis,
+            PingLatency pingLatency, Consumer<String> onLatencyText) {
         this.sendPing = Objects.requireNonNull(sendPing, "sendPing cannot be null");
         this.sendPong = Objects.requireNonNull(sendPong, "sendPong cannot be null");
         this.onTimeout = Objects.requireNonNull(onTimeout, "onTimeout cannot be null");
@@ -41,6 +58,8 @@ final class ConnectionHeartbeat implements AutoCloseable {
         }
         this.intervalMillis = intervalMillis;
         this.timeoutNanos = TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        this.pingLatency = pingLatency;
+        this.onLatencyText = onLatencyText;
     }
 
     synchronized void start() {
@@ -61,6 +80,12 @@ final class ConnectionHeartbeat implements AutoCloseable {
         }
         if (PONG.equals(message)) {
             lastPongNanos.set(System.nanoTime());
+            if (pingLatency != null) {
+                pingLatency.markPongReceived();
+                if (onLatencyText != null) {
+                    onLatencyText.accept(pingLatency.formatLatency());
+                }
+            }
             return true;
         }
         return false;
@@ -83,6 +108,9 @@ final class ConnectionHeartbeat implements AutoCloseable {
                 onTimeout.run();
             }
             return;
+        }
+        if (pingLatency != null) {
+            pingLatency.markPingSent();
         }
         sendPing.run();
     }
