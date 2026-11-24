@@ -14,6 +14,7 @@ import javafx.application.Platform;
 import tetris.block.data.ColorType;
 import tetris.gamescene.GameController;
 import tetris.gamescene.board.BoardElement;
+import tetris.onlinemulti.match.NetworkDataExtractor;
 import tetris.settings.GameSettings;
 
 class NetworkDataExtractorTests {

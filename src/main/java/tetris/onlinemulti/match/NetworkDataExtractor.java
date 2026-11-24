@@ -1,4 +1,4 @@
-package tetris.onlinemulti.network;
+package tetris.onlinemulti.match;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import tetris.block.data.BlockData;
 import tetris.gamescene.GameController;
 import tetris.gamescene.board.BoardElement;
 import tetris.gamescene.scenerender.SceneRenderState;
+import tetris.onlinemulti.network.NetworkData;
 
 // 경기마다 생성하고 게임 갱신과 같은 JavaFX 스레드에서 자기 상태를 복사한다.
 public class NetworkDataExtractor {
