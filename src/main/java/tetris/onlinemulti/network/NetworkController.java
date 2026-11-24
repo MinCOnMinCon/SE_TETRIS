@@ -31,15 +31,15 @@ public final class NetworkController {
 
     private final PayloadSender sender;
     private final BooleanSupplier connectionBool;
-    private final ConnectionMonitor connectionMonitor = new ConnectionMonitor();
+
     private volatile Consumer<NetworkData> dataHandler;
-    private ConnectionStatus lastPrintedStatus;
+
 
     public NetworkController(OnlineLobbyServer server, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(server, "server cannot be null");
         sender = server::sendNetworkPayload;
         connectionBool = server::isConnected;
-        server.setConnectionMonitor(connectionMonitor);
+        
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         server.setNetworkPayloadHandler(this::handlePayload);
@@ -49,7 +49,7 @@ public final class NetworkController {
         Objects.requireNonNull(client, "client cannot be null");
         sender = client::sendNetworkPayload;
         connectionBool = client::isConnected;
-        client.setConnectionMonitor(connectionMonitor);
+     
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         client.setNetworkPayloadHandler(this::handlePayload);
@@ -59,10 +59,6 @@ public final class NetworkController {
         return connectionBool.getAsBoolean();
     }
 
-    // 외부 게임 관리자가 현재 통신 상태를 조회할 수 있게 한다.
-    public ConnectionStatus getConnectionStatus() {
-        return connectionMonitor.evaluateNow();
-    }
 
     public void setOnDataReceived(Consumer<NetworkData> handler) {
         dataHandler = Objects.requireNonNull(handler, "handler cannot be null");
@@ -75,22 +71,8 @@ public final class NetworkController {
         }
         Objects.requireNonNull(data, "data cannot be null");
         sender.send(encode(data));
-        connectionMonitor.recordDataSent();
-        printConnectionStatus();
     }
 
-    // RTT time 반환
-    public long GetPingTime() {
-        return connectionMonitor.GetPingTime();
-    }
-
-    private void printConnectionStatus() {
-        ConnectionStatus status = connectionMonitor.evaluateNow();
-        if (status != lastPrintedStatus) {
-            System.out.println("통신 상태: " + status);
-            lastPrintedStatus = status;
-        }
-    }
 
     private void handlePayload(String payload) {
         try {
