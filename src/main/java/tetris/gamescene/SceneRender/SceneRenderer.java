@@ -98,25 +98,17 @@ public class SceneRenderer  {
         attackedBoard = new Canvas(renderConfig.attackedBoardWidth, renderConfig.attackedBoardHeight);
     }
 
-    private void UpdateAttackedBoard(List<BoardElement[][]> versusBoards) {
+    private void UpdateAttackedBoard(BoardElement[][] versusBoard) {
         GraphicsContext graphicsContext = attackedBoard.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, attackedBoard.getWidth(), attackedBoard.getHeight());
         graphicsContext.setFill(renderConfig.panelColor);
         graphicsContext.fillRect(0, 0, attackedBoard.getWidth(), attackedBoard.getHeight());
 
         double blockSide = attackedBoard.getWidth() / renderConfig.attackedBoardColumns;
-        int totalRows = 0;
-        if (versusBoards != null) {
-            for (BoardElement[][] board : versusBoards) {
-                totalRows += board.length;
-            }
+        if (versusBoard != null) {
             int row = renderConfig.attackedBoardRows
-                    - Math.min(totalRows, renderConfig.attackedBoardRows);
-            for (BoardElement[][] board : versusBoards) {
-                if (row >= renderConfig.attackedBoardRows) break;
-                DrawBoard(graphicsContext, board, blockSide, row * blockSide, null);
-                row += board.length;
-            }
+                    - Math.min(versusBoard.length, renderConfig.attackedBoardRows);
+            DrawBoard(graphicsContext, versusBoard, blockSide, row * blockSide, null);
         }
         graphicsContext.setStroke(renderConfig.borderColor);
         graphicsContext.strokeRect(0.5, 0.5, attackedBoard.getWidth() - 1, attackedBoard.getHeight() - 1);
@@ -250,7 +242,7 @@ public class SceneRenderer  {
         UpdateBlockHoldingCanvas(state.blockHolding());
         UpdateScoreCanvas(state.score());
         if (playMode != PlayMode.SOLO) {
-            UpdateAttackedBoard(state.versusBoards());
+            UpdateAttackedBoard(state.versusBoard());
         }
         
     }

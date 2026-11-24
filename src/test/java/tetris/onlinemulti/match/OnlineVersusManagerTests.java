@@ -111,7 +111,7 @@ class OnlineVersusManagerTests {
                 assertFalse(managers[0].gameData.GetIsHost());
                 assertTrue(managers[1].gameData.GetIsHost());
                 assertNotNull(managers[0].gameData.GetBoard());
-                assertNotNull(managers[1].gameData.GetVersusBoards());
+                assertNotNull(managers[1].gameData.GetBoard());
                 assertEquals(0.0, managers[0].gameData.GetRemainingTimeMs());
                 assertEquals(gameMode == GameMode.TIMELIMIT ? 180_000.0 : 0.0,
                         managers[1].gameData.GetRemainingTimeMs());

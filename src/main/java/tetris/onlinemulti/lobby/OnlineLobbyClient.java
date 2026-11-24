@@ -139,6 +139,7 @@ public final class OnlineLobbyClient implements AutoCloseable {
                 new InputStreamReader(connectedSocket.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                
                 if (connectionHeartbeat.handleMessage(line)) {
                     continue;
                 }

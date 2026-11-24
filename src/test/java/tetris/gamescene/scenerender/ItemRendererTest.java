@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import tetris.block.blocks.Block4VLines;
-import tetris.block.blocks.BlockO;
-import tetris.block.blocks.Block_dot;
+import tetris.block.blocks.Block;
 import tetris.block.data.BlockData;
 import tetris.block.data.ItemType;
 
@@ -20,7 +18,7 @@ class ItemRendererTest {
     @ParameterizedTest
     @EnumSource(value = ItemType.class, names = {"DEL_HLINE", "DEL_VLINE"})
     void lineItemsMatchOnlyTheirItemPosition(ItemType type) {
-        BlockData block = new BlockO(0).GetBlockData();
+        BlockData block = new Block().GetBlockO(0);
         block.SetItem(true);
         block.SetItemType(type);
         // x와 y를 다르게 두어 좌표를 뒤바꿔 비교하는 오류도 확인한다.
@@ -33,7 +31,7 @@ class ItemRendererTest {
     @ParameterizedTest
     @EnumSource(value = ItemType.class, names = {"DEL_VEMPTY", "DEL_AEMPTY"})
     void dotItemsMatchOnlyTheOrigin(ItemType type) {
-        BlockData block = new Block_dot(0).GetBlockData();
+        BlockData block = new Block().GetDotBlock();
         block.SetItem(true);
         block.SetItemType(type);
         block.SetItemPos(new int[]{0, 0});
@@ -46,7 +44,7 @@ class ItemRendererTest {
 
     @Test
     void fourVerticalLineItemHasNoSymbolCell() {
-        BlockData block = new Block4VLines(0).GetBlockData();
+        BlockData block = new Block().GetWeightBlock();
         block.SetItem(true);
         block.SetItemType(ItemType.DEL_4VLINE);
 
@@ -56,14 +54,14 @@ class ItemRendererTest {
 
     @Test
     void normalBlockHasNoItemCell() {
-        BlockData block = new BlockO(0).GetBlockData();
+        BlockData block = new Block().GetBlockO(0);
 
         assertFalse(renderer.IsItemCell(block, 0, 0));
     }
 
     @Test
     void disabledItemDoesNotMatchEvenWhenPositionMatches() {
-        BlockData block = new BlockO(0).GetBlockData();
+        BlockData block = new Block().GetBlockO(0);
         block.SetItemType(ItemType.DEL_HLINE);
         block.SetItemPos(new int[]{1, 0});
         block.SetItem(false);

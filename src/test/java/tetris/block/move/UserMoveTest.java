@@ -23,8 +23,7 @@ class UserMoveTest {
         CurrentBlock current = new CurrentBlock(
                 data, null, null, true, false, board, () -> {});
         BlockController controller = new BlockController(
-                current, new AutoMove(current, Difficulty.NORMAL),
-                new GameScore(progress), progress);
+                current, new GameScore(progress), progress, Difficulty.NORMAL);
 
         controller.MoveRight();
         assertEquals(5, data.GetX());
@@ -43,7 +42,7 @@ class UserMoveTest {
                 data, queue, null, true, false, gameBoard, () -> {});
         GameScore score = new GameScore(progress);
         BlockController controller = new BlockController(
-                current, new AutoMove(current, Difficulty.NORMAL), score, progress);
+                current, score, progress, Difficulty.NORMAL);
 
         controller.MoveDownMax();
 

@@ -1,6 +1,5 @@
 package tetris.block.data;
 
-import java.util.List;
 import java.util.Objects;
 
 import tetris.gamescene.blockqueue.BlockQueue;
@@ -18,6 +17,7 @@ import tetris.gamescene.board.GameBoard;
 */
 
 public class CurrentBlock {
+    private final int MAXDELLINE = 10;
     private BlockData blockData;
     private BlockQueue nextBlocks;
     private BlockData blockHolding;
@@ -27,7 +27,8 @@ public class CurrentBlock {
     private final Runnable onGameOver;
     private boolean isVersusMode = false;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
-    private List<BoardElement[][]> versusBoards; // 상대의 삭제된 보드의 줄들을 저장
+    private BoardElement[][] versusBoard = new BoardElement[MAXDELLINE][10]; // 상대의 삭제된 보드의 줄들을 저장
+    private int versusIndex = 0;
     private boolean canDefend = true; // 상대의 공격을 방어할 수 있는지 여부
 
     public CurrentBlock(BlockData blockData, BlockQueue nextBlocks, BlockData blockHolding, 
@@ -39,7 +40,6 @@ public class CurrentBlock {
         this.isHolded = isHolded;
         this.board = board;
         this.onGameOver = Objects.requireNonNull(onGameOver);
-        //versusBoards = new java.util.ArrayList<>();
     }
     public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver) {
         this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
@@ -47,7 +47,6 @@ public class CurrentBlock {
     public CurrentBlock(BlockQueue nextBlocks, GameBoard board, Runnable onGameOver, boolean isVersusMode) {
         this(nextBlocks.GetNextBlock(), nextBlocks, null, true, false, board, onGameOver);
         this.isVersusMode = isVersusMode;
-        versusBoards = new java.util.ArrayList<>();
     }
 
     public BlockData GetCurrentBlock() {
@@ -91,19 +90,32 @@ public class CurrentBlock {
     public void SetDelBoard(BoardElement[][] deletedBoard) {
         this.deletedBoard = deletedBoard;
     }
-    public List<BoardElement[][]> GetVersusBoards() {
-        return this.versusBoards;
+    public BoardElement[][] GetVersusBoard() {
+        if (versusIndex == 0)
+            return null;
+        BoardElement[][] result = new BoardElement[versusIndex][];
+        System.arraycopy(this.versusBoard, 0, result, 0, versusIndex);
+        return result;
     }
     public BoardElement[][] PopVersusBoards() {
-        if (this.versusBoards.isEmpty()) {
+        if (versusIndex == 0) {
             return null;
         }
-        return this.versusBoards.remove(0);
+
+        BoardElement[][] result = new BoardElement[versusIndex][];
+        System.arraycopy(this.versusBoard, 0, result, 0, versusIndex);
+
+        java.util.Arrays.fill(this.versusBoard, null);
+        versusIndex = 0;
+        return result;
     }
     public void AddVersusBoards(BoardElement[][] versusBoard) {
-        if (this.versusBoards == null)
-            this.versusBoards = new java.util.ArrayList<>();
-        this.versusBoards.add(versusBoard);
+        if (versusBoard == null || versusBoard.length == 0 || versusIndex >= MAXDELLINE)
+            return;
+
+        int copyCount = Math.min(versusBoard.length, MAXDELLINE - versusIndex);
+        System.arraycopy(versusBoard, 0, this.versusBoard, versusIndex, copyCount);
+        versusIndex += copyCount;
     }
     public void PrintDelBoard() {
         if (deletedBoard == null) {
@@ -146,10 +158,7 @@ public class CurrentBlock {
 
     public void MoveEnd(BlockData blockData) {
         PrintDelBoard(); // 삭제된 보드 확인
-        // if (deletedBoard != null) {
-        //     this.versusBoards.add(GetDelBoard());
-        // }
-        if (versusBoards != null && !versusBoards.isEmpty())
+        if (versusIndex > 0)
             Attacked();
         if(!CanGetNextBlock(blockData)){
             onGameOver.run();
@@ -178,7 +187,7 @@ public class CurrentBlock {
     private void SaveHold() {
         this.blockData.SetX(3);
         this.blockData.SetY(0);
-        if (blockData.GetShape() == new ShapePalette().GetShape_dot())
+        if (blockData.GetShape() == new ShapePalette().GetShapeDotBlock())
             this.blockData.SetX(4);
         this.blockHolding = this.blockData;
     }
@@ -205,29 +214,31 @@ public class CurrentBlock {
         return true; // 아무 충돌이 없으므로 이동 가능
     }
     private void Attacked() {
-        while (!versusBoards.isEmpty()) {
-            BoardElement[][] versusBoard = PopVersusBoards();
-            int size = versusBoard.length;
-            System.out.println("상대의 공격! 삭제된 줄 수: " + size);
-            BoardElement[][] myBoard = board.GetBoard();
-            for (int i = 0; i < size; i++) {
-                for (BoardElement myCol : myBoard[i]) {
-                    if (myCol.isBlock()) {
-                        canDefend = false;
-                        break;
-                    }
+        BoardElement[][] versusBoard = PopVersusBoards();
+        if (versusBoard == null)
+            return;
+
+        int size = versusBoard.length;
+        System.out.println("상대의 공격! 삭제된 줄 수: " + size);
+        BoardElement[][] myBoard = board.GetBoard();
+        canDefend = true;
+        for (int i = 0; i < size; i++) {
+            for (BoardElement myCol : myBoard[i]) {
+                if (myCol.isBlock()) {
+                    canDefend = false;
+                    break;
                 }
             }
-            int mySize = myBoard.length;
-            for (int j = 0; j < mySize; j++) {
-                if (j + size < mySize) {
-                    myBoard[j] = myBoard[j + size];
-                } else {
-                    myBoard[j] = versusBoard[j - (mySize - size)];
-                }
-            }
-            if (!canDefend)
-                onGameOver.run();
         }
+        int mySize = myBoard.length;
+        for (int j = 0; j < mySize; j++) {
+            if (j + size < mySize) {
+                myBoard[j] = myBoard[j + size];
+            } else {
+                myBoard[j] = versusBoard[j - (mySize - size)];
+            }
+        }
+        if (!canDefend)
+            onGameOver.run();
     }
 }

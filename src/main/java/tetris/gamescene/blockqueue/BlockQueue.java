@@ -43,7 +43,7 @@ public class BlockQueue {
         this.queueFRS[2] = 0; // size
         this.blockQueue = new BlockData[this.maxQueueSize];
         while (this.queueFRS[2] < this.maxQueueSize) {
-            BlockData blockData = blockGenerator.GetBlock().GetBlockData();
+            BlockData blockData = blockGenerator.GetBlockData();
             EnQ(blockData);
         }
     }
@@ -57,7 +57,7 @@ public class BlockQueue {
             blockData = blockGenerator.GetItemBlock();
             progress.AddMadeItemCount(1);
         } else {
-            blockData = blockGenerator.GetBlock().GetBlockData();
+            blockData = blockGenerator.GetBlockData();
         }
         EnQ(blockData);
         if (nextBlock != null) {

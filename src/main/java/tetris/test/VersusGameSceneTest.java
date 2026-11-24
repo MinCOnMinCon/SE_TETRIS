@@ -69,13 +69,13 @@ public class VersusGameSceneTest {
             }, INITIAL_CLEARED_LINE_COUNT);
             scene.setOnKeyPressed(event -> {
                 if (event.getCode() == KeyCode.DIGIT1) {
-                    versusManager.AddTestAttack(Player.PLAYER2, 10);
+                    versusManager.AddTestAttack(Player.PLAYER2, 5);
                 } else if (event.getCode() == KeyCode.DIGIT2) {
-                    versusManager.AddTestAttack(Player.PLAYER2, 20);
+                    versusManager.AddTestAttack(Player.PLAYER2, 10);
                 } else if (event.getCode() == KeyCode.DIGIT3) {
                     versusManager.AddTestAttack(Player.PLAYER1, 10);
                 } else if (event.getCode() == KeyCode.DIGIT4) {
-                    versusManager.AddTestAttack(Player.PLAYER1, 20);
+                    versusManager.AddTestAttack(Player.PLAYER1, 5);
                 }
             });
             scene.setRoot(versusManager.GetRoot());
