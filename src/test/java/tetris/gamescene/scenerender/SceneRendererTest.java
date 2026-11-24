@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -116,8 +115,12 @@ class SceneRendererTest {
             BoardElement[][] first = attackRows(2, ColorType.BlockJ);
             first[1][0] = new BoardElement(0);
             BoardElement[][] second = attackRows(1, ColorType.BlockZ);
+            BoardElement[][] combined = attackRows(3, ColorType.BlockJ);
+            for (int i = 0; i < 2; i++)
+                combined[i] = first[i];
+            combined[2] = second[0];
             SceneRenderState state = new SceneRenderState(board, null, 0,
-                    new BlockData[0], null, List.of(first, second));
+                    new BlockData[0], null, combined);
             BorderPane root = (BorderPane) renderer.CreateRoot(state);
             VBox right = (VBox) ((HBox) root.getCenter()).getChildren().get(2);
             assertEquals(3, right.getChildren().size());
@@ -131,15 +134,20 @@ class SceneRendererTest {
             assertEquals(ColorType.BlockJ, first[0][0].getElementColorType());
 
             BoardElement[][] overflow = attackRows(4, ColorType.BlockZ);
+            BoardElement[][] combinedOverflow = new BoardElement[10][];
+            for (int i = 0; i < 6; i++)
+                combinedOverflow[i] = attackRows(1, ColorType.BlockJ)[0];
+            for (int i = 6; i < 10; i++)
+                combinedOverflow[i] = overflow[i - 6];
             renderer.UpdateRoot(new SceneRenderState(board, null, 0, new BlockData[0], null,
-                    List.of(attackRows(8, ColorType.BlockJ), overflow)));
+                    combinedOverflow));
             pixels = attack.snapshot(null, null).getPixelReader();
-            assertEquals(Color.BLUE, pixels.getColor(6, 96));
+            assertEquals(Color.RED, pixels.getColor(6, 96));
             assertEquals(Color.RED, pixels.getColor(6, 108));
             assertEquals(Color.RED, pixels.getColor(6, 121));
             assertEquals(4, overflow.length);
 
-            renderer.UpdateRoot(new SceneRenderState(board, null, 0, new BlockData[0], null, List.of()));
+            renderer.UpdateRoot(new SceneRenderState(board, null, 0, new BlockData[0], null, null));
             pixels = attack.snapshot(null, null).getPixelReader();
             assertEquals(config.panelColor, pixels.getColor(6, 121));
         });

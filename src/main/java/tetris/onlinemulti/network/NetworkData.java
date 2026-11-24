@@ -1,7 +1,6 @@
 package tetris.onlinemulti.network;
 
 import java.io.Serializable;
-import java.util.List;
 
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
@@ -16,7 +15,7 @@ public class NetworkData implements Serializable {
     private BlockData blockData;
     private BlockData[] nextBlocks;
     private BlockData blockHolding;
-    private List<BoardElement[][]> versusBoards;
+    private BoardElement[][] versusBoard;
     private long attackId;
     private BoardElement[][] deletedBoard; // 2줄 이상 삭제 시, 삭제된 보드의 줄들을 저장
     private boolean effectRunning;
@@ -93,9 +92,9 @@ public class NetworkData implements Serializable {
         this.blockHolding = blockHolding;
     }
 
-    // 상대 화면에 표시할 공격 대기열을 설정한다.
-    public void SetVersusBoards(List<BoardElement[][]> versusBoards) {
-        this.versusBoards = versusBoards;
+    // 상대 화면에 표시할 누적 공격 보드를 설정한다.
+    public void SetVersusBoard(BoardElement[][] versusBoard) {
+        this.versusBoard = versusBoard;
     }
 
     public void SetAttackId(long attackId) {
@@ -178,8 +177,8 @@ public class NetworkData implements Serializable {
     public BlockData GetBlockHolding() {
         return blockHolding;
     }
-    public List<BoardElement[][]> GetVersusBoards() {
-        return versusBoards;
+    public BoardElement[][] GetPendingVersusBoard() {
+        return versusBoard;
     }
     public long GetAttackId() {
         return attackId;

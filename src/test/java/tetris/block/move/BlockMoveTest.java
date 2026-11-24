@@ -72,14 +72,14 @@ class BlockMoveTest {
         assertEquals(1, requests.get());
         assertEquals(19, board.GetClearedRows()[0]);
         assertSame(data, current.GetCurrentBlock());
-        assertEquals(1, current.GetVersusBoards().size());
+        assertEquals(1, current.GetVersusBoard().length);
         assertTrue(board.GetBoard()[19][1].isBlock());
 
         controller.FinishDeleteAfterEffect();
 
         BlockData next = current.GetCurrentBlock();
         assertNotSame(data, next);
-        assertEquals(0, current.GetVersusBoards().size());
+        assertNull(current.GetVersusBoard());
         assertEquals(true, board.GetBoard()[19][1].isBlock());
         assertNull(current.GetDelBoard());
         controller.FinishDeleteAfterEffect();

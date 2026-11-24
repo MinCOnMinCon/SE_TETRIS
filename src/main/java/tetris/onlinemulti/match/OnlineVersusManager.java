@@ -194,7 +194,7 @@ public abstract class OnlineVersusManager implements AutoCloseable {
 
                 SceneRenderState remoteState = new SceneRenderState(
                         data.GetBoard(), data.GetBlock(), data.GetVersusScore(),
-                        data.GetNextBlocks(), data.GetBlockHolding(), data.GetVersusBoards());
+                        data.GetNextBlocks(), data.GetBlockHolding(), data.GetPendingVersusBoard());
                 remoteView.ApplyState(remoteState, data.GetEffectId(),
                         data.GetEffectRunning(), data.GetClearedRows());
                 if (gameMode == GameMode.TIMELIMIT && !isHost) {
