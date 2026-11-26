@@ -64,7 +64,6 @@ public class OnlineVersusManager {
     // 프레임 갱신과 상태 전송 주기를 관리한다.
     private AnimationTimer updateLoop;
     private long previousFrameTime;
-    private volatile Boolean connectionDelayed; // 시작은 false로 잡고 현재 연결의 지연 여부를 나타낸다.
     private GameMode gameMode;
 
     // 호스트의 게임과 화면을 먼저 구성한 뒤 로비 서버의 연결에 수신 함수를 연결한다.
@@ -127,7 +126,6 @@ public class OnlineVersusManager {
         }
 
         startRequested = true;
-        connectionDelayed = false;
         if (isHost) {
             return;
         }
@@ -174,8 +172,8 @@ public class OnlineVersusManager {
         }
 
         remoteView.Update(deltaTimeMs);
-        connectionDelayed = networkController.getPingTime() >= DelayThreshold;
-        versusRenderer.RenderConnectionStatus(connectionDelayed);
+        long latencyMs = networkController.getPingTime();
+        versusRenderer.RenderConnectionStatus(latencyMs, latencyMs >= DelayThreshold);
         SendGameData(MessageType.DATA);
     }
 
