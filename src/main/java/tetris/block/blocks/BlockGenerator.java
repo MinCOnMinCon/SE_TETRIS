@@ -137,15 +137,16 @@ public class BlockGenerator {
         previous = selected;
         return selected;
     }
-    public Block GetBlock() {
+    public BlockData GetBlockData() {
+        Block block = new Block();
         switch (GenerateBlockIndex()) {
-            case 0:     return new BlockI(colorMode);
-            case 1:     return new BlockJ(colorMode);
-            case 2:     return new BlockL(colorMode);
-            case 3:     return new BlockO(colorMode);
-            case 4:     return new BlockS(colorMode);
-            case 5:     return new BlockT(colorMode);
-            case 6:     return new BlockZ(colorMode);            
+            case 0:     return block.GetBlockI(colorMode);
+            case 1:     return block.GetBlockJ(colorMode);
+            case 2:     return block.GetBlockL(colorMode);
+            case 3:     return block.GetBlockO(colorMode);
+            case 4:     return block.GetBlockS(colorMode);
+            case 5:     return block.GetBlockT(colorMode);
+            case 6:     return block.GetBlockZ(colorMode);
             default:    throw new IllegalArgumentException("Invalid block index");
         }
     }
@@ -160,7 +161,7 @@ public class BlockGenerator {
         switch (itemType) {
             case DEL_HLINE:
             case DEL_VLINE:
-                BlockData blockData = GetBlock().GetBlockData();
+                BlockData blockData = GetBlockData();
                 int[][] positions = blockData.GetCurrentShapeIndex();
                 int[] position = positions[random.nextInt(positions.length)]; // 테트로미노 중, 블럭이 존재하는 위치 중 동일 가중치로 아이템이 있을 위치 하나를 정함.
 
@@ -170,13 +171,13 @@ public class BlockGenerator {
                 blockData.SetItemPos(new int[]{position[1], position[0]});
                 return blockData;
             case DEL_4VLINE:
-                BlockData weightBlock = new Block4VLines(colorMode).GetBlockData();
+                BlockData weightBlock = new Block().GetWeightBlock();
                 weightBlock.SetItem(true);
                 weightBlock.SetItemType(itemType);
                 return weightBlock;
             case DEL_VEMPTY:
             case DEL_AEMPTY:
-                BlockData dotBlockData = new Block_dot(colorMode).GetBlockData();
+                BlockData dotBlockData = new Block().GetDotBlock();
                 dotBlockData.SetItem(true);
                 dotBlockData.SetItemType(itemType);
                 dotBlockData.SetItemPos(new int[]{0, 0});

@@ -17,6 +17,8 @@ import tetris.gamescene.board.BoardElement;
 import tetris.onlinemulti.lobby.OnlineLobbyClient;
 import tetris.onlinemulti.lobby.OnlineLobbyServer;
 
+// GetPingTime으로 최근 RTT ms 반환
+
 public final class NetworkController {
     private static final System.Logger LOGGER = System.getLogger(NetworkController.class.getName());
     private static final int MAX_PAYLOAD_LENGTH = 1_398_104;
@@ -28,13 +30,16 @@ public final class NetworkController {
     }
 
     private final PayloadSender sender;
-    private final BooleanSupplier connectionStatus;
+    private final BooleanSupplier connectionBool;
+
     private volatile Consumer<NetworkData> dataHandler;
+
 
     public NetworkController(OnlineLobbyServer server, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(server, "server cannot be null");
         sender = server::sendNetworkPayload;
-        connectionStatus = server::isConnected;
+        connectionBool = server::isConnected;
+        
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         server.setNetworkPayloadHandler(this::handlePayload);
@@ -43,28 +48,31 @@ public final class NetworkController {
     public NetworkController(OnlineLobbyClient client, Consumer<NetworkData> handler, Runnable onBack) {
         Objects.requireNonNull(client, "client cannot be null");
         sender = client::sendNetworkPayload;
-        connectionStatus = client::isConnected;
+        connectionBool = client::isConnected;
+     
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
         client.setNetworkPayloadHandler(this::handlePayload);
     }
 
     public boolean isConnected() {
-        return connectionStatus.getAsBoolean();
+        return connectionBool.getAsBoolean();
     }
+
 
     public void setOnDataReceived(Consumer<NetworkData> handler) {
         dataHandler = Objects.requireNonNull(handler, "handler cannot be null");
     }
 
     public void send(NetworkData data) throws IOException {
-        if (!connectionStatus.getAsBoolean()) {
+        if (!connectionBool.getAsBoolean()) {
             endNetwork.run();
             return;
         }
         Objects.requireNonNull(data, "data cannot be null");
         sender.send(encode(data));
     }
+
 
     private void handlePayload(String payload) {
         try {

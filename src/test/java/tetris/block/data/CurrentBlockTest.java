@@ -3,6 +3,7 @@ package tetris.block.data;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -75,7 +76,7 @@ class CurrentBlockTest {
     }
 
     @Test
-    void versusBoardsCanBeAddedAndPoppedInOrder() {
+    void versusBoardCanBeAddedAndPopped() {
         CurrentBlock currentBlock = new CurrentBlock(
                 createBlock(0, 0), null, null, true, false, new GameBoard(0), () -> {});
         BoardElement[][] firstBoard = {{new BoardElement(0)}};
@@ -84,9 +85,51 @@ class CurrentBlockTest {
         currentBlock.AddVersusBoards(firstBoard);
         currentBlock.AddVersusBoards(secondBoard);
 
-        assertSame(firstBoard, currentBlock.PopVersusBoards());
-        assertSame(secondBoard, currentBlock.PopVersusBoards());
+        BoardElement[][] popped = currentBlock.PopVersusBoards();
+        assertNotNull(popped);
+        assertEquals(2, popped.length);
+        assertSame(firstBoard[0], popped[0]);
+        assertSame(secondBoard[0], popped[1]);
         assertNull(currentBlock.PopVersusBoards());
+    }
+
+    @Test
+    void versusBoardKeepsOnlyAvailableRowsAndIgnoresFullAttack() {
+        CurrentBlock currentBlock = new CurrentBlock(
+                createBlock(0, 0), null, null, true, false, new GameBoard(0), () -> {});
+        BoardElement[][] firstBoard = new BoardElement[8][];
+        BoardElement[][] secondBoard = new BoardElement[5][];
+        for (int i = 0; i < firstBoard.length; i++)
+            firstBoard[i] = new BoardElement[] {new BoardElement(i)};
+        for (int i = 0; i < secondBoard.length; i++)
+            secondBoard[i] = new BoardElement[] {new BoardElement(i + 8)};
+
+        currentBlock.AddVersusBoards(firstBoard);
+        currentBlock.AddVersusBoards(secondBoard);
+
+        BoardElement[][] popped = currentBlock.PopVersusBoards();
+        assertNotNull(popped);
+        assertEquals(10, popped.length);
+        assertSame(firstBoard[7], popped[7]);
+        assertSame(secondBoard[1], popped[9]);
+
+        BoardElement[][] fullBoard = new BoardElement[10][];
+        for (int i = 0; i < fullBoard.length; i++)
+            fullBoard[i] = new BoardElement[] {new BoardElement(i)};
+        BoardElement[][] ignoredBoard = new BoardElement[1][];
+        ignoredBoard[0] = new BoardElement[] {new BoardElement(99)};
+
+        currentBlock.AddVersusBoards(fullBoard);
+        BoardElement[][] fullAfterAdd = currentBlock.PopVersusBoards();
+        assertNotNull(fullAfterAdd);
+        assertSame(fullBoard[0], fullAfterAdd[0]);
+
+        currentBlock.AddVersusBoards(fullBoard);
+        currentBlock.AddVersusBoards(ignoredBoard);
+        BoardElement[][] remainsFull = currentBlock.PopVersusBoards();
+        assertNotNull(remainsFull);
+        assertEquals(10, remainsFull.length);
+        assertSame(fullBoard[9], remainsFull[9]);
     }
 
     @Test

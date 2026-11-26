@@ -14,7 +14,6 @@ import tetris.gamescene.scenerender.SceneRenderer;
 import tetris.gamescene.score.GameScore;
 import tetris.gamescene.blockqueue.BlockQueue;
 import tetris.block.data.CurrentBlock;
-import tetris.block.move.AutoMove;
 import tetris.block.move.BlockController;
 
 import tetris.settings.GameSettings;
@@ -123,11 +122,9 @@ public class GameController {
 		BlockQueue blockQueue = new BlockQueue(settings.colorMode(), progress, settings.difficulty(), settings.gameMode());
 		
 		currentBlock = new CurrentBlock(blockQueue, board, this::StopGame);
- 
-		AutoMove autoMove = new AutoMove(currentBlock, gameSettings.difficulty()); 
 
-        blockController = new BlockController(currentBlock, autoMove, score, progress,
-                this::StartLineClearEffect);
+        blockController = new BlockController(currentBlock, score, progress,
+                this::StartLineClearEffect, gameSettings.difficulty());
 
 
 		
@@ -209,7 +206,7 @@ public class GameController {
             return;
         }
         SceneRenderState state = new SceneRenderState(board.GetBoard(), null, score.GetGameScore(),
-                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoard());
             renderer.UpdateRoot(state);
         GameResult result = new GameResult(
             score.GetGameScore(), gameSettings.difficulty(), gameSettings.gameMode());
@@ -271,7 +268,7 @@ public class GameController {
     // 조회 시점의 게임 상태를 저장해 반환하며 내부 배열과 블록은 복사하지 않는다.
     public SceneRenderState GetRenderState() {
         renderState = new SceneRenderState(board.GetBoard(), currentBlock.GetCurrentBlock(), score.GetGameScore(),
-                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoards());
+                currentBlock.GetBlockQueue().GetBlocksInQueueOrder(), currentBlock.GetBlockHolding(), currentBlock.GetVersusBoard());
         return renderState;
     }
 

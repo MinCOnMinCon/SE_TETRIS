@@ -26,6 +26,6 @@ class ShapePaletteTest {
             }
             assertEquals(4, occupiedCells);
         }
-        assertTrue(palette.GetShape_dot()[0][0]);
+        assertTrue(palette.GetShapeDotBlock()[0][0]);
     }
 }

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class BlockITest {
     @Test
     void createsFourCellHorizontalIBlock() {
-        boolean[][] shape = new BlockI(0).GetBlockData().GetShape();
+        boolean[][] shape = new Block().GetBlockI(0).GetShape();
 
         assertEquals(1, shape.length);
         assertEquals(4, shape[0].length);

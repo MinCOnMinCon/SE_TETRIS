@@ -63,7 +63,7 @@ class NetworkDataExtractorTests {
                 assertEquals(originalNextX, data.GetNextBlocks()[0].GetX());
                 assertNull(data.GetBlockHolding());
                 assertEquals(controller.GetScore(), data.GetVersusScore());
-                assertTrue(data.GetVersusBoards().isEmpty());
+                assertNull(data.GetPendingVersusBoard());
             } finally {
                 controller.CleanGame();
             }
@@ -121,10 +121,9 @@ class NetworkDataExtractorTests {
 
                 pending[0][0].setElementColorType(ColorType.BlockL);
                 outgoing[0][0].setElementColorType(ColorType.BlockL);
-                controller.GetRenderState().versusBoards().clear();
-
-                assertEquals(1, data.GetVersusBoards().size());
-                assertEquals(ColorType.BlockJ, data.GetVersusBoards().get(0)[0][0].getElementColorType());
+                assertNotNull(data.GetPendingVersusBoard());
+                assertEquals(1, data.GetPendingVersusBoard().length);
+                assertEquals(ColorType.BlockJ, data.GetPendingVersusBoard()[0][0].getElementColorType());
                 assertEquals(ColorType.BlockZ, data.GetVersusBoard()[0][0].getElementColorType());
                 assertEquals(1, controller.attackReads);
             } finally {

@@ -145,8 +145,8 @@ public class VersusManager {
     // 테스트용 임의 공격을 지정한 플레이어의 대기열에 추가한다.
     public void AddTestAttack(Player target, int lineCount) {
         Objects.requireNonNull(target);
-        if (lineCount != 10 && lineCount != 20) {
-            throw new IllegalArgumentException("테스트 공격 줄 수는 10 또는 20이어야 합니다.");
+        if (lineCount != 5 && lineCount != 10 && lineCount != 20) {
+            throw new IllegalArgumentException("테스트 공격 줄 수는 5, 10 또는 20이어야 합니다.");
         }
 
         BoardElement[][] attack = new BoardElement[lineCount][10];

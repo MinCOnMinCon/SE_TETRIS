@@ -1,7 +1,5 @@
 package tetris.onlinemulti.match;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import tetris.block.data.BlockData;
@@ -41,13 +39,7 @@ public class NetworkDataExtractor {
         data.SetAttackId(lastAttackId);
         data.SetDeletedBoard(attack);
 
-        List<BoardElement[][]> versusBoards = new ArrayList<>();
-        if (state.versusBoards() != null) {
-            for (BoardElement[][] versusBoard : state.versusBoards()) {
-                versusBoards.add(CopyBoard(versusBoard));
-            }
-        }
-        data.SetVersusBoards(versusBoards);
+        data.SetVersusBoard(CopyBoard(state.versusBoard()));
         data.SetEffectRunning(controller.GetLineClearEffectRunning());
         data.SetEffectId(controller.GetEffectId());
         data.SetClearedRows(controller.GetClearedRows().clone());
@@ -80,8 +72,7 @@ public class NetworkDataExtractor {
         int[] itemPos = source.GetItemPos();
         BlockData copy = new BlockData(shape, source.GetColorType(), source.GetColorMode(),
                 source.GetX(), source.GetY(), source.IsItem(), source.GetItemType(),
-                itemPos == null ? null : itemPos.clone());
-        copy.SetPatternType(source.GetPatternType());
+                itemPos == null ? null : itemPos.clone(), source.GetPatternType());
         return copy;
     }
 }
