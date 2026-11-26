@@ -1,7 +1,6 @@
 package tetris.onlinemulti.network;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 
 import tetris.block.data.BlockData;

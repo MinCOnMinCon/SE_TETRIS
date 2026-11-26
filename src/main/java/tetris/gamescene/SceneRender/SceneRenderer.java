@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import java.util.Objects;
-import java.util.List;
+
 
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.*;

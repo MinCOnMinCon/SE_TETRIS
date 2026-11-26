@@ -3,7 +3,6 @@ package tetris.block.move;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javafx.scene.paint.Color;
 import tetris.block.data.BlockData;
 import tetris.block.data.CurrentBlock;
 import tetris.gamescene.GameProgress;

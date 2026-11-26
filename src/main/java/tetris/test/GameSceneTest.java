@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import tetris.gameoverscene.GameOverRoot;
 import tetris.gameoverscene.VersusOverRoot;
 import tetris.gamescene.GameController;
 import tetris.pausescene.PauseScene;

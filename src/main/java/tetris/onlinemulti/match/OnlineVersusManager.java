@@ -29,6 +29,7 @@ import tetris.versusmode.VersusTimer;
 public class OnlineVersusManager {
     public enum MatchState { READY, RUNNING, PAUSED, ENDING, ENDED }
     public enum MatchEndReason { BOARD_FULL, TIMEOUT }
+    private final long DelayThreshold = 150;
 
     // 경기 실행과 화면 구성에 필요한 객체를 보관한다.
     private NetworkController networkController;
@@ -63,7 +64,7 @@ public class OnlineVersusManager {
     // 프레임 갱신과 상태 전송 주기를 관리한다.
     private AnimationTimer updateLoop;
     private long previousFrameTime;
-    private volatile Boolean connectionDelayed; // 첫 판정을 받기 전에는 null이다.
+    private volatile Boolean connectionDelayed; // 시작은 false로 잡고 현재 연결의 지연 여부를 나타낸다.
     private GameMode gameMode;
 
     // 호스트의 게임과 화면을 먼저 구성한 뒤 로비 서버의 연결에 수신 함수를 연결한다.
@@ -126,9 +127,12 @@ public class OnlineVersusManager {
         }
 
         startRequested = true;
+        connectionDelayed = false;
         if (isHost) {
             return;
         }
+
+
 
         if (!SendGameData(MessageType.DATA)) {
             startRequested = false;
@@ -149,9 +153,6 @@ public class OnlineVersusManager {
         updateLoop.start();
     }
 
-    public void SetConnectionDelayed(boolean delayed) {
-        connectionDelayed = delayed;
-    }
 
     // 진행 중인 경기의 상대 화면과 연결 상태를 갱신하고 매 프레임 자기 상태를 전송한다.
     protected void UpdateFrame(long now) {
@@ -173,6 +174,7 @@ public class OnlineVersusManager {
         }
 
         remoteView.Update(deltaTimeMs);
+        connectionDelayed = networkController.getPingTime() >= DelayThreshold;
         versusRenderer.RenderConnectionStatus(connectionDelayed);
         SendGameData(MessageType.DATA);
     }

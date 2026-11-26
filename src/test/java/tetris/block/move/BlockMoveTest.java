@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javafx.scene.paint.Color;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorType;
 import tetris.block.data.CurrentBlock;

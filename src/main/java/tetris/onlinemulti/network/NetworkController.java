@@ -11,13 +11,12 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 
 import tetris.block.data.BlockData;
 import tetris.gamescene.board.BoardElement;
 import tetris.onlinemulti.lobby.OnlineLobbyClient;
 import tetris.onlinemulti.lobby.OnlineLobbyServer;
-
-// GetPingTime으로 최근 RTT ms 반환
 
 public final class NetworkController {
     private static final System.Logger LOGGER = System.getLogger(NetworkController.class.getName());
@@ -31,6 +30,7 @@ public final class NetworkController {
 
     private final PayloadSender sender;
     private final BooleanSupplier connectionBool;
+    private final LongSupplier pingTime; // 핑 RTT를 받을 수 있는 함수를 저장하는 변수
 
     private volatile Consumer<NetworkData> dataHandler;
 
@@ -39,6 +39,7 @@ public final class NetworkController {
         Objects.requireNonNull(server, "server cannot be null");
         sender = server::sendNetworkPayload;
         connectionBool = server::isConnected;
+        pingTime = server.getPingLatency()::getLatencyMs;
         
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
@@ -49,6 +50,7 @@ public final class NetworkController {
         Objects.requireNonNull(client, "client cannot be null");
         sender = client::sendNetworkPayload;
         connectionBool = client::isConnected;
+        pingTime = client.getPingLatency()::getLatencyMs;
      
         setOnDataReceived(handler);
         endNetwork = Objects.requireNonNull(onBack, "onBack cannot be null");
@@ -57,6 +59,10 @@ public final class NetworkController {
 
     public boolean isConnected() {
         return connectionBool.getAsBoolean();
+    }
+
+    public long getPingTime() {
+        return pingTime.getAsLong();
     }
 
 

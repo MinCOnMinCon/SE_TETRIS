@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javafx.scene.paint.Color;
 import org.junit.jupiter.api.Test;
 import tetris.block.data.BlockData;
 import tetris.block.data.ColorType;
@@ -187,7 +186,7 @@ class BlockDeleteTest {
                 itemData, nextBlocks, null, true, false, gameBoard, () -> {});
         GameScore score = new GameScore(progress);
         BlockMove movement = new BlockMove(currentBlock, score, progress);
-        int[] clearedRows = new int[GameBoard.maxClearedLines];
+    
 
         assertEquals(2, itemData.GetShape().length);
         assertEquals(4, itemData.GetShape()[0].length);
