@@ -77,7 +77,7 @@ public class VersusRenderer {
     }
 
     public void RenderConnectionStatus(Boolean delayed) {
-        if(delayed != null) return;
+        if(delayed == null) return;
         connectionStatusLabel.setText(delayed ? "지연" : "쾌적");
         connectionStatusLabel.setTextFill(delayed ? Color.RED : Color.LIMEGREEN);
     }
