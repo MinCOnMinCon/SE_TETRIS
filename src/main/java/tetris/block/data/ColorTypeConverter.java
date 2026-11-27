@@ -9,63 +9,63 @@ public class ColorTypeConverter {
             case BlockI:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(135, 206, 235);
+                        return Color.web("#56B4E9");
                     case 2:
-                        return Color.BLUE;
+                        return Color.web("#67E6E4");
                     default:
                         return Color.CYAN;
                 }
             case BlockJ:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(0, 0, 128);
+                        return Color.web("#0072B2");
                     case 2:
-                        return Color.rgb(128, 0, 128);
+                        return Color.web("#117733");
                     default:
                         return Color.BLUE;
                 }
             case BlockL:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(255, 140, 0);
+                        return Color.web("#E69F00");
                     case 2:
-                        return Color.rgb(255, 69, 0);
+                        return Color.web("#FF99B9");
                     default:
                         return Color.ORANGE;
                 }
             case BlockO:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(255, 215, 0);
+                        return Color.web("#F0E442");
                     case 2:
-                        return Color.rgb(255, 250, 205);
+                        return Color.web("#FAFAFA");
                     default:
                         return Color.YELLOW;
                 }
             case BlockS:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(0, 255, 255);
+                        return Color.web("#009E73");
                     case 2:
-                        return Color.rgb(60, 179, 113);
+                        return Color.web("#90B830");
                     default:
                         return Color.GREEN;
                 }
             case BlockT:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(148, 0, 211);
+                        return Color.web("#F5F5F5");
                     case 2:
-                        return Color.rgb(218, 112, 214);
+                        return Color.web("#9D4092");
                     default:
                         return Color.PURPLE;
                 }
             case BlockZ:
                 switch (colorMode) {
                     case 1:
-                        return Color.rgb(139, 0, 0);
+                        return Color.web("#DE6321");
                     case 2:
-                        return Color.rgb(139, 0, 0);
+                        return Color.web("#F34158");
                     default:
                         return Color.RED;
                 }
