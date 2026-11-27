@@ -15,7 +15,7 @@ public class BoardElement implements Serializable{
     private ColorType colorType;
     private boolean isBlock;
     private transient int colorMode;
-    private transient PatternType patternType = PatternType.NONE;
+    private PatternType patternType = PatternType.NONE;
 
 
     public BoardElement(ColorType colorType, boolean block, int colorMode){
@@ -50,6 +50,10 @@ public class BoardElement implements Serializable{
 
     public int getElementColorMode() {
         return colorMode;
+    }
+
+    public void setElementColorMode(int colorMode) {
+        this.colorMode = colorMode;
     }
 
     public boolean isBlock(){
