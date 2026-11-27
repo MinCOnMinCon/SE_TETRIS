@@ -26,7 +26,7 @@ final class ConnectionHeartbeat implements AutoCloseable {
     private final AtomicLong lastPongNanos = new AtomicLong(System.nanoTime());
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(task -> {
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2, task -> {
         Thread thread = new Thread(task, "online-connection-heartbeat");
         thread.setDaemon(true);
         return thread;
@@ -66,7 +66,10 @@ final class ConnectionHeartbeat implements AutoCloseable {
         if (!started.compareAndSet(false, true) || closed.get()) {
             return;
         }
-        scheduler.scheduleAtFixedRate(this::checkConnection,
+        long timeoutCheckIntervalMillis = Math.min(intervalMillis, 100);
+        scheduler.scheduleAtFixedRate(this::checkTimeout,
+                timeoutCheckIntervalMillis, timeoutCheckIntervalMillis, TimeUnit.MILLISECONDS);
+        scheduler.scheduleAtFixedRate(this::sendPing,
                 intervalMillis, intervalMillis, TimeUnit.MILLISECONDS);
     }
 
@@ -98,7 +101,7 @@ final class ConnectionHeartbeat implements AutoCloseable {
         }
     }
 
-    private void checkConnection() {
+    private void checkTimeout() {
         if (closed.get()) {
             return;
         }
@@ -107,6 +110,11 @@ final class ConnectionHeartbeat implements AutoCloseable {
                 scheduler.shutdownNow();
                 onTimeout.run();
             }
+        }
+    }
+
+    private void sendPing() {
+        if (closed.get()) {
             return;
         }
         if (pingLatency != null) {
