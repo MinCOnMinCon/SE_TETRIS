@@ -17,6 +17,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import javafx.application.Platform;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import tetris.onlinemulti.lobby.OnlineLobbyClient;
 import tetris.onlinemulti.lobby.OnlineLobbyScreen;
 import tetris.onlinemulti.lobby.OnlineLobbyServer;
@@ -26,6 +28,7 @@ import tetris.onlinemulti.network.NetworkData;
 import tetris.settings.GameSettings;
 import tetris.settings.GameSettings.Difficulty;
 import tetris.settings.GameSettings.GameMode;
+import tetris.settings.KeyBindingSettings.ActionType;
 
 class OnlineVersusManagerTests {
     @BeforeAll
@@ -140,6 +143,60 @@ class OnlineVersusManagerTests {
             assertNull(manager.GetRoot().getOnKeyPressed());
             assertEquals(1, lobbyReturns.get());
         });
+    }
+
+    // 입력: 실제 로컬 소켓으로 연결된 두 매니저에서 호스트의 왼쪽 키 핸들러를 호출한다.
+    // 기대: 상태를 그린 클라이언트가 보낸 ACK로 호스트만 지연을 계산한다. 목적: 입력부터 ACK까지의 연결을 검증한다.
+    @Test
+    void measuresHostInputAfterTheClientRendersIt() throws Exception {
+        var settings = new GameSettings("1280x720", 1280, 720, 0,
+                Map.of(ActionType.MOVE_LEFT, List.of(KeyCode.LEFT)), Difficulty.NORMAL, GameMode.NORMAL);
+        OnlineLobbyServer[] server = new OnlineLobbyServer[1];
+        OnlineLobbyClient[] client = new OnlineLobbyClient[1];
+        OnlineVersusManager[] managers = new OnlineVersusManager[2];
+        try {
+            runOnFxThread(() -> {
+                var serverLobby = new OnlineLobbyScreen(OnlineLobbyScreen.Role.SERVER, settings.gameMode(), () -> {});
+                var clientLobby = new OnlineLobbyScreen(OnlineLobbyScreen.Role.CLIENT, settings.gameMode(), () -> {});
+                server[0] = new OnlineLobbyServer(serverLobby, 0);
+                server[0].start();
+                client[0] = new OnlineLobbyClient("127.0.0.1", server[0].getPort(), clientLobby);
+                managers[0] = new OnlineVersusManager(server[0], settings, () -> {}, root -> {}, result -> {}, () -> {});
+                managers[1] = new OnlineVersusManager(client[0], settings, () -> {}, root -> {}, result -> {}, () -> {});
+            });
+            client[0].connect();
+            long connectionDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (server[0].getPingLatency().getLatencyMs() < 0 && System.nanoTime() < connectionDeadline) {
+                Thread.sleep(10);
+            }
+            assertTrue(server[0].getPingLatency().getLatencyMs() >= 0);
+            runOnFxThread(() -> {
+                managers[0].GameStart();
+                managers[1].GameStart();
+            });
+
+            boolean[] sentInput = {false};
+            boolean[] measured = {false};
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (!measured[0] && System.nanoTime() < deadline) {
+                runOnFxThread(() -> {
+                    if (!sentInput[0] && managers[0].GetState() == OnlineVersusManager.MatchState.RUNNING
+                            && managers[1].GetState() == OnlineVersusManager.MatchState.RUNNING) {
+                        assertTrue(managers[0].GetInputRenderLatencyMs().isEmpty());
+                        managers[0].GetRoot().getOnKeyPressed().handle(new KeyEvent(KeyEvent.KEY_PRESSED,
+                                "", "", KeyCode.LEFT, false, false, false, false));
+                        sentInput[0] = true;
+                    }
+                    measured[0] = managers[0].GetInputRenderLatencyMs().isPresent();
+                });
+                Thread.sleep(10);
+            }
+            assertTrue(measured[0], "호스트가 입력에 대한 렌더링 ACK를 받아야 한다");
+            runOnFxThread(() -> assertTrue(managers[1].GetInputRenderLatencyMs().isEmpty()));
+        } finally {
+            if (client[0] != null) client[0].close();
+            if (server[0] != null) server[0].close();
+        }
     }
 
     private static final class ManagerStub extends OnlineVersusManager {

@@ -12,6 +12,7 @@ public class NetworkData implements Serializable {
     // 클래스 버전 관리 (권장). 통신하는 양쪽의 클래스 형태가 같다는 것을 보증합니다.
     private static final long serialVersionUID = 1L;
     private MessageType messageType;
+    private long lastInputId;
     private BoardElement[][] board;
     private BlockData blockData;
     private BlockData[] nextBlocks;
@@ -69,6 +70,14 @@ public class NetworkData implements Serializable {
 
     public void SetMessageType(MessageType messageType) {
         this.messageType = messageType;
+    }
+
+    public void SetLastInputId(long lastInputId) {
+        this.lastInputId = lastInputId;
+    }
+
+    public long GetLastInputId() {
+        return lastInputId;
     }
 
     // 추출기가 복사한 고정 보드를 설정한다.
