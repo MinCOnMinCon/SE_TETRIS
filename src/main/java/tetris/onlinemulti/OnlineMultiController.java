@@ -78,7 +78,7 @@ public final class OnlineMultiController implements AutoCloseable {
                     this::showPauseScreen,
                     this::resumeMatch,
                     this::showEndGame,
-                    this::returnToLobby);
+                    () -> returnToLobby(false));
         } else if (client != null) {
             versusManager = new OnlineVersusManager(
                     client,
@@ -86,7 +86,7 @@ public final class OnlineMultiController implements AutoCloseable {
                     this::showPauseScreen,
                     this::resumeMatch,
                     this::showEndGame,
-                    this::returnToLobby);
+                    () -> returnToLobby(false));
         } else {
             return;
         }
@@ -127,22 +127,36 @@ public final class OnlineMultiController implements AutoCloseable {
     private void showEndGame(VersusResult result) {
         lobbyController.clearIncomingChatHandler();
         pauseScene = null;
-        VersusOverRoot versusOverRoot = new VersusOverRoot(result, this::returnToLobby);
+        VersusOverRoot versusOverRoot = new VersusOverRoot(result, () -> returnToLobby(true));
         requestScreen(TITLE_RESULT, versusOverRoot.getRoot());
         versusOverRoot.focusBackButton();
     }
 
-    private void returnToLobby() {
+    // normalEnd=true: 결과 화면에서 정상 복귀. false: 연결 끊김 등 비정상 종료.
+    private void returnToLobby(boolean normalEnd) {
         lobbyController.clearIncomingChatHandler();
         endMatchResources();
+
+        // 클라이언트는 연결 끊김(비정상 종료) 시 IP 입력 화면으로 이동한다.
+        if (!normalEnd && lobbyController.getClient() != null) {
+            showConnectScreen();
+            if (connectScreen != null) {
+                connectScreen.showError("서버 연결이 끊어졌습니다.");
+            }
+            return;
+        }
+
+        // 클라이언트 정상 종료 시 로비로 이동.
         OnlineLobbyScreen lobby = lobbyController.getLobby();
         if (lobby == null) {
             returnToStart();
             return;
         }
         requestScreen(TITLE_LOBBY, lobby.getRoot());
-        //TODO: 파라미터에 정상 종료인지 확인하는 불리언 값, 정상 종료가 아니면 아니라고 대화창에 공지 띄우기
-        
+        // 클라이언트 비정상 종료 시 안내 메시지 추가.
+        if (!normalEnd) {
+            lobby.addAnnouncementMessage("대전이 비정상적으로 종료되었습니다.");
+        }
     }
 
     private void endMatchResources() {
