@@ -160,7 +160,9 @@ public final class OnlineLobbyServer implements AutoCloseable {
                 if (heartbeat.handleMessage(line)) {
                     continue;
                 }
-                if (line.startsWith("CHAT ")) {
+                if ("READY".equals(line)) {
+                    Platform.runLater(() -> lobby.setClientReady(true));
+                } else if (line.startsWith("CHAT ")) {
                     String message = line.substring("CHAT ".length());
                     Platform.runLater(() -> channel.deliverIncomingChat(message));
                 } else if (line.startsWith("DATA ")) {
