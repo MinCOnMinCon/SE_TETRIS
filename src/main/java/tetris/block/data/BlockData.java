@@ -81,6 +81,9 @@ public class BlockData implements Serializable {
     public int GetColorMode() {
         return this.colorMode;
     }
+    public void SetColorMode(int colorMode) {
+        this.colorMode = colorMode;
+    }
     public Color GetColor() {
         if (this.color == null) {
             this.color = ColorTypeConverter.ConvertEnumToColor(this.colorType, this.colorMode);

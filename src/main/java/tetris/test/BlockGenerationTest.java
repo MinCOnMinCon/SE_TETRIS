@@ -5,7 +5,7 @@ import java.util.Random;
 
 import tetris.block.blocks.BlockGenerator;
 import tetris.block.data.BlockData;
-import tetris.block.data.ColorType;
+
 import tetris.settings.GameSettings.Difficulty;
 
 // 지정한 시행 횟수, 난이도, 시드로 블록 출현 분포를 확인한다.

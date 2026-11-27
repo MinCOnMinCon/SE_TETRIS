@@ -2,6 +2,7 @@ package tetris.onlinemulti.match;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.OptionalDouble;
 import java.util.function.Consumer;
 
 import javafx.animation.AnimationTimer;
@@ -15,6 +16,7 @@ import tetris.gamescene.scenerender.RenderConfig;
 import tetris.gamescene.scenerender.SceneRenderState;
 import tetris.onlinemulti.lobby.OnlineLobbyClient;
 import tetris.onlinemulti.lobby.OnlineLobbyServer;
+import tetris.onlinemulti.network.InputRenderLatency;
 import tetris.onlinemulti.network.MessageType;
 import tetris.onlinemulti.network.NetworkController;
 import tetris.onlinemulti.network.NetworkData;
@@ -29,6 +31,7 @@ import tetris.versusmode.VersusTimer;
 public class OnlineVersusManager {
     public enum MatchState { READY, RUNNING, PAUSED, ENDING, ENDED }
     public enum MatchEndReason { BOARD_FULL, TIMEOUT }
+    private final long DelayThreshold = 150;
 
     // 경기 실행과 화면 구성에 필요한 객체를 보관한다.
     private NetworkController networkController;
@@ -59,11 +62,11 @@ public class OnlineVersusManager {
 
     private int localFinalScore;
     private long lastReceivedAttackId = -1;
+    private final InputRenderLatency inputRenderLatency = new InputRenderLatency();
 
     // 프레임 갱신과 상태 전송 주기를 관리한다.
     private AnimationTimer updateLoop;
     private long previousFrameTime;
-    private volatile Boolean connectionDelayed; // 첫 판정을 받기 전에는 null이다.
     private GameMode gameMode;
 
     // 호스트의 게임과 화면을 먼저 구성한 뒤 로비 서버의 연결에 수신 함수를 연결한다.
@@ -109,8 +112,12 @@ public class OnlineVersusManager {
         remoteView = new RemotePlayerView(new RenderConfig(settings, queueSize), initialRemoteState);
         versusRenderer = new VersusRenderer(localController.GetRoot(), remoteView.GetRoot(), settings);
         versusRenderer.CreateConnectionStatusPane();
-        versusRenderer.GetRoot().setOnKeyPressed(
-                event -> localController.playerInput.HandleKeyCode(event.getCode()));
+        versusRenderer.GetRoot().setOnKeyPressed(event -> {
+            long inputNanos = System.nanoTime();
+            if (localController.playerInput.HandleKeyCode(event.getCode()) && state == MatchState.RUNNING) {
+                inputRenderLatency.recordInput(inputNanos);
+            }
+        });
         updateLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -129,6 +136,8 @@ public class OnlineVersusManager {
         if (isHost) {
             return;
         }
+
+
 
         if (!SendGameData(MessageType.DATA)) {
             startRequested = false;
@@ -149,9 +158,6 @@ public class OnlineVersusManager {
         updateLoop.start();
     }
 
-    public void SetConnectionDelayed(boolean delayed) {
-        connectionDelayed = delayed;
-    }
 
     // 진행 중인 경기의 상대 화면과 연결 상태를 갱신하고 매 프레임 자기 상태를 전송한다.
     protected void UpdateFrame(long now) {
@@ -172,13 +178,22 @@ public class OnlineVersusManager {
             versusRenderer.RenderTime(timer.GetRemainingTimeMs()); // 서버는 타이머를 업데이트하고 화면에 표시
         }
 
-        remoteView.Update(deltaTimeMs);
-        versusRenderer.RenderConnectionStatus(connectionDelayed);
+        long renderedInputId = remoteView.Update(deltaTimeMs);
+        if (inputRenderLatency.shouldSendRenderAck(renderedInputId)
+                && !SendGameData(MessageType.RENDER_ACK, renderedInputId)) {
+            return;
+        }
+        long latencyMs = networkController.getPingTime();
+        versusRenderer.RenderConnectionStatus(latencyMs, latencyMs >= DelayThreshold);
         SendGameData(MessageType.DATA);
     }
 
     // 공통 경기 정보와 메시지별 데이터를 채우고, 제한시간 모드의 호스트는 남은 시간도 보낸다.
     protected boolean SendGameData(MessageType messageType) {
+        return SendGameData(messageType, 0);
+    }
+
+    private boolean SendGameData(MessageType messageType, long renderedInputId) {
         Objects.requireNonNull(messageType, "messageType cannot be null");
 
         NetworkData data = new NetworkData();
@@ -188,7 +203,11 @@ public class OnlineVersusManager {
         data.SetIsPaused(state == MatchState.PAUSED);
 
         switch (messageType) {
-            case DATA -> dataExtractor.ExtractInto(data);
+            case DATA -> {
+                dataExtractor.ExtractInto(data);
+                data.SetLastInputId(inputRenderLatency.getLastInputId());
+            }
+            case RENDER_ACK -> data.SetLastInputId(renderedInputId);
             case PAUSE -> {
                 // 일시정지와 재개는 공통 필드의 isPaused로 전달한다.
                 // 그래서 여기는 암것도 안함.
@@ -216,11 +235,13 @@ public class OnlineVersusManager {
     // 수신 메시지를 JavaFX 스레드에서 확인하고 화면·공격 갱신이나 일시정지·종료 처리로 연결한다.
     public void HandleGameData(NetworkData data) {
         Objects.requireNonNull(data, "data cannot be null");
-        if (!Platform.isFxApplicationThread()) {
+        MessageType messageType = Objects.requireNonNull(data.GetMessageType(), "messageType cannot be null");
+        boolean onFxThread = Platform.isFxApplicationThread();
+        if (!onFxThread && messageType != MessageType.RENDER_ACK) {
             Platform.runLater(() -> HandleGameData(data));
             return;
         }
-        switch (Objects.requireNonNull(data.GetMessageType(), "messageType cannot be null")) {
+        switch (messageType) {
             case DATA -> {
                 if (state == MatchState.ENDING || state == MatchState.ENDED) {
                     return;
@@ -232,16 +253,28 @@ public class OnlineVersusManager {
                     lastReceivedAttackId = data.GetAttackId();
                 }
 
+                
                 SceneRenderState remoteState = new SceneRenderState(
                         data.GetBoard(), data.GetBlock(), data.GetVersusScore(),
                         data.GetNextBlocks(), data.GetBlockHolding(), data.GetPendingVersusBoard());
                 remoteView.ApplyState(remoteState, data.GetEffectId(),
-                        data.GetEffectRunning(), data.GetClearedRows());
+                        data.GetEffectRunning(), data.GetClearedRows(), data.GetLastInputId());
                 if (gameMode == GameMode.TIMELIMIT && !isHost) {
                     versusRenderer.RenderTime(data.GetRemainingTimeMs()); //클라이언트는 데이터로 남은 시간을 전송받아 표시한다.
                 }
                 if (state == MatchState.READY && startRequested) {
                     HandleInitialData();
+                }
+            }
+            case RENDER_ACK -> {
+                long receivedNanos = System.nanoTime();
+                long inputId = data.GetLastInputId();
+                Runnable measure = () -> inputRenderLatency.onRenderAck(
+                        inputId, receivedNanos, networkController.getPingTime());
+                if (onFxThread) {
+                    measure.run();
+                } else {
+                    Platform.runLater(measure);
                 }
             }
             case PAUSE -> {
@@ -316,6 +349,7 @@ public class OnlineVersusManager {
         state = MatchState.ENDING;
         localFinalScore = finalScore;
         updateLoop.stop();
+        inputRenderLatency.clearPendingInputs();
         localController.CleanGame();
         GetRoot().setOnKeyPressed(null);
     }
@@ -374,6 +408,7 @@ public class OnlineVersusManager {
         // PauseGame의 콜백이 RequestPause를 다시 호출하기 전에 상태를 바꾼다.
         state = MatchState.PAUSED;
         updateLoop.stop();
+        inputRenderLatency.clearPendingInputs();
         localController.PauseGame(); // 퍼즈 게임을 호출하면 해당 함수에서 다시 콜백으로 requestPause를 호출하나, 그때는 이 함수 상단에 state 조건으로 걸리므로 다시 실행되지 않는다.
         onPauseRequested.run();
         return true;
@@ -403,5 +438,10 @@ public class OnlineVersusManager {
 
     public MatchState GetState() {
         return state;
+    }
+
+    // JavaFX 스레드에서 내 입력이 상대 뷰에 반영되기까지의 최근 추정값(ms)을 조회한다.
+    public OptionalDouble GetInputRenderLatencyMs() {
+        return inputRenderLatency.getLatestLatencyMs();
     }
 }

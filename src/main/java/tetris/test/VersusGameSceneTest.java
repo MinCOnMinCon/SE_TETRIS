@@ -16,8 +16,6 @@ import tetris.settings.SettingsStore;
 import tetris.settings.GameSettings.ColorBlindMode;
 import tetris.versusmode.VersusManager;
 import tetris.versusmode.VersusManager.Player;
-import tetris.versusmode.VersusResult;
-
 // 로컬 2인 대전 모드를 직접 생성해 아이템 블록과 대전 동작을 확인한다.
 public class VersusGameSceneTest {
     // 10줄당 아이템 하나: 테스트 시작 시 누적 삭제 줄 수를 지정한다.

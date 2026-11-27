@@ -35,22 +35,21 @@ public class PlayerInput {
         // 해당 클래스의 키 바인딩 키-밸류를 수정하는 걸 막기 위한 코드
 	}
 
-	public void HandleKeyCode(KeyCode keyCode) { // 1인 모드에서 플레이어의 키 입력을 처리
-		
-		KeyBindingSettings.ActionType action = keyBindings.get(keyCode);
-
-		HandleAction(action);
-
+	public boolean HandleKeyCode(KeyCode keyCode) {
+		if (keyCode == null) {
+			return false;
+		}
+		return HandleAction(keyBindings.get(keyCode));
 	}
 
-	public void HandleAction(ActionType action){ 
+	public boolean HandleAction(ActionType action){
 		// 대전 모드일 때, 대전모드 관리자가 플레이어 입력이 누구껀지 확인해 그 플레이어의 인풋 매니저의 이 함수를 호출함. 
 		// 그때 파라미터로 입력에 맞는 액션 타입을 제공해서 처리하게 한다.
 		if (!inputEnabled) {
-			return;
+			return false;
 		}
 		if (action == null) {
-			return;
+			return false;
 		}
 
 		switch (action) {
@@ -77,8 +76,9 @@ public class PlayerInput {
 				break;
 			case PAUSE:
 				pauseGame.run();
-				break;
+				return false;
 		}
+		return true;
 	}
 	public void SetInputEnabled(boolean inputEnabled) {
 		this.inputEnabled = inputEnabled;

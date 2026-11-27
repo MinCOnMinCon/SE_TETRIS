@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -21,6 +22,7 @@ public class VersusRenderer {
     private final Label timerLabel = new Label();
     private final StackPane timerPane = new StackPane(timerLabel);
     private final Label connectionStatusLabel = new Label();
+    private final Label connectionLatencyLabel = new Label();
 
     public VersusRenderer(Parent player1Root, Parent player2Root, GameSettings settings) {
         Objects.requireNonNull(player1Root);
@@ -67,19 +69,30 @@ public class VersusRenderer {
         caption.setTextFill(Color.WHITE);
         connectionStatusLabel.setFont(font);
         connectionStatusLabel.setMinWidth(fontSize * 2.5);
+        connectionLatencyLabel.setFont(font);
 
-        HBox statusPane = new HBox(6, caption, connectionStatusLabel);
-        statusPane.setAlignment(Pos.CENTER_LEFT);
-        statusPane.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
+        HBox statusRow = new HBox(6, caption, connectionStatusLabel);
+        statusRow.setAlignment(Pos.CENTER);
+        VBox statusPane = new VBox(2, statusRow, connectionLatencyLabel);
+        statusPane.setAlignment(Pos.CENTER);
+        statusPane.setMaxSize(VBox.USE_PREF_SIZE, VBox.USE_PREF_SIZE);
         StackPane.setAlignment(statusPane, Pos.CENTER_RIGHT);
         StackPane.setMargin(statusPane, new Insets(0, fontSize, 0, 0));
         timerPane.getChildren().add(statusPane);
     }
 
-    public void RenderConnectionStatus(Boolean delayed) {
-        if(delayed == null) return;
+    public void RenderConnectionStatus(long latencyMs, boolean delayed) {
+        if (latencyMs < 0) {
+            connectionStatusLabel.setText("");
+            connectionLatencyLabel.setText("");
+            return;
+        }
+
+        Color statusColor = delayed ? Color.RED : Color.LIMEGREEN;
         connectionStatusLabel.setText(delayed ? "지연" : "쾌적");
-        connectionStatusLabel.setTextFill(delayed ? Color.RED : Color.LIMEGREEN);
+        connectionStatusLabel.setTextFill(statusColor);
+        connectionLatencyLabel.setText(latencyMs + " ms");
+        connectionLatencyLabel.setTextFill(statusColor);
     }
 
     public void RenderTime(double remainingTimeMs) {

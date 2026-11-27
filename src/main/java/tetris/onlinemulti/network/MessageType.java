@@ -4,5 +4,6 @@ public enum MessageType {
     DATA,
     PAUSE,
     END,
-    FINAL_SCORE
+    FINAL_SCORE,
+    RENDER_ACK
 }

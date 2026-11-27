@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "OnlineMultiScreenTest",
+            "request": "launch",
+            "mainClass": "tetris.test.OnlineMultiScreenTest",
+            "projectName": "SE_TETRIS"
+        },
+        {
+            "type": "java",
             "name": "VersusGameSceneTest",
             "request": "launch",
             "mainClass": "tetris.test.VersusGameSceneTest",

@@ -45,18 +45,18 @@ class RemotePlayerViewTest {
     void freezesEffectBoardAndWaitsForAnotherSnapshot() throws Exception {
         runOnFxThread(() -> {
             Fixture fixture = new Fixture();
-            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19, -1, -1, -1});
+            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19, -1, -1, -1}, 0);
             fixture.view.Update(0);
             assertEquals(Color.WHITE, fixture.colorAt(19));
 
-            fixture.view.ApplyState(fixture.after, 1, false, null);
+            fixture.view.ApplyState(fixture.after, 1, false, null, 0);
             fixture.view.Update(1000);
             fixture.view.Update(16);
             assertEquals(Color.BLUE, fixture.colorAt(0), "이펙트 중 받은 새 보드를 보관하지 않는다");
             assertEquals(Color.BLACK, fixture.colorAt(19), "다음 수신 전까지 이펙트의 마지막 화면을 유지한다");
             assertTrue(fixture.before.board()[19][0].isBlock(), "표시 객체는 실제 줄을 삭제하지 않는다");
 
-            fixture.view.ApplyState(fixture.after, 1, false, null);
+            fixture.view.ApplyState(fixture.after, 1, false, null, 0);
             fixture.view.Update(0);
             assertEquals(Color.RED, fixture.colorAt(0));
             assertEquals(Color.BLACK, fixture.colorAt(19));
@@ -68,18 +68,18 @@ class RemotePlayerViewTest {
     void rejectsCompletedEffectButAcceptsANewEffect() throws Exception {
         runOnFxThread(() -> {
             Fixture fixture = new Fixture();
-            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19});
+            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19}, 0);
             fixture.view.Update(1000);
-            fixture.view.ApplyState(fixture.after, 1, false, null);
+            fixture.view.ApplyState(fixture.after, 1, false, null, 0);
             fixture.view.Update(0);
 
-            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19});
+            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19}, 0);
             fixture.view.Update(0);
             assertEquals(Color.RED, fixture.colorAt(0));
             assertEquals(Color.BLACK, fixture.colorAt(19));
 
             int[] rows = {18};
-            fixture.view.ApplyState(fixture.after, 2, true, rows);
+            fixture.view.ApplyState(fixture.after, 2, true, rows, 0);
             rows[0] = 10;
             fixture.view.Update(0);
             assertEquals(Color.WHITE, fixture.colorAt(18), "새 이펙트는 처음부터 시작한다");
@@ -92,9 +92,9 @@ class RemotePlayerViewTest {
     void remembersAnEffectThatFinishedBeforeReception() throws Exception {
         runOnFxThread(() -> {
             Fixture fixture = new Fixture();
-            fixture.view.ApplyState(fixture.after, 3, false, null);
+            fixture.view.ApplyState(fixture.after, 3, false, null, 0);
             fixture.view.Update(0);
-            fixture.view.ApplyState(fixture.before, 3, true, new int[] {19});
+            fixture.view.ApplyState(fixture.before, 3, true, new int[] {19}, 0);
             fixture.view.Update(0);
             assertEquals(Color.RED, fixture.colorAt(0));
             assertEquals(Color.BLACK, fixture.colorAt(19));
@@ -106,18 +106,39 @@ class RemotePlayerViewTest {
     void runsForOneLocalSecondWithoutRestartingOnDuplicateReception() throws Exception {
         runOnFxThread(() -> {
             Fixture fixture = new Fixture();
-            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19});
+            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19}, 0);
             fixture.view.Update(500);
-            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19});
+            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19}, 0);
             fixture.view.Update(499);
-            fixture.view.ApplyState(fixture.after, 1, false, null);
+            fixture.view.ApplyState(fixture.after, 1, false, null, 0);
             fixture.view.Update(0);
             assertEquals(Color.BLUE, fixture.colorAt(0), "1초가 되기 전에는 수신 상태를 무시한다");
 
             fixture.view.Update(1);
-            fixture.view.ApplyState(fixture.after, 1, false, null);
+            fixture.view.ApplyState(fixture.after, 1, false, null, 0);
             fixture.view.Update(0);
             assertEquals(Color.RED, fixture.colorAt(0), "중복 수신과 관계없이 1초 후 새 상태를 받는다");
+        });
+    }
+
+    // 입력 번호가 있는 두 상태를 한 프레임 전에 적용하고 이펙트로 세 번째 상태를 가린다.
+    // 실제 보드를 그린 최신 번호만 반환하고, 이펙트 프레임은 ACK 대상에서 제외하는지 확인한다.
+    @Test
+    void reportsTheInputIdOfTheSnapshotDrawnOnTheFrame() throws Exception {
+        runOnFxThread(() -> {
+            Fixture fixture = new Fixture();
+            fixture.view.ApplyState(fixture.before, 0, false, null, 1);
+            fixture.view.ApplyState(fixture.after, 0, false, null, 2);
+            assertEquals(2, fixture.view.Update(16));
+
+            fixture.view.ApplyState(fixture.before, 1, true, new int[] {19}, 3);
+            assertEquals(0, fixture.view.Update(500));
+            fixture.view.ApplyState(fixture.after, 1, false, null, 4);
+            assertEquals(0, fixture.view.Update(500));
+            assertEquals(3, fixture.view.Update(16));
+
+            fixture.view.ApplyState(fixture.after, 1, false, null, 4);
+            assertEquals(4, fixture.view.Update(16));
         });
     }
 
