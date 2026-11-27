@@ -36,11 +36,20 @@ jobs:
           --tests tetris.gamescene.FramePerformanceTest
           --rerun-tasks --no-daemon
 
+      - name: 네트워크 연결 테스트 실행
+        run: >
+          xvfb-run -a bash ./gradlew test
+          --tests tetris.onlinemulti.network.NetworkConnectionTest
+          --tests tetris.onlinemulti.network.NetworkConnectionSequenceTest
+          --tests tetris.onlinemulti.network.NetworkConnectionBoardTest
+          --tests tetris.onlinemulti.network.NetworkConnectionBoardSequenceTest
+          --rerun-tasks --no-daemon
+
       - name: 테스트 보고서 저장
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: frame-performance-reports
+          name: frame-and-network-test-reports
           path: |
             performance-reports/
             build/reports/tests/test/
